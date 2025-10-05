@@ -180,7 +180,7 @@ export function SocialProof() {
                     <div className="flex items-center justify-center p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
                       <AlertCircle className="w-5 h-5 text-red-200 mr-2" />
                       <span className="text-red-200">
-                        Erreur d'envoi. Veuillez réessayer dans quelques instants.
+                        Erreur d&apos;envoi. Veuillez réessayer dans quelques instants.
                       </span>
                     </div>
                   )}

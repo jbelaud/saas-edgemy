@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, MessageCircle, Youtube, Twitter } from 'lucide-react';
+import { MessageCircle, Twitter } from 'lucide-react';
 import Image from 'next/image';
 
 export function Footer() {
@@ -30,7 +30,7 @@ export function Footer() {
               Rejoignez la communauté Edgemy !
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Boostez votre poker dès aujourd'hui et soyez parmi les premiers à découvrir notre plateforme
+              Boostez votre poker dès aujourd&apos;hui et soyez parmi les premiers à découvrir notre plateforme
             </p>
             <button 
               onClick={() => {

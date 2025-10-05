@@ -29,7 +29,7 @@ export function LandingHero() {
           
           <p className="text-xl md:text-2xl mb-12 text-gray-300 max-w-4xl mx-auto leading-relaxed">
             Réservations faciles, suivi personnalisé, sessions Discord privées avec des pros de MTT, cash game et mindset. 
-            <span className="text-blue-300 font-semibold"> L'accompagnement poker nouvelle génération.</span>
+            <span className="text-blue-300 font-semibold"> L&apos;accompagnement poker nouvelle génération.</span>
           </p>
           
             <button 

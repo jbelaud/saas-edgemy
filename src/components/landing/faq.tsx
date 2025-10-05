@@ -78,7 +78,7 @@ export function LandingFAQ() {
 
           <div className="text-center mt-12">
             <p className="text-gray-600 mb-4">
-              Vous avez d'autres questions ?
+              Vous avez d&apos;autres questions ?
             </p>
             <a 
               href="mailto:contact@edgemy.fr"

@@ -55,7 +55,7 @@ export function LandingNewsletter() {
       } else {
         setSubmitStatus('error');
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -235,7 +235,7 @@ export function LandingNewsletter() {
                 <div className="flex items-center p-4 bg-red-50 border border-red-200 rounded-xl">
                   <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
                   <div>
-                    <p className="text-red-800 font-semibold">Erreur d'inscription</p>
+                    <p className="text-red-800 font-semibold">Erreur d&apos;inscription</p>
                     <p className="text-red-700 text-sm">Veuillez réessayer dans quelques instants.</p>
                   </div>
                 </div>

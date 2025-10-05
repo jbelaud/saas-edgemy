@@ -150,7 +150,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
 
 
 // Email de notification interne pour l'équipe
-export async function sendInternalNotification(type: 'subscriber', data: any) {
+export async function sendInternalNotification(type: 'subscriber', data: { email: string; role: string; firstName?: string }) {
   try {
     if (!process.env.BREVO_API_KEY) {
       console.error('BREVO_API_KEY not configured');
