@@ -39,7 +39,7 @@ const features = [
 
 export function SocialProof() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error' | 'already_subscribed'>('idle');
 
   const {
     register,
@@ -70,6 +70,8 @@ export function SocialProof() {
       if (response.ok) {
         setSubmitStatus('success');
         reset();
+      } else if (response.status === 409) {
+        setSubmitStatus('already_subscribed');
       } else {
         const errorData = await response.json();
         console.error('Submission error:', errorData);
@@ -174,7 +176,16 @@ export function SocialProof() {
                     </div>
                   </div>
 
-                  {/* Error Message */}
+                  {/* Error Messages */}
+                  {submitStatus === 'already_subscribed' && (
+                    <div className="flex items-center justify-center p-4 bg-amber-500/20 border border-amber-500/30 rounded-lg">
+                      <AlertCircle className="w-5 h-5 text-amber-200 mr-2" />
+                      <span className="text-amber-200">
+                        Cet email fait déjà partie de notre liste d&apos;attente. Vous recevrez nos actualités !
+                      </span>
+                    </div>
+                  )}
+
                   {submitStatus === 'error' && (
                     <div className="flex items-center justify-center p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
                       <AlertCircle className="w-5 h-5 text-red-200 mr-2" />

@@ -19,7 +19,7 @@ type SubscriberInput = z.infer<typeof subscriberSchema>;
 
 export function LandingNewsletter() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error' | 'already_subscribed'>('idle');
   const { stats, loading } = useStats();
 
   const {
@@ -52,6 +52,8 @@ export function LandingNewsletter() {
         reset();
         // Mettre à jour le compteur localement
         stats.subscriberCount += 1;
+      } else if (response.status === 409) {
+        setSubmitStatus('already_subscribed');
       } else {
         setSubmitStatus('error');
       }
@@ -227,6 +229,16 @@ export function LandingNewsletter() {
                   <div>
                     <p className="text-green-800 font-semibold">Vous êtes sur la liste ! 🎉</p>
                     <p className="text-green-700 text-sm">Vous recevrez nos conseils exclusifs et serez informé en priorité du lancement.</p>
+                  </div>
+                </div>
+              )}
+
+              {submitStatus === 'already_subscribed' && (
+                <div className="flex items-center p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <AlertCircle className="w-5 h-5 text-amber-600 mr-3" />
+                  <div>
+                    <p className="text-amber-800 font-semibold">Email déjà inscrit</p>
+                    <p className="text-amber-700 text-sm">Cet email fait déjà partie de notre liste d&apos;attente. Vous recevrez nos actualités !</p>
                   </div>
                 </div>
               )}
