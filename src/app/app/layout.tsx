@@ -24,6 +24,12 @@ export default function AppLayout({
               </div>
               <div className="flex items-center space-x-4">
                 <LanguageSwitcher />
+                <a
+                  href="/app/auth/login"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Connexion
+                </a>
                 <span className="text-sm text-gray-500">Version développement</span>
               </div>
             </div>
