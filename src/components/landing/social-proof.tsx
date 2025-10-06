@@ -128,10 +128,9 @@ export function SocialProof() {
               {submitStatus === 'success' ? (
                 <div className="text-center py-8">
                   <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                  <h4 className="text-2xl font-bold mb-2">Candidature envoyée ! 🎉</h4>
+                  <h4 className="text-2xl font-bold mb-2">Bienvenue parmi les coachs Edgemy ! 👏</h4>
                   <p className="text-lg opacity-90">
-                    Merci pour votre intérêt. Nous examinerons votre profil et vous recontacterons rapidement.
-                  </p>
+                  Vous êtes désormais dans la liste prioritaire pour accéder à la plateforme dès son lancement et créer votre espace coach.                  </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
