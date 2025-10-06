@@ -5,18 +5,19 @@ export function middleware(request: NextRequest) {
   
   // Vérifier si c'est le sous-domaine app
   if (hostname.startsWith('app.')) {
-    // Rediriger vers /app si on est sur le sous-domaine app
-    if (request.nextUrl.pathname === '/') {
-      return NextResponse.redirect(new URL('/app/dashboard', request.url));
+    const pathname = request.nextUrl.pathname;
+    
+    // Rediriger la racine vers /dashboard
+    if (pathname === '/') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     
-    // Si on est déjà sur /app/*, laisser passer
-    if (request.nextUrl.pathname.startsWith('/app')) {
-      return NextResponse.next();
+    // Réécrire les routes pour pointer vers /app/*
+    if (!pathname.startsWith('/app') && !pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
+      return NextResponse.rewrite(new URL('/app' + pathname, request.url));
     }
     
-    // Sinon rediriger vers /app
-    return NextResponse.redirect(new URL('/app' + request.nextUrl.pathname, request.url));
+    return NextResponse.next();
   }
   
   // Pour le domaine principal, bloquer l'accès à /app en production
