@@ -1,46 +1,86 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight, Users, Trophy, TrendingUp } from 'lucide-react';
 
 export default function AppPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <div className="container mx-auto px-6 py-20">
         <div className="text-center max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-12">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <Badge variant="secondary" className="mb-4">
+              🚧 {t('common.development')}
+            </Badge>
+            <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
               {t('home.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
               {t('home.subtitle')}
             </p>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               {t('home.description')}
             </p>
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <a
-              href="/app/dashboard"
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-lg rounded-xl transition-all duration-300 hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              {t('nav.dashboard')}
-            </a>
-            <a
-              href="/app/profile"
-              className="px-8 py-4 bg-white text-gray-700 font-semibold text-lg rounded-xl border-2 border-gray-200 transition-all duration-300 hover:border-gray-300 hover:shadow-lg"
-            >
-              {t('nav.profile')}
-            </a>
+            <Button size="lg" className="px-8 py-6 text-lg" asChild>
+              <a href="/app/dashboard">
+                {t('nav.dashboard')}
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </a>
+            </Button>
+            <Button variant="outline" size="lg" className="px-8 py-6 text-lg" asChild>
+              <a href="/app/profile">
+                {t('nav.profile')}
+              </a>
+            </Button>
           </div>
 
-          {/* Coming Soon Badge */}
-          <div className="inline-flex items-center px-6 py-3 bg-amber-100 text-amber-800 rounded-full font-semibold">
-            🚧 {t('common.development')}
+          {/* Feature Cards */}
+          <div className="grid md:grid-cols-3 gap-6 mt-16">
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+                <CardTitle>Coaching Personnalisé</CardTitle>
+                <CardDescription>
+                  Connectez-vous avec des coachs experts pour améliorer votre jeu
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                  <Trophy className="w-6 h-6 text-primary" />
+                </div>
+                <CardTitle>Suivi des Performances</CardTitle>
+                <CardDescription>
+                  Analysez vos sessions et suivez votre progression en temps réel
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                  <TrendingUp className="w-6 h-6 text-primary" />
+                </div>
+                <CardTitle>Communauté Active</CardTitle>
+                <CardDescription>
+                  Rejoignez une communauté de joueurs passionnés et motivés
+                </CardDescription>
+              </CardHeader>
+            </Card>
           </div>
         </div>
       </div>
