@@ -7,9 +7,9 @@ export function middleware(request: NextRequest) {
   if (hostname.startsWith('app.')) {
     const pathname = request.nextUrl.pathname;
     
-    // Rediriger la racine vers /dashboard
+    // Pas de redirection automatique pour l'instant - juste rewrite vers /app
     if (pathname === '/') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.rewrite(new URL('/app', request.url));
     }
     
     // Réécrire les routes pour pointer vers /app/*

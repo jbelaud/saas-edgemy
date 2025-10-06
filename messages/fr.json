@@ -1,0 +1,22 @@
+{
+  "home": {
+    "title": "Bienvenue sur Edgemy",
+    "subtitle": "La plateforme de coaching poker qui connecte joueurs et coachs passionnés",
+    "description": "Trouvez le coach parfait pour faire passer votre jeu au niveau supérieur"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "dashboard": "Tableau de bord",
+    "profile": "Profil",
+    "settings": "Paramètres"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "delete": "Supprimer"
+  }
+}

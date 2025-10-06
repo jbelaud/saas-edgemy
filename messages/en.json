@@ -1,0 +1,22 @@
+{
+  "home": {
+    "title": "Welcome to Edgemy",
+    "subtitle": "The poker coaching platform that connects passionate players and coaches",
+    "description": "Find the perfect coach to take your game to the next level"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete"
+  }
+}
