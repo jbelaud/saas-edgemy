@@ -20,15 +20,15 @@ export function LandingHero() {
           {/* Badge */}
           <div className="inline-flex items-center px-4 py-2 mb-8 text-sm font-medium text-blue-100 bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 rounded-full">
             <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
-            Plateforme de coaching poker #1 en France
+            Shape Your Edge, Own the Game
           </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight bg-gradient-to-r from-white via-blue-100 to-indigo-200 bg-clip-text text-transparent">
-            Trouvez le coach de poker qui fera passer votre jeu au niveau supérieur
+          Trouvez votre coach poker adapté en quelques clics
           </h1>
           
           <p className="text-xl md:text-2xl mb-12 text-gray-300 max-w-4xl mx-auto leading-relaxed">
-            Réservations faciles, suivi personnalisé, sessions Discord privées avec des pros de MTT, cash game et mindset. 
+            Réservations faciles, suivi personnalisé, sessions Discord privées avec des coachs de MTT, cash game et mindset. 
             <span className="text-blue-300 font-semibold"> L&apos;accompagnement poker nouvelle génération.</span>
           </p>
           
