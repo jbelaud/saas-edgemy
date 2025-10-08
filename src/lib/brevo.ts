@@ -124,9 +124,17 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
               <ul style="color: #475569;">
                 <li><strong>Lancement prioritaire :</strong> Vous serez informé(e) en premier</li>
                 <li><strong>Accès early bird :</strong> Tarifs préférentiels pour les premiers utilisateurs</li>
-                <li><strong>Conseils exclusifs :</strong> Tips poker directement dans votre boîte mail</li>
                 <li><strong>Choix des coachs :</strong> Accès privilégié aux meilleurs profils</li>
               </ul>
+            </div>
+            
+             <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
+                Nous t'enverrons bientôt des nouvelles du lancement officiel 🚀
+              </p>
+              
+              <p style="font-size: 16px; color: #374151;">
+                En attendant, rejoins notre communauté Discord pour échanger avec d'autres joueurs et coachs passionnés.
+              </p>
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
@@ -136,8 +144,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
             </div>
             
             <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center; color: #64748b; font-size: 14px;">
-              <p>Des questions ? Répondez simplement à cet email !</p>
-              <p>L'équipe Edgemy 🚀</p>
+              <p>À bientôt,<br>L'équipe Edgemy 🚀</p>
             </div>
           </body>
         </html>

@@ -228,7 +228,7 @@ export function LandingNewsletter() {
                   <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
                   <div>
                     <p className="text-green-800 font-semibold">Vous êtes sur la liste ! 🎉</p>
-                    <p className="text-green-700 text-sm">Vous recevrez nos conseils exclusifs et serez informé en priorité du lancement.</p>
+                    <p className="text-green-700 text-sm">Vous serez informé en priorité du lancement.</p>
                   </div>
                 </div>
               )}
