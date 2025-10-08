@@ -12,7 +12,7 @@ Edgemy est une plateforme moderne qui connecte les joueurs de poker avec les mei
 - ✅ **API de souscription** connectée à PostgreSQL
 
 ### Phases Futures
-- 🔄 **Authentification** (NextAuth.js avec Google, Discord, email)
+- 🔄 **Authentification** (BetterAuth.js avec Google, Discord, email)
 - 🔄 **Dashboard joueurs/coachs** avec profils et réservations
 - 🔄 **Système de paiement** Stripe intégré
 - 🔄 **Intégration Discord** pour les sessions de coaching
