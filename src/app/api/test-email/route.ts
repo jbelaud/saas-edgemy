@@ -6,7 +6,7 @@ export async function GET() {
     console.log('Testing email sending...');
     
     const result = await sendWelcomeEmail({
-      email: 'test@example.com', // Changez par votre email pour tester
+      email: 'olive.belaud@gmail.com', // Changez par votre email pour tester
       firstName: 'Test',
       role: 'PLAYER'
     });

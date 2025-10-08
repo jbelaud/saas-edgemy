@@ -25,6 +25,12 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
       return { success: false, error: 'Email service not configured' };
     }
 
+    console.log('Brevo config check:', {
+      hasKey: !!process.env.BREVO_API_KEY,
+      senderEmail: process.env.BREVO_SENDER_EMAIL,
+      senderName: process.env.BREVO_SENDER_NAME
+    });
+
     const client = getBrevoClient();
     const sendSmtpEmail = new brevo.SendSmtpEmail();
     
