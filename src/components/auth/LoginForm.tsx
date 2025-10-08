@@ -46,7 +46,7 @@ export function LoginForm() {
         // Redirection après connexion réussie
         window.location.href = '/app/dashboard';
       }
-    } catch (err) {
+    } catch {
       setError('Une erreur est survenue lors de la connexion');
     } finally {
       setIsLoading(false);
@@ -60,7 +60,7 @@ export function LoginForm() {
         provider: 'google',
         callbackURL: '/app/dashboard',
       });
-    } catch (err) {
+    } catch {
       setError('Erreur lors de la connexion avec Google');
       setIsLoading(false);
     }
@@ -145,7 +145,7 @@ export function LoginForm() {
         <div className="text-center text-sm">
           <span className="text-muted-foreground">Pas encore de compte ? </span>
           <a href="/auth/register" className="text-primary hover:underline">
-            S'inscrire
+            S&apos;inscrire
           </a>
         </div>
       </CardContent>
