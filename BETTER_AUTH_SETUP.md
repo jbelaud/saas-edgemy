@@ -5,9 +5,9 @@
 Ajoutez ces variables dans votre fichier `.env.local` :
 
 ```bash
-# Better Auth Configuration
-BETTER_AUTH_SECRET="your-secret-key-here-minimum-32-characters"
-BETTER_AUTH_URL="http://localhost:3000"
+# Better Auth Configuration (OBLIGATOIRE)
+BETTER_AUTH_SECRET="edgemy-super-secret-key-minimum-32-characters-long-for-security"
+BETTER_AUTH_URL="http://localhost:3001"
 
 # Google OAuth (optionnel pour le développement)
 GOOGLE_CLIENT_ID="your-google-client-id"
@@ -42,10 +42,12 @@ NEXT_PUBLIC_AUTH_METHODS="credential,google,discord"
 
 ## Test de la configuration
 
-1. Démarrer le serveur : `pnpm dev`
-2. Aller sur `http://localhost:3000/app/auth/login`
-3. Tester la connexion email/password
-4. Tester la connexion Google (si configuré)
+1. **Ajouter les variables d'environnement** dans `.env.local`
+2. **Démarrer le serveur** : `pnpm dev`
+3. **Tester la configuration** : `http://localhost:3001/app/auth/test`
+4. **Tester la page de connexion** : `http://localhost:3001/app/auth/login`
+5. **Tester l'inscription/connexion** avec email/password
+6. **Tester OAuth** (si configuré)
 
 ## Problèmes courants
 

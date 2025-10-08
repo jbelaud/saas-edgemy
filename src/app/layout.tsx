@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Edgemy – Coaching poker personnalisé avec les meilleurs coachs francophones",
-  description: "Trouvez le coach de poker qui fera passer votre jeu au niveau supérieur. Réservations faciles, sessions Discord privées, suivi personnalisé avec des pros de MTT et cash game.",
-  keywords: "coaching poker, coach poker, formation poker, MTT, cash game, mental game, Discord poker, cours poker",
+  title: "Edgemy – Coaching poker : trouvez votre coach idéal",
+  description: "La plateforme qui connecte joueurs et coachs de poker. Trouvez le coach adapté à vos besoins pour progresser rapidement en MTT, cash game ou mental game.",
+  keywords: "coaching poker, coach poker, formation poker, MTT, cash game, mental game, Discord poker, cours poker, plateforme coaching",
   authors: [{ name: "Edgemy" }],
   creator: "Edgemy",
   publisher: "Edgemy",
@@ -27,14 +27,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
     url: "https://edgemy.fr",
-    title: "Edgemy – Coaching poker personnalisé",
-    description: "Trouvez le coach de poker qui fera passer votre jeu au niveau supérieur",
+    title: "Edgemy – Coaching poker : trouvez votre coach idéal",
+    description: "La plateforme qui connecte joueurs et coachs de poker pour progresser rapidement",
     siteName: "Edgemy",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Edgemy – Coaching poker personnalisé",
-    description: "Trouvez le coach de poker qui fera passer votre jeu au niveau supérieur",
+    title: "Edgemy – Coaching poker : trouvez votre coach idéal",
+    description: "La plateforme qui connecte joueurs et coachs de poker pour progresser rapidement",
   },
 };
 

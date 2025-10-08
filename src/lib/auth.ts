@@ -11,15 +11,19 @@ export const auth = betterAuth({
     requireEmailVerification: false, // Désactivé pour le développement
   },
   socialProviders: {
-    google: {
-      prompt: 'select_account',
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    },
-    discord: {
-      clientId: process.env.DISCORD_CLIENT_ID as string,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
-    },
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && {
+      google: {
+        prompt: 'select_account',
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      },
+    }),
+    ...(process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET && {
+      discord: {
+        clientId: process.env.DISCORD_CLIENT_ID,
+        clientSecret: process.env.DISCORD_CLIENT_SECRET,
+      },
+    }),
   },
   account: {
     accountLinking: {
@@ -48,6 +52,11 @@ export const auth = betterAuth({
   },
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
   secret: process.env.BETTER_AUTH_SECRET as string,
+  trustedOrigins: [
+    "http://localhost:3001",
+    "http://localhost:3000", 
+    "https://app.edgemy.fr"
+  ],
 })
 
 export type Session = typeof auth.$Infer.Session

@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Send welcome email (temporarily disabled for debugging)
+    // Send welcome email
     console.log('Subscriber created successfully, attempting to send emails...');
     try {
       console.log('Calling sendWelcomeEmail...');
@@ -53,12 +53,17 @@ export async function POST(request: NextRequest) {
       });
       console.log('Email result:', emailResult);
       
+      // Vérifier si l'email a vraiment été envoyé
+      if (!emailResult.success) {
+        console.error('Email sending failed:', emailResult.error);
+      }
+      
       console.log('Calling sendInternalNotification...');
       await sendInternalNotification('subscriber', validatedData);
       console.log('Internal notification sent');
       
     } catch (emailError) {
-      console.error('Error sending emails:', emailError);
+      console.error('Error sending emails - FULL ERROR:', JSON.stringify(emailError, null, 2));
       // Continue even if email fails - don't block the subscription
     }
 

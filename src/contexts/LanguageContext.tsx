@@ -17,7 +17,7 @@ const translations = {
   fr: {
     'home.title': 'Bienvenue sur Edgemy',
     'home.subtitle': 'La plateforme de coaching poker qui connecte joueurs et coachs passionnés',
-    'home.description': 'Trouvez le coach parfait pour faire passer votre jeu au niveau supérieur',
+    'home.description': 'Trouvez votre coach poker adapté en quelques clics',
     'nav.dashboard': 'Accéder au Dashboard',
     'nav.profile': 'Mon Profil',
     'common.development': 'Application en cours de développement',
