@@ -5,12 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Users, Trophy, TrendingUp } from 'lucide-react';
+import { AuthButton } from '@/components/auth/AuthButton';
 
 export default function AppPage() {
   const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Header with Auth Button */}
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold">Edgemy</h2>
+          <AuthButton />
+        </div>
+      </div>
+
       <div className="container mx-auto px-6 py-20">
         <div className="text-center max-w-4xl mx-auto">
           {/* Header */}

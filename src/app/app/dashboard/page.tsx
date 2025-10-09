@@ -1,17 +1,49 @@
 'use client';
 
-import { Users, Calendar, TrendingUp, Settings } from 'lucide-react';
+import { Users, Calendar, TrendingUp, Settings, Loader2 } from 'lucide-react';
+import { useSession } from '@/lib/auth-client';
+import { AuthButton } from '@/components/auth/AuthButton';
 
 export default function DashboardPage() {
-  return (
-    <div className="px-4 py-6 sm:px-0">
-      {/* En-tête Dashboard */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-2 text-gray-600">
-          Bienvenue sur votre espace personnel Edgemy !
-        </p>
+  const { data: session, isPending } = useSession();
+
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header with Auth Button */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold">Edgemy</h2>
+          <AuthButton />
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-6 sm:px-6">
+        {/* En-tête Dashboard */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="mt-2 text-gray-600">
+            {session?.user ? (
+              <>Bienvenue {session.user.name || session.user.email} !</>
+            ) : (
+              <>Bienvenue sur votre espace personnel Edgemy !</>
+            )}
+          </p>
+          {session?.user && (
+            <div className="mt-2">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                Rôle: {session.user.role || 'USER'}
+              </span>
+            </div>
+          )}
+        </div>
 
       {/* Statistiques rapides */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -109,6 +141,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
