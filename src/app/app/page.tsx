@@ -11,7 +11,7 @@ export default function AppPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="container mx-auto px-6 py-20">
+      <div className="container mx-auto max-w-7xl px-6 py-20">
         <div className="text-center max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-12">
@@ -27,21 +27,6 @@ export default function AppPage() {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               {t('home.description')}
             </p>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <Button size="lg" className="px-8 py-6 text-lg" asChild>
-              <a href="/app/dashboard">
-                {t('nav.dashboard')}
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </a>
-            </Button>
-            <Button variant="outline" size="lg" className="px-8 py-6 text-lg" asChild>
-              <a href="/app/profile">
-                {t('nav.profile')}
-              </a>
-            </Button>
           </div>
 
           {/* Feature Cards */}
