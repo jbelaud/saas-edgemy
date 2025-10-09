@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { signIn, useSession } from '@/lib/auth-client';
+import { signIn } from '@/lib/auth-client';
 import { Mail, Lock, Chrome, Loader2 } from 'lucide-react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 const loginSchema = z.object({
   email: z.string().email('Adresse email invalide'),
@@ -23,16 +23,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const { data: session } = useSession();
   const callbackUrl = searchParams.get('callbackUrl') || '/app/dashboard';
-
-  // Si l'utilisateur est déjà connecté (retour OAuth), rediriger
-  useEffect(() => {
-    if (session?.user) {
-      router.push(callbackUrl);
-    }
-  }, [session, callbackUrl, router]);
 
   const {
     register,
