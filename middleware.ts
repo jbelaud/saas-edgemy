@@ -8,6 +8,7 @@ export async function middleware(request: NextRequest) {
   if (hostname.startsWith('app.')) {
     // Routes publiques de l'app (pas besoin d'auth)
     const publicRoutes = [
+      '/app',                        // Page d'accueil app (publique)
       '/app/auth/login',
       '/app/auth/register',
       '/app/auth/test',
