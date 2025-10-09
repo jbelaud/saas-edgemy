@@ -8,46 +8,56 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { signIn } from '@/lib/auth-client';
-import { Mail, Lock, Chrome } from 'lucide-react';
+import { signIn, signUp } from '@/lib/auth-client';
+import { Mail, Lock, User, Chrome } from 'lucide-react';
 
-const loginSchema = z.object({
+const registerSchema = z.object({
+  name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
   email: z.string().email('Adresse email invalide'),
-  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
+  password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Les mots de passe ne correspondent pas',
+  path: ['confirmPassword'],
 });
 
-type LoginInput = z.infer<typeof loginSchema>;
+type RegisterInput = z.infer<typeof registerSchema>;
 
-export function LoginForm() {
+export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: LoginInput) => {
+  const onSubmit = async (data: RegisterInput) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await signIn.email({
+      const result = await signUp.email({
         email: data.email,
         password: data.password,
+        name: data.name,
       });
 
       if (result.error) {
-        setError(result.error.message || 'Erreur de connexion');
+        setError(result.error.message || 'Erreur lors de l\'inscription');
       } else {
-        // Redirection après connexion réussie
-        window.location.href = '/app/dashboard';
+        setSuccess(true);
+        // Redirection après inscription réussie
+        setTimeout(() => {
+          window.location.href = '/app/dashboard';
+        }, 1000);
       }
     } catch {
-      setError('Une erreur est survenue lors de la connexion');
+      setError('Une erreur est survenue lors de l\'inscription');
     } finally {
       setIsLoading(false);
     }
@@ -66,12 +76,25 @@ export function LoginForm() {
     }
   };
 
+  if (success) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-green-600">Inscription réussie !</CardTitle>
+          <CardDescription>
+            Redirection vers votre dashboard...
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Connexion</CardTitle>
+        <CardTitle className="text-2xl font-bold">Créer un compte</CardTitle>
         <CardDescription>
-          Connectez-vous à votre compte Edgemy
+          Rejoignez Edgemy et commencez votre progression
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -82,6 +105,23 @@ export function LoginForm() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nom complet</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                className="pl-10"
+                {...register('name')}
+              />
+            </div>
+            {errors.name && (
+              <p className="text-sm text-red-600">{errors.name.message}</p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
@@ -116,8 +156,25 @@ export function LoginForm() {
             )}
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                className="pl-10"
+                {...register('confirmPassword')}
+              />
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
+            )}
+          </div>
+
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Connexion...' : 'Se connecter'}
+            {isLoading ? 'Inscription...' : 'S\'inscrire'}
           </Button>
         </form>
 
@@ -143,9 +200,9 @@ export function LoginForm() {
         </Button>
 
         <div className="text-center text-sm">
-          <span className="text-muted-foreground">Pas encore de compte ? </span>
-          <a href="/app/auth/register" className="text-primary hover:underline">
-            S&apos;inscrire
+          <span className="text-muted-foreground">Déjà un compte ? </span>
+          <a href="/app/auth/login" className="text-primary hover:underline">
+            Se connecter
           </a>
         </div>
       </CardContent>
