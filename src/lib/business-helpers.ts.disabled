@@ -1,10 +1,17 @@
 /**
  * Helpers métier pour Edgemy
  * Fonctions réutilisables pour la logique business
+ * 
+ * NOTE: Ces fonctions nécessitent la migration de la base de données
+ * Elles seront pleinement fonctionnelles après le déploiement de la migration
  */
 
 import { db } from '@/lib/db';
-import { RoleType, SubscriptionStatus, PlanType } from '@prisma/client';
+
+// Types temporaires en attendant la migration Prisma
+type RoleType = 'PLAYER' | 'COACH' | 'ADMIN';
+type SubscriptionStatus = 'ACTIVE' | 'CANCELED' | 'EXPIRED';
+type PlanType = 'PLAYER_PREMIUM' | 'COACH_MONTHLY' | 'COACH_YEARLY';
 
 // ==================== ROLES ====================
 
