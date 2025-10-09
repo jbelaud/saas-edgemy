@@ -28,8 +28,18 @@ model User {
   updatedAt     DateTime  @updatedAt
   twoFactorEnabled Boolean?
 
+  // Better Auth relations
   accounts Account[]
   sessions Session[]
+
+  // Business logic relations
+  roles           UserRole[]
+  subscriptions   Subscription[]
+  coachProfile    CoachProfile?
+  playerProfile   PlayerProfile?
+  coachingOffers  CoachingOffer[]
+  bookingsAsPlayer Booking[] @relation("PlayerBookings")
+  bookingsAsCoach  Booking[] @relation("CoachBookings")
 
   @@map("user")
 }
@@ -80,6 +90,124 @@ model Verification {
 
   @@map("verification")
 }
+
+// --- Business Models ---
+
+model UserRole {
+  id        String   @id @default(cuid())
+  type      RoleType
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([type, userId])
+  @@map("user_role")
+}
+
+enum RoleType {
+  PLAYER
+  COACH
+  ADMIN
+}
+
+model Subscription {
+  id            String             @id @default(cuid())
+  userId        String
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan          PlanType
+  stripeId      String?            @unique
+  status        SubscriptionStatus @default(ACTIVE)
+  startedAt     DateTime           @default(now())
+  expiresAt     DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@map("subscription")
+}
+
+enum PlanType {
+  PLAYER_PREMIUM
+  COACH_MONTHLY
+  COACH_YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+}
+
+model CoachProfile {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio             String?         @db.Text
+  experience      Int?
+  specialties     String[]
+  hourlyRate      Float?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("coach_profile")
+}
+
+model PlayerProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bankroll       Float?
+  level          String?
+  commissionRate Float    @default(0.05) // 5% par défaut pour le MVP
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("player_profile")
+}
+
+model CoachingOffer {
+  id             String     @id @default(cuid())
+  coachId        String
+  coach          User       @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  title          String
+  description    String     @db.Text
+  theme          String
+  price          Float
+  duration       Int?       // Durée en minutes
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  bookings       Booking[]
+
+  @@map("coaching_offer")
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  playerId        String
+  player          User          @relation("PlayerBookings", fields: [playerId], references: [id], onDelete: Cascade)
+  coachId         String
+  coach           User          @relation("CoachBookings", fields: [coachId], references: [id])
+  coachingOfferId String
+  coachingOffer   CoachingOffer @relation(fields: [coachingOfferId], references: [id], onDelete: Cascade)
+  status          BookingStatus @default(PENDING)
+  scheduledAt     DateTime?
+  totalPrice      Float
+  commissionFee   Float
+  stripePaymentId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("booking")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+// --- Legacy (Waitlist) ---
 
 enum Role {
   PLAYER
