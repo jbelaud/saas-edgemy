@@ -1,57 +1,15 @@
 'use client';
 
-import { useSession } from '@/lib/auth-client';
-import { Users, Calendar, TrendingUp, Settings, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { Users, Calendar, TrendingUp, Settings } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { data: session, isPending } = useSession();
-
-  // Loading state
-  if (isPending) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Chargement de votre dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Not authenticated (ne devrait pas arriver grâce au middleware)
-  if (!session?.user) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle>Non connecté</CardTitle>
-            <CardDescription>Vous devez être connecté pour accéder au dashboard</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/app/auth/login">Se connecter</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const user = session.user;
-
   return (
     <div className="px-4 py-6 sm:px-0">
       {/* En-tête Dashboard */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="mt-2 text-gray-600">
-          Bienvenue sur votre espace personnel Edgemy, {user.name} !
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          {user.email}
+          Bienvenue sur votre espace personnel Edgemy !
         </p>
       </div>
 

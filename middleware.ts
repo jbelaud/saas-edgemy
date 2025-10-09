@@ -1,36 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const pathname = request.nextUrl.pathname;
   
   // Vérifier si c'est le sous-domaine app
   if (hostname.startsWith('app.')) {
-    // Routes publiques de l'app (pas besoin d'auth)
-    const publicRoutes = [
-      '/app',                        // Page d'accueil app (publique)
-      '/app/auth/login',
-      '/app/auth/register',
-      '/app/auth/test',
-      '/app/auth/forgot-password',
-    ];
-    
-    // Routes API et assets (toujours accessibles)
+    // Routes API et assets
     const isApiOrAsset = pathname.startsWith('/api') || 
                          pathname.startsWith('/_next') || 
                          pathname.startsWith('/favicon.ico');
-    
-    // Vérifier l'authentification pour les routes protégées
-    if (!isApiOrAsset && !publicRoutes.includes(pathname) && pathname.startsWith('/app')) {
-      const token = request.cookies.get('better-auth.session_token')?.value;
-      
-      // Si pas de token, rediriger vers login
-      if (!token) {
-        const loginUrl = new URL('/app/auth/login', request.url);
-        loginUrl.searchParams.set('callbackUrl', pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-    }
     
     // Rewrite pour le sous-domaine app
     if (pathname === '/') {

@@ -1,34 +1,13 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useSession } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Users, Trophy, TrendingUp, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { ArrowRight, Users, Trophy, TrendingUp } from 'lucide-react';
 
 export default function AppPage() {
   const { t } = useLanguage();
-  const { data: session, isPending } = useSession();
-  const router = useRouter();
-
-  // Rediriger automatiquement vers le dashboard si connecté
-  useEffect(() => {
-    if (session?.user) {
-      router.push('/app/dashboard');
-    }
-  }, [session, router]);
-
-  // Loading state
-  if (isPending) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
