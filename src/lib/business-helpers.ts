@@ -61,14 +61,11 @@ export async function hasActiveSubscription(
   userId: string,
   planType?: PlanType
 ): Promise<boolean> {
-  const where: any = {
+  const where = {
     userId,
     status: SubscriptionStatus.ACTIVE,
+    ...(planType && { plan: planType }),
   };
-
-  if (planType) {
-    where.plan = planType;
-  }
 
   const subscription = await db.subscription.findFirst({ where });
   return !!subscription;
@@ -78,14 +75,11 @@ export async function hasActiveSubscription(
  * Récupère l'abonnement actif d'un utilisateur
  */
 export async function getActiveSubscription(userId: string, planType?: PlanType) {
-  const where: any = {
+  const where = {
     userId,
     status: SubscriptionStatus.ACTIVE,
+    ...(planType && { plan: planType }),
   };
-
-  if (planType) {
-    where.plan = planType;
-  }
 
   return db.subscription.findFirst({ where });
 }
