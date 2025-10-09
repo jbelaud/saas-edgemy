@@ -7,10 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==========================================
-// WAITLIST (Landing page)
-// ==========================================
-
 model Subscriber {
   id        String       @id @default(cuid())
   email     String       @unique
@@ -22,109 +18,91 @@ model Subscriber {
   @@map("subscribers")
 }
 
-enum WaitlistRole {
-  PLAYER
-  COACH
-}
-
-// ==========================================
-// AUTHENTIFICATION (Better Auth + Edgemy)
-// ==========================================
-
-model User {
-  id             String     @id @default(cuid())
-  email          String?    @unique
-  emailVerified  Boolean    @default(false)
-  name           String?
-  image          String?
-  role           Role       @default(USER)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-
-  accounts       Account[]
-  sessions       Session[]
-  coachProfile   Coach?
-  playerProfile  Player?
-
-  @@map("user")
-}
-
-model Account {
-  id                 String    @id @default(cuid())
-  userId             String
-  accountId          String
-  providerId         String
-  accessToken        String?
-  refreshToken       String?
-  idToken            String?
-  accessTokenExpiresAt DateTime?
+model account {
+  id                    String    @id
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
-  scope              String?
-  password           String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime
+  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId])
-  @@map("account")
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  expiresAt    DateTime
-  token        String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  ipAddress    String?
-  userAgent    String?
-  userId       String
-
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("session")
+model coach {
+  id          String   @id
+  userId      String   @unique
+  bio         String?
+  hourlyRate  Float?
+  specialties String[]
+  experience  Int?
+  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Verification {
-  id         String   @id @default(cuid())
+model player {
+  id       String   @id
+  userId   String   @unique
+  abi      Float?
+  formats  String[]
+  goals    String?
+  winnings Float?
+  user     user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model user {
+  id            String    @id
+  email         String?   @unique
+  emailVerified Boolean   @default(false)
+  name          String?
+  image         String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+  account       account[]
+  coach         coach?
+  player        player?
+  session       session[]
+}
+
+model verification {
+  id         String   @id
   identifier String
   value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updatedAt  DateTime
 
   @@unique([identifier, value])
-  @@map("verification")
-}
-
-model Player {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  abi          Float?
-  formats      String[]
-  goals        String?
-  winnings     Float?
-  
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("player")
-}
-
-model Coach {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  bio          String?
-  hourlyRate   Float?
-  specialties  String[]
-  experience   Int?
-  
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("coach")
 }
 
 enum Role {
   USER
+  PLAYER
+  COACH
+  ADMIN
+}
+
+enum WaitlistRole {
   PLAYER
   COACH
   ADMIN

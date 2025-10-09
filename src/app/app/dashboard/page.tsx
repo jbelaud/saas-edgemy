@@ -2,7 +2,7 @@
 
 import { Users, Calendar, TrendingUp, Settings, Loader2 } from 'lucide-react';
 import { useSession } from '@/lib/auth-client';
-import { AuthButton } from '@/components/auth/AuthButton';
+import { AppHeader } from '@/components/layout/AppHeader';
 
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
@@ -17,13 +17,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with Auth Button */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <h2 className="text-xl font-bold">Edgemy</h2>
-          <AuthButton />
-        </div>
-      </div>
+      <AppHeader />
 
       <div className="container mx-auto px-4 py-6 sm:px-6">
         {/* En-tête Dashboard */}
@@ -36,13 +30,6 @@ export default function DashboardPage() {
               <>Bienvenue sur votre espace personnel Edgemy !</>
             )}
           </p>
-          {session?.user && (
-            <div className="mt-2">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                Rôle: {session.user.role || 'USER'}
-              </span>
-            </div>
-          )}
         </div>
 
       {/* Statistiques rapides */}

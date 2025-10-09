@@ -39,7 +39,19 @@ export const auth = betterAuth({
 
   advanced: {
     cookiePrefix: "edgemy",
+    useSecureCookies: process.env.NODE_ENV === "production",
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: process.env.NODE_ENV === "production" ? ".edgemy.fr" : undefined,
+    },
   },
+
+  // Forcer l'utilisation d'un fetch custom pour éviter les problèmes IPv6
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://app.edgemy.fr",
+    "https://edgemy.fr",
+  ],
 });
 
 export type Session = typeof auth.$Infer.Session;
