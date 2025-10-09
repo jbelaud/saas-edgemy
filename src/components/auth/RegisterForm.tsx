@@ -34,9 +34,10 @@ export function RegisterForm() {
   // Rediriger si déjà connecté
   useEffect(() => {
     if (session?.user && !isPending) {
-      router.push('/app/dashboard');
+      // Utiliser window.location pour forcer la redirection
+      window.location.href = '/app/dashboard';
     }
-  }, [session, isPending, router]);
+  }, [session, isPending]);
 
   const {
     register,

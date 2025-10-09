@@ -30,9 +30,10 @@ export function LoginForm() {
   // Rediriger si déjà connecté
   useEffect(() => {
     if (session?.user && !isPending) {
-      router.push(callbackUrl);
+      // Utiliser window.location pour forcer la redirection
+      window.location.href = callbackUrl;
     }
-  }, [session, isPending, router, callbackUrl]);
+  }, [session, isPending, callbackUrl]);
 
   const {
     register,
