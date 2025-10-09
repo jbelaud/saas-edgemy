@@ -140,7 +140,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
           <div className="text-center text-sm">
             Pas encore de compte ?{" "}
             <Link href="/app/signup" className="text-primary hover:underline">
-              S'inscrire
+              S&apos;inscrire
             </Link>
           </div>
         </div>

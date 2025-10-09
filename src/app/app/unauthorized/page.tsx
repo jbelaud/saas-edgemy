@@ -17,13 +17,13 @@ export default function UnauthorizedPage() {
             Accès refusé
           </h1>
           <p className="text-lg text-gray-600">
-            Vous n'avez pas la permission d'accéder à cette section.
+            Vous n&apos;avez pas la permission d&apos;accéder à cette section.
           </p>
         </div>
 
         <div className="space-y-4 pt-6">
           <p className="text-sm text-gray-500">
-            Si vous pensez qu'il s'agit d'une erreur, veuillez contacter l'administrateur.
+            Si vous pensez qu&apos;il s&apos;agit d&apos;une erreur, veuillez contacter l&apos;administrateur.
           </p>
           
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
