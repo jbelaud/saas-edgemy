@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { signIn, useSession } from '@/lib/auth-client';
+import { signIn } from '@/lib/auth-client';
 import { Mail, Lock, Chrome, Loader2 } from 'lucide-react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 const loginSchema = z.object({
   email: z.string().email('Adresse email invalide'),
@@ -23,17 +23,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const { data: session, isPending } = useSession();
   const callbackUrl = searchParams.get('callbackUrl') || '/app/dashboard';
-
-  // Rediriger si déjà connecté
-  useEffect(() => {
-    if (session?.user && !isPending) {
-      // Utiliser window.location pour forcer la redirection
-      window.location.href = callbackUrl;
-    }
-  }, [session, isPending, callbackUrl]);
 
   const {
     register,
@@ -51,6 +41,7 @@ export function LoginForm() {
       const result = await signIn.email({
         email: data.email,
         password: data.password,
+        callbackURL: callbackUrl, // Better Auth gère la redirection automatiquement
       });
 
       if (result.error) {
@@ -63,14 +54,12 @@ export function LoginForm() {
         } else {
           setError(errorMessage || 'Erreur de connexion. Veuillez réessayer.');
         }
-      } else {
-        // Redirection après connexion réussie vers callbackUrl
-        window.location.href = callbackUrl;
+        setIsLoading(false);
       }
+      // Pas besoin de else - Better Auth redirige automatiquement
     } catch (err) {
       console.error('Login error:', err);
       setError('Une erreur est survenue lors de la connexion. Veuillez réessayer.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -87,29 +76,6 @@ export function LoginForm() {
       setIsLoading(false);
     }
   };
-
-  // Afficher un loader pendant la vérification de session
-  if (isPending) {
-    return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Si déjà connecté, afficher un message de redirection
-  if (session?.user) {
-    return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Vous êtes déjà connecté. Redirection...</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card className="w-full max-w-md mx-auto">

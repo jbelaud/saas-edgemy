@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,9 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { signIn, signUp, useSession } from '@/lib/auth-client';
+import { signIn, signUp } from '@/lib/auth-client';
 import { Mail, Lock, User, Chrome, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -28,16 +27,6 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const router = useRouter();
-  const { data: session, isPending } = useSession();
-
-  // Rediriger si déjà connecté
-  useEffect(() => {
-    if (session?.user && !isPending) {
-      // Utiliser window.location pour forcer la redirection
-      window.location.href = '/app/dashboard';
-    }
-  }, [session, isPending]);
 
   const {
     register,
@@ -56,6 +45,7 @@ export function RegisterForm() {
         email: data.email,
         password: data.password,
         name: data.name,
+        callbackURL: '/app/dashboard', // Better Auth gère la redirection automatiquement
       });
 
       if (result.error) {
@@ -70,17 +60,12 @@ export function RegisterForm() {
         } else {
           setError(errorMessage || 'Erreur lors de l\'inscription. Veuillez réessayer.');
         }
-      } else {
-        setSuccess(true);
-        // Redirection après inscription réussie
-        setTimeout(() => {
-          window.location.href = '/app/dashboard';
-        }, 1500);
+        setIsLoading(false);
       }
+      // Pas besoin de else - Better Auth redirige automatiquement
     } catch (err) {
       console.error('Registration error:', err);
       setError('Une erreur est survenue lors de l\'inscription. Veuillez réessayer.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -97,29 +82,6 @@ export function RegisterForm() {
       setIsLoading(false);
     }
   };
-
-  // Afficher un loader pendant la vérification de session
-  if (isPending) {
-    return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Si déjà connecté, afficher un message de redirection
-  if (session?.user) {
-    return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Vous êtes déjà connecté. Redirection...</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   if (success) {
     return (
