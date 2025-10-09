@@ -2,7 +2,6 @@
 
 import { Users, Calendar, TrendingUp, Settings, Loader2 } from 'lucide-react';
 import { useSession } from '@/lib/auth-client';
-import { AppHeader } from '@/components/layout/AppHeader';
 
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
@@ -17,8 +16,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader />
-
       <div className="container mx-auto px-4 py-6 sm:px-6">
         {/* En-tête Dashboard */}
         <div className="mb-8">
