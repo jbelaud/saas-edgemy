@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { signIn } from '@/lib/auth-client';
-import { Mail, Lock, Chrome } from 'lucide-react';
+import { Mail, Lock, Chrome, Loader2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 const loginSchema = z.object({
   email: z.string().email('Adresse email invalide'),
@@ -21,6 +22,8 @@ type LoginInput = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/app/dashboard';
 
   const {
     register,
@@ -41,13 +44,22 @@ export function LoginForm() {
       });
 
       if (result.error) {
-        setError(result.error.message || 'Erreur de connexion');
+        // Messages d'erreur plus explicites
+        const errorMessage = result.error.message;
+        if (errorMessage?.includes('Invalid email or password')) {
+          setError('Email ou mot de passe incorrect. Veuillez réessayer.');
+        } else if (errorMessage?.includes('User not found')) {
+          setError('Aucun compte trouvé avec cet email. Voulez-vous vous inscrire ?');
+        } else {
+          setError(errorMessage || 'Erreur de connexion. Veuillez réessayer.');
+        }
       } else {
-        // Redirection après connexion réussie
-        window.location.href = '/app/dashboard';
+        // Redirection après connexion réussie vers callbackUrl
+        window.location.href = callbackUrl;
       }
-    } catch {
-      setError('Une erreur est survenue lors de la connexion');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Une erreur est survenue lors de la connexion. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +70,7 @@ export function LoginForm() {
     try {
       await signIn.social({
         provider: 'google',
-        callbackURL: '/app/dashboard',
+        callbackURL: callbackUrl,
       });
     } catch {
       setError('Erreur lors de la connexion avec Google');
@@ -114,10 +126,19 @@ export function LoginForm() {
             {errors.password && (
               <p className="text-sm text-red-600">{errors.password.message}</p>
             )}
+            <div className="text-right">
+              <a 
+                href="/app/auth/forgot-password" 
+                className="text-sm text-primary hover:underline"
+              >
+                Mot de passe oublié ?
+              </a>
+            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Connexion...' : 'Se connecter'}
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading ? 'Connexion en cours...' : 'Se connecter'}
           </Button>
         </form>
 

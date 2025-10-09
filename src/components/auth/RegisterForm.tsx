@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { signIn, signUp } from '@/lib/auth-client';
-import { Mail, Lock, User, Chrome } from 'lucide-react';
+import { Mail, Lock, User, Chrome, Loader2 } from 'lucide-react';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -48,16 +48,27 @@ export function RegisterForm() {
       });
 
       if (result.error) {
-        setError(result.error.message || 'Erreur lors de l\'inscription');
+        // Messages d'erreur plus explicites
+        const errorMessage = result.error.message;
+        if (errorMessage?.includes('already exists') || errorMessage?.includes('duplicate')) {
+          setError('Cet email est déjà utilisé. Voulez-vous vous connecter ?');
+        } else if (errorMessage?.includes('password')) {
+          setError('Le mot de passe doit contenir au moins 8 caractères.');
+        } else if (errorMessage?.includes('email')) {
+          setError('Adresse email invalide. Veuillez vérifier votre saisie.');
+        } else {
+          setError(errorMessage || 'Erreur lors de l\'inscription. Veuillez réessayer.');
+        }
       } else {
         setSuccess(true);
         // Redirection après inscription réussie
         setTimeout(() => {
           window.location.href = '/app/dashboard';
-        }, 1000);
+        }, 1500);
       }
-    } catch {
-      setError('Une erreur est survenue lors de l\'inscription');
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('Une erreur est survenue lors de l\'inscription. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
     }
@@ -174,7 +185,8 @@ export function RegisterForm() {
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Inscription...' : 'S\'inscrire'}
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading ? 'Inscription en cours...' : 'S\'inscrire'}
           </Button>
         </form>
 

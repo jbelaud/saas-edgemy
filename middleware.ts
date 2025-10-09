@@ -1,19 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
+  const pathname = request.nextUrl.pathname;
   
   // Vérifier si c'est le sous-domaine app
   if (hostname.startsWith('app.')) {
-    const pathname = request.nextUrl.pathname;
+    // Routes publiques de l'app (pas besoin d'auth)
+    const publicRoutes = [
+      '/app/auth/login',
+      '/app/auth/register',
+      '/app/auth/test',
+      '/app/auth/forgot-password',
+    ];
     
-    // Pas de redirection automatique pour l'instant - juste rewrite vers /app
+    // Routes API et assets (toujours accessibles)
+    const isApiOrAsset = pathname.startsWith('/api') || 
+                         pathname.startsWith('/_next') || 
+                         pathname.startsWith('/favicon.ico');
+    
+    // Vérifier l'authentification pour les routes protégées
+    if (!isApiOrAsset && !publicRoutes.includes(pathname) && pathname.startsWith('/app')) {
+      const token = request.cookies.get('better-auth.session_token')?.value;
+      
+      // Si pas de token, rediriger vers login
+      if (!token) {
+        const loginUrl = new URL('/app/auth/login', request.url);
+        loginUrl.searchParams.set('callbackUrl', pathname);
+        return NextResponse.redirect(loginUrl);
+      }
+    }
+    
+    // Rewrite pour le sous-domaine app
     if (pathname === '/') {
       return NextResponse.rewrite(new URL('/app', request.url));
     }
     
     // Réécrire les routes pour pointer vers /app/*
-    if (!pathname.startsWith('/app') && !pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
+    if (!pathname.startsWith('/app') && !isApiOrAsset) {
       return NextResponse.rewrite(new URL('/app' + pathname, request.url));
     }
     
@@ -21,7 +45,7 @@ export function middleware(request: NextRequest) {
   }
   
   // Pour le domaine principal, bloquer l'accès à /app en production
-  if (request.nextUrl.pathname.startsWith('/app')) {
+  if (pathname.startsWith('/app')) {
     // En développement local, autoriser l'accès
     if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
       return NextResponse.next();
