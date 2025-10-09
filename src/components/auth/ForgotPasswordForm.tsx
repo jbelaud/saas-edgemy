@@ -30,13 +30,14 @@ export function ForgotPasswordForm() {
     resolver: zodResolver(forgotPasswordSchema),
   });
 
-  const onSubmit = async (data: ForgotPasswordInput) => {
+  const onSubmit = async (_data: ForgotPasswordInput) => {
     setIsLoading(true);
     setError(null);
 
     try {
       // TODO: Implémenter la logique de réinitialisation avec Better Auth
       // Pour l'instant, on simule un succès
+      // const result = await resetPassword(data.email);
       await new Promise((resolve) => setTimeout(resolve, 1500));
       
       setSuccess(true);
