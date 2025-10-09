@@ -1,5 +1,11 @@
 # Configuration Better Auth pour Edgemy
 
+## 📚 Documentation officielle
+
+- [Better Auth - Prisma Adapter](https://www.better-auth.com/docs/adapters/prisma)
+- [Better Auth - Google OAuth](https://www.better-auth.com/docs/authentication/google)
+- [Better Auth - Discord OAuth](https://www.better-auth.com/docs/authentication/discord)
+
 ## Variables d'environnement requises
 
 Ajoutez ces variables dans votre fichier `.env.local` :
@@ -8,17 +14,15 @@ Ajoutez ces variables dans votre fichier `.env.local` :
 # Better Auth Configuration (OBLIGATOIRE)
 BETTER_AUTH_SECRET="edgemy-super-secret-key-minimum-32-characters-long-for-security"
 BETTER_AUTH_URL="http://localhost:3001"
+NEXT_PUBLIC_APP_URL="http://localhost:3001"
 
-# Google OAuth (optionnel pour le développement)
-GOOGLE_CLIENT_ID="your-google-client-id"
+# Google OAuth (OBLIGATOIRE pour Google Sign-In)
+GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
-# Discord OAuth (optionnel pour le développement)
+# Discord OAuth (OBLIGATOIRE pour Discord Sign-In)
 DISCORD_CLIENT_ID="your-discord-client-id"
 DISCORD_CLIENT_SECRET="your-discord-client-secret"
-
-# Configuration des méthodes d'auth disponibles
-NEXT_PUBLIC_AUTH_METHODS="credential,google,discord"
 ```
 
 ## Configuration OAuth
