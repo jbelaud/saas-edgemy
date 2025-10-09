@@ -67,10 +67,21 @@ export function LoginForm() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signIn.social({
-        provider: 'google',
-        callbackURL: callbackUrl,
-      });
+      await signIn.social(
+        {
+          provider: 'google',
+        },
+        {
+          onSuccess: () => {
+            // Redirection après succès OAuth
+            window.location.href = callbackUrl;
+          },
+          onError: (ctx) => {
+            setError(ctx.error.message || 'Erreur lors de la connexion avec Google');
+            setIsLoading(false);
+          },
+        }
+      );
     } catch {
       setError('Erreur lors de la connexion avec Google');
       setIsLoading(false);
