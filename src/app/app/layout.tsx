@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 export const metadata: Metadata = {
   title: "Edgemy App - Plateforme de coaching poker",
@@ -12,11 +13,13 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      <main className="container py-6">
-        {children}
-      </main>
-    </div>
+    <LanguageProvider>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <main className="container py-6">
+          {children}
+        </main>
+      </div>
+    </LanguageProvider>
   );
 }
