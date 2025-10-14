@@ -2,15 +2,10 @@
 
 import { Users, Calendar, TrendingUp, Settings, Loader2 } from 'lucide-react';
 import { useSession } from '@/lib/auth-client';
-import { useCoachRoleSetup } from '@/hooks/useCoachRoleSetup';
-import { usePlayerRoleSetup } from '@/hooks/usePlayerRoleSetup';
+import { RoleSetupWrapper } from '@/components/auth/RoleSetupWrapper';
 
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
-  
-  // Gérer l'attribution des rôles après connexion Google
-  useCoachRoleSetup();
-  usePlayerRoleSetup();
 
   if (isPending) {
     return (
@@ -21,8 +16,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto max-w-7xl px-6 py-6">
+    <>
+      <RoleSetupWrapper />
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto max-w-7xl px-6 py-6">
         {/* En-tête Dashboard */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
@@ -132,7 +129,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
