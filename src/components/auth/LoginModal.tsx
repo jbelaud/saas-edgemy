@@ -44,6 +44,8 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
+      // Pour la connexion, on ne définit pas de rôle spécifique
+      // Le rôle sera déjà défini si l'utilisateur existe
       await signIn.social({
         provider: "google",
         callbackURL: "/app/dashboard",

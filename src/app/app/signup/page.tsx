@@ -23,12 +23,36 @@ export default function SignUpPage() {
     setError("");
 
     try {
+      // 1. Inscription de l'utilisateur
       await signUp.email({
         email,
         password,
         name: `${firstName} ${lastName}`.trim(),
         callbackURL: "/app/dashboard",
       });
+      
+      // 2. Vérifier l'email automatiquement (pour dev/test)
+      await fetch("/api/user/verify-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      // 3. Mettre à jour le rôle à PLAYER (crée aussi l'entrée dans la table player)
+      const response = await fetch("/api/user/update-role", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ role: "PLAYER" }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Erreur lors de la mise à jour du rôle");
+      }
+      
       router.push("/app/dashboard");
     } catch (err) {
       setError((err as Error).message || "Une erreur est survenue");
@@ -40,9 +64,12 @@ export default function SignUpPage() {
   const handleGoogleSignUp = async () => {
     setIsLoading(true);
     try {
+      // Stocker l'intention de devenir joueur dans le localStorage
+      localStorage.setItem("pendingPlayerRole", "true");
+      
       await signIn.social({
         provider: "google",
-        callbackURL: "/app/dashboard",
+        callbackURL: "/app/dashboard?setupPlayer=true",
       });
     } catch (error) {
       console.error("Erreur d'inscription Google:", error);

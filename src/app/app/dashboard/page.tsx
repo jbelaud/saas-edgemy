@@ -2,9 +2,15 @@
 
 import { Users, Calendar, TrendingUp, Settings, Loader2 } from 'lucide-react';
 import { useSession } from '@/lib/auth-client';
+import { useCoachRoleSetup } from '@/hooks/useCoachRoleSetup';
+import { usePlayerRoleSetup } from '@/hooks/usePlayerRoleSetup';
 
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
+  
+  // Gérer l'attribution des rôles après connexion Google
+  useCoachRoleSetup();
+  usePlayerRoleSetup();
 
   if (isPending) {
     return (

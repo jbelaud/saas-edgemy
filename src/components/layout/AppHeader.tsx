@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { useSession } from '@/lib/auth-client';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { LoginModal } from '@/components/auth/LoginModal';
+import { CoachSignUpModal } from '@/components/auth/CoachSignUpModal';
 import { Button } from '@/components/ui/button';
 
 export function AppHeader() {
   const { data: session } = useSession();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCoachSignUpModal, setShowCoachSignUpModal] = useState(false);
 
   return (
     <>
@@ -44,20 +46,38 @@ export function AppHeader() {
             </Link>
           </nav>
 
-          {/* Auth Button ou Login */}
-          <div>
+          {/* Auth Buttons */}
+          <div className="flex items-center gap-3">
             {session?.user ? (
               <AuthButton />
             ) : (
-              <Button onClick={() => setShowLoginModal(true)}>
-                Se connecter
-              </Button>
+              <>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowCoachSignUpModal(true)}
+                  className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                >
+                  Devenir Coach
+                </Button>
+                <Button 
+                  variant="outline"
+                  asChild
+                >
+                  <Link href="/app/signup">
+                    S&apos;inscrire
+                  </Link>
+                </Button>
+                <Button onClick={() => setShowLoginModal(true)}>
+                  Se connecter
+                </Button>
+              </>
             )}
           </div>
         </div>
       </header>
 
       <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
+      <CoachSignUpModal open={showCoachSignUpModal} onOpenChange={setShowCoachSignUpModal} />
     </>
   );
 }
