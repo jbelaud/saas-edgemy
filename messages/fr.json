@@ -1,0 +1,56 @@
+{
+  "common": {
+    "development": "Application en cours de développement",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "success": "Succès"
+  },
+  "home": {
+    "title": "Bienvenue sur Edgemy",
+    "subtitle": "La plateforme de coaching poker qui connecte joueurs et coachs passionnés",
+    "description": "Trouvez votre coach poker adapté en quelques clics"
+  },
+  "nav": {
+    "dashboard": "Accéder au Dashboard",
+    "profile": "Mon Profil",
+    "logout": "Se déconnecter",
+    "login": "Se connecter"
+  },
+  "auth": {
+    "signUp": {
+      "title": "Devenir Coach Edgemy",
+      "subtitle": "Rejoignez notre équipe de coachs professionnels",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "password": "Mot de passe",
+      "submit": "Créer mon compte coach",
+      "submitting": "Inscription...",
+      "googleButton": "Continuer avec Google",
+      "orContinueWith": "Ou continuer avec",
+      "alreadyMember": "Déjà inscrit ?",
+      "signIn": "Se connecter",
+      "error": "Une erreur est survenue"
+    },
+    "signIn": {
+      "title": "Se connecter",
+      "subtitle": "Connectez-vous à votre compte",
+      "email": "Email",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "submitting": "Connexion...",
+      "googleButton": "Continuer avec Google",
+      "noAccount": "Pas encore de compte ?",
+      "signUp": "S'inscrire"
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue",
+    "stats": {
+      "totalSessions": "Sessions totales",
+      "totalRevenue": "Revenu total",
+      "activeStudents": "Élèves actifs"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "common": {
+    "development": "Application under development",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success"
+  },
+  "home": {
+    "title": "Welcome to Edgemy",
+    "subtitle": "The poker coaching platform that connects passionate players and coaches",
+    "description": "Find the perfect coach to take your game to the next level"
+  },
+  "nav": {
+    "dashboard": "Access Dashboard",
+    "profile": "My Profile",
+    "logout": "Log out",
+    "login": "Log in"
+  },
+  "auth": {
+    "signUp": {
+      "title": "Become an Edgemy Coach",
+      "subtitle": "Join our team of professional coaches",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create my coach account",
+      "submitting": "Signing up...",
+      "googleButton": "Continue with Google",
+      "orContinueWith": "Or continue with",
+      "alreadyMember": "Already a member?",
+      "signIn": "Sign in",
+      "error": "An error occurred"
+    },
+    "signIn": {
+      "title": "Sign in",
+      "subtitle": "Sign in to your account",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "googleButton": "Continue with Google",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome",
+    "stats": {
+      "totalSessions": "Total Sessions",
+      "totalRevenue": "Total Revenue",
+      "activeStudents": "Active Students"
+    }
+  }
+}

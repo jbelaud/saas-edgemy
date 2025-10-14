@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import createMiddleware from 'next-intl/middleware';
+import { routing } from './src/i18n/routing';
+
+// Créer le middleware next-intl
+const intlMiddleware = createMiddleware(routing);
 
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
@@ -11,33 +16,39 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/favicon.ico') ||
     pathname.startsWith('/logos');
 
+  // Skip i18n for API routes and assets
+  if (isApiOrAsset) {
+    return NextResponse.next();
+  }
+
   // Vérifier si c'est le sous-domaine app
   if (hostname.startsWith('app.')) {
     // Rewrite pour le sous-domaine app
     if (pathname === '/') {
-      return NextResponse.rewrite(new URL('/app', request.url));
+      return NextResponse.rewrite(new URL('/fr/app', request.url));
     }
     
-    // Réécrire les routes pour pointer vers /app/*
-    if (!pathname.startsWith('/app') && !isApiOrAsset) {
-      return NextResponse.rewrite(new URL('/app' + pathname, request.url));
+    // Réécrire les routes pour pointer vers /[locale]/app/*
+    if (!pathname.match(/^\/(fr|en)\//)) {
+      return NextResponse.rewrite(new URL('/fr' + pathname, request.url));
     }
     
-    return NextResponse.next();
+    return intlMiddleware(request);
   }
   
   // Pour le domaine principal, bloquer l'accès à /app en production
-  if (pathname.startsWith('/app')) {
+  if (pathname.match(/^\/(fr|en)\/app/)) {
     // En développement local, autoriser l'accès
     if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
-      return NextResponse.next();
+      return intlMiddleware(request);
     }
     
     // En production sur le domaine principal, rediriger vers la landing
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/fr', request.url));
   }
   
-  return NextResponse.next();
+  // Appliquer le middleware i18n pour toutes les autres routes
+  return intlMiddleware(request);
 }
 
 export const config = {
