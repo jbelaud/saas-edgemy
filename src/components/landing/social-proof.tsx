@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { cn } from '@/lib/utils';
 import { Target, Users, Brain, Shield, User, Mail, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { LanguageSwitcherCompact } from './LanguageSwitcherCompact';
 
 const coachSchema = z.object({
   firstName: z.string().min(2, "Prénom requis"),
@@ -195,26 +196,30 @@ export function SocialProof() {
                     </div>
                   )}
 
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={cn(
-                      "w-full px-8 py-4 bg-white text-blue-700 font-bold text-lg rounded-lg transition-all duration-300 hover:bg-gray-100 transform hover:scale-105 cursor-pointer",
-                      "disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    )}
-                  >
-                    <div className="flex items-center justify-center">
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Inscription en cours...
-                        </>
-                      ) : (
-                        'Devenir coach'
+                  {/* Submit Button with Language Switcher */}
+                  <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className={cn(
+                        "flex-1 px-8 py-4 bg-white text-blue-700 font-bold text-lg rounded-lg transition-all duration-300 hover:bg-gray-100 transform hover:scale-105 cursor-pointer",
+                        "disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                       )}
-                    </div>
-                  </button>
+                    >
+                      <div className="flex items-center justify-center">
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                            Inscription en cours...
+                          </>
+                        ) : (
+                          'Devenir coach'
+                        )}
+                      </div>
+                    </button>
+                    
+                    <LanguageSwitcherCompact />
+                  </div>
                 </form>
               )}
             </div>
