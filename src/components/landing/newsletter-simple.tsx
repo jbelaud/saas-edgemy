@@ -39,7 +39,7 @@ export function LandingNewsletter() {
     setSubmitStatus('idle');
 
     try {
-      const response = await fetch('/api/subscribe-simple', {
+      const response = await fetch('/api/subscribe-with-emails', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
