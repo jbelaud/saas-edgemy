@@ -1,10 +1,9 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Users, Trophy, TrendingUp } from 'lucide-react';
+import { Users, Trophy, TrendingUp } from 'lucide-react';
 
 export default function AppPage() {
   const { t } = useLanguage();

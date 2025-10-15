@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User } from "lucide-react";
+import Link from "next/link";
 
 export function AuthButton() {
   const { data: session, isPending } = useSession();
@@ -53,10 +54,10 @@ export function AuthButton() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <a href="/app/profile" className="flex items-center cursor-pointer">
+            <Link href="/app/profile" className="flex items-center cursor-pointer">
               <User className="mr-2 h-4 w-4" />
               <span>Profil</span>
-            </a>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

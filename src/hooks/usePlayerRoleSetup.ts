@@ -29,7 +29,7 @@ export function usePlayerRoleSetup() {
           body: JSON.stringify({ role: "PLAYER" }),
         }),
       ])
-        .then(([verifyResponse, roleResponse]) => {
+        .then(([_verifyResponse, roleResponse]) => {
           if (roleResponse.ok) {
             console.log("Rôle PLAYER attribué avec succès");
             // Nettoyer le localStorage

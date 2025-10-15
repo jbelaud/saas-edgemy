@@ -29,7 +29,7 @@ export function useCoachRoleSetup() {
           body: JSON.stringify({ role: "COACH" }),
         }),
       ])
-        .then(([verifyResponse, roleResponse]) => {
+        .then(([_verifyResponse, roleResponse]) => {
           if (roleResponse.ok) {
             console.log("Rôle COACH attribué avec succès");
             // Nettoyer le localStorage
