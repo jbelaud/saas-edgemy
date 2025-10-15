@@ -1,6 +1,5 @@
 'use client';
 
-import { Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,24 +26,20 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center space-x-2">
-          <Globe className="w-4 h-4" />
-          <span className="text-sm font-medium">
-            {currentLanguage?.flag} {currentLanguage?.name}
-          </span>
+        <Button variant="ghost" size="icon" className="h-9 w-9">
+          <span className="text-2xl">{currentLanguage?.flag}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-32">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => handleLanguageChange(lang.code as 'fr' | 'en')}
-            className={`flex items-center space-x-3 cursor-pointer ${
+            className={`flex items-center justify-center cursor-pointer ${
               language === lang.code ? 'bg-accent' : ''
             }`}
           >
-            <span className="text-lg">{lang.flag}</span>
-            <span className="font-medium">{lang.name}</span>
+            <span className="text-2xl">{lang.flag}</span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

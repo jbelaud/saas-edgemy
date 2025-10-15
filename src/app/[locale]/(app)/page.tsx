@@ -1,12 +1,12 @@
 'use client';
 
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslations } from 'next-intl';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Trophy, TrendingUp } from 'lucide-react';
 
 export default function AppPage() {
-  const { t } = useLanguage();
+  const t = useTranslations();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">

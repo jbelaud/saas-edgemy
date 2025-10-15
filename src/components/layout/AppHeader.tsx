@@ -6,6 +6,7 @@ import { useSession } from '@/lib/auth-client';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { CoachSignUpModal } from '@/components/auth/CoachSignUpModal';
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 
 export function AppHeader() {
@@ -46,8 +47,9 @@ export function AppHeader() {
             </Link>
           </nav>
 
-          {/* Auth Buttons */}
+          {/* Auth Buttons & Language Switcher */}
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             {session?.user ? (
               <AuthButton />
             ) : (
