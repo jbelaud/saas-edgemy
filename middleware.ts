@@ -23,16 +23,8 @@ export async function middleware(request: NextRequest) {
 
   // Vérifier si c'est le sous-domaine app
   if (hostname.startsWith('app.')) {
-    // Rewrite pour le sous-domaine app
-    if (pathname === '/') {
-      return NextResponse.rewrite(new URL('/fr/app', request.url));
-    }
-    
-    // Réécrire les routes pour pointer vers /[locale]/app/*
-    if (!pathname.match(/^\/(fr|en)\//)) {
-      return NextResponse.rewrite(new URL('/fr' + pathname, request.url));
-    }
-    
+    // Pour le sous-domaine app, appliquer simplement le middleware i18n
+    // qui redirigera automatiquement vers /fr ou /en selon la locale
     return intlMiddleware(request);
   }
   
