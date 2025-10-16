@@ -28,22 +28,10 @@ export function AppHeader() {
           {/* Navigation centrale */}
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Link
-              href="/dashboard"
-              className="transition-colors hover:text-primary text-foreground/60"
-            >
-              Dashboard
-            </Link>
-            <Link
               href="/coachs"
               className="transition-colors hover:text-primary text-foreground/60"
             >
               Trouver un coach
-            </Link>
-            <Link
-              href="/sessions"
-              className="transition-colors hover:text-primary text-foreground/60"
-            >
-              Mes sessions
             </Link>
           </nav>
 
