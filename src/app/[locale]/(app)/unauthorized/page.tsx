@@ -28,7 +28,7 @@ export default function UnauthorizedPage() {
           
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button asChild>
-              <Link href="/app/dashboard">
+              <Link href="/dashboard">
                 Retour au tableau de bord
               </Link>
             </Button>

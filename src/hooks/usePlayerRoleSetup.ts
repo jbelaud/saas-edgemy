@@ -35,7 +35,7 @@ export function usePlayerRoleSetup() {
             // Nettoyer le localStorage
             localStorage.removeItem("pendingPlayerRole");
             // Recharger la page pour mettre à jour la session
-            window.location.href = "/app/dashboard";
+            window.location.href = "/dashboard";
           }
         })
         .catch((error) => {

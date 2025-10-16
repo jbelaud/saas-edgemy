@@ -28,7 +28,7 @@ export default function SignUpPage() {
         email,
         password,
         name: `${firstName} ${lastName}`.trim(),
-        callbackURL: "/app/dashboard",
+        callbackURL: "/dashboard",
       });
       
       // 2. Vérifier l'email automatiquement (pour dev/test)
@@ -53,7 +53,7 @@ export default function SignUpPage() {
         throw new Error(data.error || "Erreur lors de la mise à jour du rôle");
       }
       
-      router.push("/app/dashboard");
+      router.push("/dashboard");
     } catch (err) {
       setError((err as Error).message || "Une erreur est survenue");
     } finally {
@@ -69,7 +69,7 @@ export default function SignUpPage() {
       
       await signIn.social({
         provider: "google",
-        callbackURL: "/app/dashboard?setupPlayer=true",
+        callbackURL: "/dashboard?setupPlayer=true",
       });
     } catch (error) {
       console.error("Erreur d'inscription Google:", error);

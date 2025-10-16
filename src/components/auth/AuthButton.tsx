@@ -54,7 +54,7 @@ export function AuthButton() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/app/profile" className="flex items-center cursor-pointer">
+            <Link href="/profile" className="flex items-center cursor-pointer">
               <User className="mr-2 h-4 w-4" />
               <span>Profil</span>
             </Link>
@@ -77,7 +77,7 @@ export function AuthButton() {
       onClick={() =>
         signIn.social({
           provider: "google",
-          callbackURL: "/app/dashboard",
+          callbackURL: "/dashboard",
         })
       }
       className="bg-white text-gray-900 hover:bg-gray-100 border border-gray-300"

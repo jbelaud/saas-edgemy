@@ -120,7 +120,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Mot de passe</Label>
                 <Link
-                  href="/app/forgot-password"
+                  href="/forgot-password"
                   className="text-sm text-primary hover:underline"
                 >
                   Mot de passe oublié ?
@@ -141,7 +141,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
 
           <div className="text-center text-sm">
             Pas encore de compte ?{" "}
-            <Link href="/app/signup" className="text-primary hover:underline">
+            <Link href="/signup" className="text-primary hover:underline">
               S&apos;inscrire
             </Link>
           </div>

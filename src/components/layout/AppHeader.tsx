@@ -19,7 +19,7 @@ export function AppHeader() {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto max-w-7xl px-6 flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/app" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               Edgemy
             </span>
@@ -28,19 +28,19 @@ export function AppHeader() {
           {/* Navigation centrale */}
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Link
-              href="/app/dashboard"
+              href="/dashboard"
               className="transition-colors hover:text-primary text-foreground/60"
             >
               Dashboard
             </Link>
             <Link
-              href="/app/coachs"
+              href="/coachs"
               className="transition-colors hover:text-primary text-foreground/60"
             >
               Trouver un coach
             </Link>
             <Link
-              href="/app/sessions"
+              href="/sessions"
               className="transition-colors hover:text-primary text-foreground/60"
             >
               Mes sessions
@@ -65,7 +65,7 @@ export function AppHeader() {
                   variant="outline"
                   asChild
                 >
-                  <Link href="/app/signup">
+                  <Link href="/signup">
                     S&apos;inscrire
                   </Link>
                 </Button>
