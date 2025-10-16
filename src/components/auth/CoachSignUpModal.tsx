@@ -40,7 +40,7 @@ export function CoachSignUpModal({ open, onOpenChange }: CoachSignUpModalProps) 
         email,
         password,
         name: `${firstName} ${lastName}`.trim(),
-        callbackURL: "/app/dashboard",
+        callbackURL: "/dashboard",
       });
       
       // 2. Vérifier l'email automatiquement (pour dev/test)
@@ -66,7 +66,7 @@ export function CoachSignUpModal({ open, onOpenChange }: CoachSignUpModalProps) 
       }
       
       onOpenChange(false);
-      router.push("/app/dashboard");
+      router.push("/dashboard");
     } catch (err) {
       setError((err as Error).message || "Une erreur est survenue");
     } finally {
@@ -82,7 +82,7 @@ export function CoachSignUpModal({ open, onOpenChange }: CoachSignUpModalProps) 
       
       await signIn.social({
         provider: "google",
-        callbackURL: "/app/dashboard?setupCoach=true",
+        callbackURL: "/dashboard?setupCoach=true",
       });
     } catch (error) {
       console.error("Erreur d'inscription Google:", error);

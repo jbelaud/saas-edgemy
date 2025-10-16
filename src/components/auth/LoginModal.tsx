@@ -31,7 +31,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       await signIn.email({
         email,
         password,
-        callbackURL: "/app/dashboard",
+        callbackURL: "/dashboard",
       });
       onOpenChange(false);
     } catch (error) {
@@ -48,7 +48,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       // Le rôle sera déjà défini si l'utilisateur existe
       await signIn.social({
         provider: "google",
-        callbackURL: "/app/dashboard",
+        callbackURL: "/dashboard",
       });
     } catch (error) {
       console.error("Erreur de connexion Google:", error);
