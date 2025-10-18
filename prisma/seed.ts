@@ -16,7 +16,7 @@ async function main() {
     create: {
       email: 'coach-actif@edgemy.fr',
       name: 'Jean Dupont',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jean',
     },
   });
@@ -28,7 +28,7 @@ async function main() {
     create: {
       email: 'coach-inactif@edgemy.fr',
       name: 'Marie Martin',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=marie',
     },
   });
@@ -40,7 +40,7 @@ async function main() {
     create: {
       email: 'coach-pending@edgemy.fr',
       name: 'Pierre Durand',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pierre',
     },
   });
@@ -52,7 +52,7 @@ async function main() {
     create: {
       email: 'joueur@edgemy.fr',
       name: 'Sophie Bernard',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sophie',
     },
   });

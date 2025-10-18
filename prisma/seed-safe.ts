@@ -40,13 +40,13 @@ async function main() {
     where: { email: 'coach-actif@edgemy.fr' },
     update: {
       name: 'Jean Dupont',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jean',
     },
     create: {
       email: 'coach-actif@edgemy.fr',
       name: 'Jean Dupont',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jean',
     },
   });
@@ -55,13 +55,13 @@ async function main() {
     where: { email: 'coach-inactif@edgemy.fr' },
     update: {
       name: 'Marie Martin',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=marie',
     },
     create: {
       email: 'coach-inactif@edgemy.fr',
       name: 'Marie Martin',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=marie',
     },
   });
@@ -70,13 +70,13 @@ async function main() {
     where: { email: 'coach-pending@edgemy.fr' },
     update: {
       name: 'Pierre Durand',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pierre',
     },
     create: {
       email: 'coach-pending@edgemy.fr',
       name: 'Pierre Durand',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pierre',
     },
   });
@@ -85,13 +85,13 @@ async function main() {
     where: { email: 'joueur@edgemy.fr' },
     update: {
       name: 'Sophie Bernard',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sophie',
     },
     create: {
       email: 'joueur@edgemy.fr',
       name: 'Sophie Bernard',
-      emailVerified: new Date(),
+      emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sophie',
     },
   });
