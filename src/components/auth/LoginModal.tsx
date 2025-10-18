@@ -44,7 +44,13 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       console.log('✅ Résultat complet:', JSON.stringify(result, null, 2));
       
       if (result?.error) {
-        const errorMessage = result.error.message || result.error.toString() || "Erreur de connexion";
+        // Extraire le message d'erreur de manière robuste
+        let errorMessage = "Erreur de connexion";
+        if (typeof result.error === 'string') {
+          errorMessage = result.error;
+        } else if (result.error && typeof result.error === 'object') {
+          errorMessage = result.error.message || JSON.stringify(result.error);
+        }
         setError(errorMessage);
         console.error('❌ Erreur détaillée:', result.error);
       } else if (result?.data) {
