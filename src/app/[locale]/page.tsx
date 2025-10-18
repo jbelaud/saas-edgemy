@@ -1,7 +1,5 @@
 import {setRequestLocale} from 'next-intl/server'
 import {routing} from '@/i18n/routing'
-import { useTranslations } from 'next-intl'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({locale}))

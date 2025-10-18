@@ -14,7 +14,6 @@ interface Props {
 
 export function OnboardingStep5({ data, onComplete, onBack, isLoading }: Props) {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
-  const [subscriptionId, setSubscriptionId] = useState(data.subscriptionId || '');
 
   const handleSubscribe = async () => {
     try {
@@ -29,7 +28,6 @@ export function OnboardingStep5({ data, onComplete, onBack, isLoading }: Props) 
 
       // Pour le MVP, on simule l'abonnement
       const mockSubId = 'sub_mock_' + Date.now();
-      setSubscriptionId(mockSubId);
       
       // Finaliser l'onboarding
       onComplete({ subscriptionId: mockSubId });

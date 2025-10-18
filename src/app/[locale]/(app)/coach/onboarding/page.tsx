@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { OnboardingStep1 } from '@/components/coach/onboarding/OnboardingStep1';
 import { OnboardingStep2 } from '@/components/coach/onboarding/OnboardingStep2';

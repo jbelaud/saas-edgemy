@@ -193,7 +193,7 @@ export function OnboardingStep3({ data, onNext, onBack }: Props) {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
           💡 <strong>Astuce :</strong> Une photo professionnelle et une bannière attrayante 
-          augmentent vos chances d'être choisi par les joueurs.
+          augmentent vos chances d&apos;être choisi par les joueurs.
         </p>
       </div>
 

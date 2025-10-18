@@ -101,10 +101,10 @@ export function OnboardingStep2({ data, onNext, onBack }: Props) {
         <Input
           id="discordUrl"
           {...register('discordUrl')}
-          placeholder="votre-serveur-discord ou lien d'invitation"
+          placeholder="votre-serveur-discord ou lien d&apos;invitation"
         />
         <p className="text-sm text-gray-500 mt-1">
-          Nom de votre serveur ou lien d'invitation
+          Nom de votre serveur ou lien d&apos;invitation
         </p>
       </div>
 

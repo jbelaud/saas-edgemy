@@ -162,7 +162,7 @@ export function OnboardingStep1({ data, onNext }: Props) {
           />
         </div>
         <div>
-          <Label htmlFor="experience">Années d'expérience</Label>
+          <Label htmlFor="experience">Années d&apos;expérience</Label>
           <Input
             id="experience"
             type="number"
