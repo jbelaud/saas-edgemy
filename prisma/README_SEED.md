@@ -6,17 +6,25 @@ Ce script de seed crée un jeu de données de test complet pour la plateforme Ed
 
 ## 🚀 Utilisation
 
-### Lancer le seed
+### Option 1 : Seed SAFE (Préserve les subscribers) ⭐ RECOMMANDÉ
+```bash
+pnpm db:seed:safe
+```
+✅ Supprime uniquement les données de test  
+✅ **Préserve tous les subscribers**  
+✅ Idéal pour la production
+
+### Option 2 : Seed complet (Supprime tout)
 ```bash
 pnpm db:seed
 ```
+⚠️ Utilise `upsert` mais peut créer des doublons
 
-### Reset complet de la DB + seed
+### Option 3 : Reset complet de la DB + seed
 ```bash
 pnpm db:reset
 ```
-
-⚠️ **Attention** : `db:reset` supprime TOUTES les données existantes !
+❌ **ATTENTION** : Supprime TOUTES les données (y compris les subscribers) !
 
 ## 👥 Comptes de Test Créés
 

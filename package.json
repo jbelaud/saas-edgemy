@@ -9,6 +9,7 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:safe": "tsx prisma/seed-safe.ts",
     "db:reset": "prisma migrate reset --force && pnpm db:seed"
   },
   "prisma": {

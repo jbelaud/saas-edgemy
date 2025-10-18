@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Documentation Links - Edgemy Project
 
 Ce fichier centralise tous les liens vers les documentations officielles des technologies utilisées dans le projet Edgemy.
