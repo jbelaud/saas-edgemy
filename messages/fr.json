@@ -1,4 +1,8 @@
 {
+  "LocaleLayout": {
+    "title": "Edgemy - Plateforme de coaching poker",
+    "description": "Trouvez votre coach poker idéal parmi nos experts. Coaching personnalisé en MTT, Cash Game et SNG."
+  },
   "common": {
     "development": "Application en cours de développement",
     "loading": "Chargement...",
