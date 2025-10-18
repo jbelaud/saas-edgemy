@@ -11,10 +11,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, Euro, Loader2 } from 'lucide-react';
+import { Calendar, Clock, Euro, Loader2, AlertCircle } from 'lucide-react';
+
+// TODO: Remplacer par de vraies données depuis l'API
+const MOCK_AVAILABILITIES = [
+  { date: '2025-10-20', slots: ['09:00', '14:00', '16:00'] },
+  { date: '2025-10-21', slots: ['10:00', '15:00'] },
+  { date: '2025-10-22', slots: ['09:00', '11:00', '14:00', '17:00'] },
+  { date: '2025-10-23', slots: ['13:00', '15:00', '18:00'] },
+  { date: '2025-10-24', slots: ['09:00', '10:00', '14:00'] },
+];
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -34,8 +42,10 @@ export function BookingModal({ isOpen, onClose, announcement, coachId }: Booking
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [preferredDate, setPreferredDate] = useState('');
-  const [preferredTime, setPreferredTime] = useState('');
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+
+  const selectedAvailability = MOCK_AVAILABILITIES.find((a) => a.date === selectedDate);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +58,12 @@ export function BookingModal({ isOpen, onClose, announcement, coachId }: Booking
 
     setIsLoading(true);
 
+    if (!selectedDate || !selectedSlot) {
+      alert('Veuillez sélectionner une date et un créneau horaire');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // TODO: Implémenter l'API de réservation
       const response = await fetch('/api/reservations', {
@@ -57,8 +73,8 @@ export function BookingModal({ isOpen, onClose, announcement, coachId }: Booking
           announcementId: announcement.id,
           coachId,
           message,
-          preferredDate,
-          preferredTime,
+          selectedDate,
+          selectedSlot,
         }),
       });
 
@@ -106,49 +122,127 @@ export function BookingModal({ isOpen, onClose, announcement, coachId }: Booking
             </div>
           </div>
 
-          {/* Informations de réservation */}
+          {/* Sélection de créneaux disponibles */}
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="preferredDate">Date souhaitée *</Label>
-                <Input
-                  id="preferredDate"
-                  type="date"
-                  value={preferredDate}
-                  onChange={(e) => setPreferredDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="preferredTime">Heure souhaitée *</Label>
-                <Input
-                  id="preferredTime"
-                  type="time"
-                  value={preferredTime}
-                  onChange={(e) => setPreferredTime(e.target.value)}
-                  required
-                />
+            {/* Sélection de la date */}
+            <div>
+              <Label className="text-base font-semibold mb-3 block">
+                1. Choisissez une date disponible
+              </Label>
+              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                {MOCK_AVAILABILITIES.map((availability) => {
+                  const date = new Date(availability.date);
+                  const isSelected = selectedDate === availability.date;
+                  
+                  return (
+                    <button
+                      key={availability.date}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDate(availability.date);
+                        setSelectedSlot(null); // Reset slot when changing date
+                      }}
+                      className={`
+                        p-3 rounded-lg border-2 text-left transition-all
+                        ${isSelected 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                        }
+                      `}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {date.toLocaleDateString('fr-FR', { 
+                              weekday: 'long', 
+                              day: 'numeric', 
+                              month: 'long' 
+                            })}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {availability.slots.length} créneaux disponibles
+                          </p>
+                        </div>
+                        <Clock className="w-4 h-4 text-gray-400" />
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="message">Message pour le coach (optionnel)</Label>
-              <Textarea
-                id="message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Décrivez vos objectifs, votre niveau, ou toute information utile..."
-                rows={4}
-              />
-            </div>
+            {/* Sélection du créneau horaire */}
+            {selectedDate && selectedAvailability && (
+              <div>
+                <Label className="text-base font-semibold mb-3 block">
+                  2. Choisissez un créneau horaire
+                </Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {selectedAvailability.slots.map((slot) => {
+                    const isSelected = selectedSlot === slot;
+                    
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`
+                          px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all
+                          ${isSelected
+                            ? 'border-blue-500 bg-blue-500 text-white'
+                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                          }
+                        `}
+                      >
+                        {slot}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Message optionnel */}
+            {selectedSlot && (
+              <div>
+                <Label htmlFor="message">3. Message pour le coach (optionnel)</Label>
+                <Textarea
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Décrivez vos objectifs, votre niveau, ou toute information utile..."
+                  rows={4}
+                  className="mt-2"
+                />
+              </div>
+            )}
           </div>
 
           {/* Informations importantes */}
+          {!selectedSlot && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-900">
+                Veuillez sélectionner une date et un créneau horaire parmi les disponibilités du coach.
+              </p>
+            </div>
+          )}
+
+          {selectedSlot && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-sm text-green-900">
+                <strong>✓ Créneau sélectionné :</strong> {new Date(selectedDate!).toLocaleDateString('fr-FR', { 
+                  weekday: 'long', 
+                  day: 'numeric', 
+                  month: 'long' 
+                })} à {selectedSlot}
+              </p>
+            </div>
+          )}
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-900">
-              <strong>ℹ️ Important :</strong> Cette demande sera envoyée au coach qui vous contactera 
-              pour confirmer la disponibilité. Le paiement sera effectué après confirmation.
+              <strong>ℹ️ Important :</strong> Le paiement sera effectué après confirmation du coach.
             </p>
           </div>
 
@@ -157,7 +251,7 @@ export function BookingModal({ isOpen, onClose, announcement, coachId }: Booking
             <Button type="button" variant="outline" onClick={onClose}>
               Annuler
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading || !selectedSlot}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -166,7 +260,7 @@ export function BookingModal({ isOpen, onClose, announcement, coachId }: Booking
               ) : (
                 <>
                   <Calendar className="mr-2 h-4 w-4" />
-                  Envoyer la demande
+                  Confirmer la réservation
                 </>
               )}
             </Button>

@@ -80,24 +80,34 @@ const handleNotifyMe = async (announcementId: string) => {
 ---
 
 ### 3. Modal de Réservation
-**Status**: ❌ À créer
+**Status**: 🟡 UI créée avec sélection de créneaux, backend à implémenter
 
 **Description**:
 - Modal pour finaliser une réservation
-- Sélection de créneau horaire
-- Paiement via Stripe
-- Confirmation par email
+- ✅ Sélection parmi les créneaux disponibles du coach (pas de saisie libre)
+- ✅ Affichage progressif : Date → Créneau → Message
+- Paiement via Stripe (à implémenter)
+- Confirmation par email (à implémenter)
 
 **Fichiers concernés**:
-- À créer: `src/components/coach/public/BookingModal.tsx`
+- ✅ `src/components/coach/public/BookingModal.tsx` (UI terminée)
 - À créer: `src/app/api/reservations/*`
 
+**Fonctionnement actuel**:
+1. Le joueur sélectionne une date parmi les disponibilités mockées
+2. Les créneaux horaires de cette date s'affichent
+3. Le joueur sélectionne un créneau
+4. Le joueur peut ajouter un message optionnel
+5. Confirmation visuelle du créneau sélectionné
+6. Bouton "Confirmer la réservation" activé uniquement si un créneau est sélectionné
+
 **À faire**:
-- [ ] Créer le composant BookingModal
+- [ ] API GET `/api/coach/[id]/availabilities` pour récupérer les vraies disponibilités
+- [ ] API POST `/api/reservations` pour créer la réservation
 - [ ] Intégration Stripe Payment
-- [ ] API de création de réservation
 - [ ] Email de confirmation (joueur + coach)
-- [ ] Ajout au calendrier automatique
+- [ ] Ajout au calendrier automatique (Google Calendar)
+- [ ] Bloquer le créneau après réservation
 
 ---
 
