@@ -1,7 +1,13 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
+
+// Fonction pour générer un ID unique
+function generateId() {
+  return randomBytes(16).toString('hex');
+}
 
 async function main() {
   console.log('🌱 Démarrage du seed...');
@@ -14,6 +20,7 @@ async function main() {
     where: { email: 'coach-actif@edgemy.fr' },
     update: {},
     create: {
+      id: generateId(),
       email: 'coach-actif@edgemy.fr',
       name: 'Jean Dupont',
       emailVerified: true,
@@ -26,6 +33,7 @@ async function main() {
     where: { email: 'coach-inactif@edgemy.fr' },
     update: {},
     create: {
+      id: generateId(),
       email: 'coach-inactif@edgemy.fr',
       name: 'Marie Martin',
       emailVerified: true,
@@ -38,6 +46,7 @@ async function main() {
     where: { email: 'coach-pending@edgemy.fr' },
     update: {},
     create: {
+      id: generateId(),
       email: 'coach-pending@edgemy.fr',
       name: 'Pierre Durand',
       emailVerified: true,
@@ -50,6 +59,7 @@ async function main() {
     where: { email: 'joueur@edgemy.fr' },
     update: {},
     create: {
+      id: generateId(),
       email: 'joueur@edgemy.fr',
       name: 'Sophie Bernard',
       emailVerified: true,
