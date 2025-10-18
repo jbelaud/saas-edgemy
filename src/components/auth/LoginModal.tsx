@@ -20,8 +20,10 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ open, onOpenChange }: LoginModalProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // En dev, pré-remplir avec le compte de test
+  const isDev = process.env.NODE_ENV === 'development';
+  const [email, setEmail] = useState(isDev ? "coach-actif@edgemy.fr" : "");
+  const [password, setPassword] = useState(isDev ? "Password123!" : "");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -110,7 +112,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
               <Input
                 id="email"
                 type="email"
-                placeholder="jean.dupont@exemple.fr"
+                placeholder="coach-actif@edgemy.fr"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -129,6 +131,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
               <Input
                 id="password"
                 type="password"
+                placeholder="Password123!"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
