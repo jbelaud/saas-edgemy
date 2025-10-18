@@ -12,13 +12,10 @@ interface PageProps {
 }
 
 async function getCoach(slug: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const coach = await prisma.coach.findUnique({
-    where: { 
-      // @ts-expect-error - Prisma types not fully generated
-      slug 
-    },
+    where: { slug },
     include: {
-      // @ts-expect-error - Prisma types not fully generated
       announcements: {
         where: { isActive: true },
         orderBy: { createdAt: 'desc' },
@@ -31,7 +28,6 @@ async function getCoach(slug: string) {
         },
       },
     },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as any;
 
   return coach;
