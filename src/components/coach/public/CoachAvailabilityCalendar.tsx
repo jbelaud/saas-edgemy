@@ -17,7 +17,7 @@ const MOCK_AVAILABILITIES = [
   { date: '2025-10-24', slots: ['09:00', '10:00', '14:00'] },
 ];
 
-export function CoachAvailabilityCalendar({ coachId, isInactive = false }: CoachAvailabilityCalendarProps) {
+export function CoachAvailabilityCalendar({ isInactive = false }: CoachAvailabilityCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const selectedAvailability = MOCK_AVAILABILITIES.find((a) => a.date === selectedDate);

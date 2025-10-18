@@ -146,7 +146,7 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
                               Intéressé par ce coach ?
                             </p>
                             <p className="text-xs text-amber-700">
-                              Notifiez-le pour qu'il réactive son profil
+                              Notifiez-le pour qu&apos;il réactive son profil
                             </p>
                             <div className="flex gap-2">
                               <input
@@ -173,7 +173,7 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
                               ✓ Coach notifié !
                             </p>
                             <p className="text-xs text-green-600 mt-1">
-                              Vous serez contacté s'il réactive son profil
+                              Vous serez contacté s&apos;il réactive son profil
                             </p>
                           </div>
                         )}
