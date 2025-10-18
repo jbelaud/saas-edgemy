@@ -56,11 +56,15 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         console.log('⚠️ Résultat inattendu:', result);
         setError("Résultat de connexion inattendu");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("❌ Exception lors de la connexion:", error);
-      console.error("❌ Stack:", error?.stack);
-      console.error("❌ Message:", error?.message);
-      setError(error?.message || "Une erreur est survenue lors de la connexion");
+      if (error instanceof Error) {
+        console.error("❌ Stack:", error.stack);
+        console.error("❌ Message:", error.message);
+        setError(error.message);
+      } else {
+        setError("Une erreur est survenue lors de la connexion");
+      }
     } finally {
       setIsLoading(false);
     }
