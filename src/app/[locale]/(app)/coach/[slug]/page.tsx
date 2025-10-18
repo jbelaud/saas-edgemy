@@ -12,7 +12,6 @@ interface PageProps {
 }
 
 async function getCoach(slug: string) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const coach = await prisma.coach.findUnique({
     where: { slug },
     include: {
@@ -28,9 +27,10 @@ async function getCoach(slug: string) {
         },
       },
     },
-  }) as any;
-
-  return coach;
+  });
+  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return coach as any;
 }
 
 export default async function CoachPublicPage({ params }: PageProps) {
