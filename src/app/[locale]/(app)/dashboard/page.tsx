@@ -1,11 +1,62 @@
 'use client';
 
-import { Users, Calendar, TrendingUp, Settings, Loader2 } from 'lucide-react';
+import { Users, Calendar, Shield, Settings, Loader2 } from 'lucide-react';
 import { useSession } from '@/lib/auth-client';
 import { RoleSetupWrapper } from '@/components/auth/RoleSetupWrapper';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [roleLoading, setRoleLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch('/api/user/role');
+        if (response.ok) {
+          const data = await response.json();
+          setUserRole(data.role);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du rôle:', error);
+      } finally {
+        setRoleLoading(false);
+      }
+    };
+
+    if (session?.user) {
+      fetchUserRole();
+    }
+  }, [session]);
+
+  const getRoleLabel = (role: string | null) => {
+    switch (role) {
+      case 'COACH':
+        return 'Coach';
+      case 'PLAYER':
+        return 'Joueur';
+      case 'ADMIN':
+        return 'Administrateur';
+      case 'USER':
+        return 'Utilisateur';
+      default:
+        return '-';
+    }
+  };
+
+  const getRoleColor = (role: string | null) => {
+    switch (role) {
+      case 'COACH':
+        return 'text-orange-600';
+      case 'PLAYER':
+        return 'text-blue-600';
+      case 'ADMIN':
+        return 'text-purple-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
 
   if (isPending) {
     return (
@@ -56,10 +107,16 @@ export default function DashboardPage() {
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <TrendingUp className="h-8 w-8 text-purple-600" />
+            <Shield className={`h-8 w-8 ${getRoleColor(userRole)}`} />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Progression</p>
-              <p className="text-2xl font-bold text-gray-900">-</p>
+              <p className="text-sm font-medium text-gray-500">Rôle</p>
+              {roleLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+              ) : (
+                <p className={`text-2xl font-bold ${getRoleColor(userRole)}`}>
+                  {getRoleLabel(userRole)}
+                </p>
+              )}
             </div>
           </div>
         </div>
