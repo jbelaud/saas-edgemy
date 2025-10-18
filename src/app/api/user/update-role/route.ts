@@ -57,13 +57,12 @@ export async function POST(request: NextRequest) {
       });
 
       if (!existingCoach) {
-        await prisma.coach.create({
-          data: {
-            id: `coach_${session.user.id}`,
-            userId: session.user.id,
-            specialties: [],
-          },
-        });
+        // Ne pas créer automatiquement le profil coach ici
+        // Le coach doit passer par l'onboarding complet
+        return NextResponse.json(
+          { error: 'Le profil coach doit être créé via l\'onboarding' },
+          { status: 400 }
+        );
       }
     } else if (role === "PLAYER") {
       // Vérifier si l'entrée player existe déjà
