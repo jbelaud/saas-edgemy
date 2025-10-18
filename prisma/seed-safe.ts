@@ -33,11 +33,17 @@ async function main() {
 
   console.log('✅ Nettoyage terminé (subscribers préservés)');
 
-  // 2. Créer les utilisateurs de base
+  // 2. Créer les utilisateurs de base (avec upsert pour éviter les erreurs)
   console.log('👤 Création des utilisateurs...');
 
-  const coachActiveUser = await prisma.user.create({
-    data: {
+  const coachActiveUser = await prisma.user.upsert({
+    where: { email: 'coach-actif@edgemy.fr' },
+    update: {
+      name: 'Jean Dupont',
+      emailVerified: new Date(),
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jean',
+    },
+    create: {
       email: 'coach-actif@edgemy.fr',
       name: 'Jean Dupont',
       emailVerified: new Date(),
@@ -45,8 +51,14 @@ async function main() {
     },
   });
 
-  const coachInactiveUser = await prisma.user.create({
-    data: {
+  const coachInactiveUser = await prisma.user.upsert({
+    where: { email: 'coach-inactif@edgemy.fr' },
+    update: {
+      name: 'Marie Martin',
+      emailVerified: new Date(),
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=marie',
+    },
+    create: {
       email: 'coach-inactif@edgemy.fr',
       name: 'Marie Martin',
       emailVerified: new Date(),
@@ -54,8 +66,14 @@ async function main() {
     },
   });
 
-  const coachPendingUser = await prisma.user.create({
-    data: {
+  const coachPendingUser = await prisma.user.upsert({
+    where: { email: 'coach-pending@edgemy.fr' },
+    update: {
+      name: 'Pierre Durand',
+      emailVerified: new Date(),
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pierre',
+    },
+    create: {
       email: 'coach-pending@edgemy.fr',
       name: 'Pierre Durand',
       emailVerified: new Date(),
@@ -63,8 +81,14 @@ async function main() {
     },
   });
 
-  const playerUser = await prisma.user.create({
-    data: {
+  const playerUser = await prisma.user.upsert({
+    where: { email: 'joueur@edgemy.fr' },
+    update: {
+      name: 'Sophie Bernard',
+      emailVerified: new Date(),
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sophie',
+    },
+    create: {
       email: 'joueur@edgemy.fr',
       name: 'Sophie Bernard',
       emailVerified: new Date(),
