@@ -141,8 +141,7 @@ async function main() {
   // 2.5. Créer les comptes d'authentification (Better Auth)
   console.log('🔐 Création des comptes d\'authentification...');
   
-  const defaultPassword = hashPassword('Password123!'); // Mot de passe par défaut pour tous
-
+  // Hash le mot de passe pour chaque compte (chaque hash sera unique grâce au salt)
   await prisma.account.upsert({
     where: {
       providerId_accountId: {
@@ -156,7 +155,7 @@ async function main() {
       userId: coachActiveUser.id,
       accountId: coachActiveUser.id,
       providerId: 'credential',
-      password: defaultPassword,
+      password: hashPassword('Password123!'),
       updatedAt: new Date(),
     },
   });
@@ -174,7 +173,7 @@ async function main() {
       userId: coachInactiveUser.id,
       accountId: coachInactiveUser.id,
       providerId: 'credential',
-      password: defaultPassword,
+      password: hashPassword('Password123!'),
       updatedAt: new Date(),
     },
   });
@@ -192,7 +191,7 @@ async function main() {
       userId: coachPendingUser.id,
       accountId: coachPendingUser.id,
       providerId: 'credential',
-      password: defaultPassword,
+      password: hashPassword('Password123!'),
       updatedAt: new Date(),
     },
   });
@@ -210,7 +209,7 @@ async function main() {
       userId: playerUser.id,
       accountId: playerUser.id,
       providerId: 'credential',
-      password: defaultPassword,
+      password: hashPassword('Password123!'),
       updatedAt: new Date(),
     },
   });

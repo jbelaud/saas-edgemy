@@ -41,20 +41,26 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         callbackURL: "/dashboard",
       });
       
-      console.log('✅ Résultat connexion:', result);
+      console.log('✅ Résultat complet:', JSON.stringify(result, null, 2));
       
       if (result?.error) {
-        setError(result.error.message || "Erreur de connexion");
-        console.error('❌ Erreur:', result.error);
-      } else {
-        console.log('✅ Connexion réussie, redirection...');
+        const errorMessage = result.error.message || result.error.toString() || "Erreur de connexion";
+        setError(errorMessage);
+        console.error('❌ Erreur détaillée:', result.error);
+      } else if (result?.data) {
+        console.log('✅ Connexion réussie, données:', result.data);
         onOpenChange(false);
         // Force reload pour s'assurer que la session est bien chargée
         window.location.href = "/dashboard";
+      } else {
+        console.log('⚠️ Résultat inattendu:', result);
+        setError("Résultat de connexion inattendu");
       }
-    } catch (error) {
-      console.error("❌ Erreur de connexion:", error);
-      setError("Une erreur est survenue lors de la connexion");
+    } catch (error: any) {
+      console.error("❌ Exception lors de la connexion:", error);
+      console.error("❌ Stack:", error?.stack);
+      console.error("❌ Message:", error?.message);
+      setError(error?.message || "Une erreur est survenue lors de la connexion");
     } finally {
       setIsLoading(false);
     }
