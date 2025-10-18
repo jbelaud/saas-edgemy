@@ -10,7 +10,7 @@ import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 
 export function AppHeader() {
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCoachSignUpModal, setShowCoachSignUpModal] = useState(false);
 
@@ -38,7 +38,14 @@ export function AppHeader() {
           {/* Auth Buttons & Language Switcher */}
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
-            {session?.user ? (
+            {isPending ? (
+              // Skeleton pendant le chargement pour éviter le flash
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-32 bg-muted animate-pulse rounded-md" />
+                <div className="h-9 w-24 bg-muted animate-pulse rounded-md" />
+                <div className="h-9 w-28 bg-muted animate-pulse rounded-md" />
+              </div>
+            ) : session?.user ? (
               <AuthButton />
             ) : (
               <>
