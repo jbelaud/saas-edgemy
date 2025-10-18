@@ -28,6 +28,8 @@ pnpm db:reset
 
 ## 👥 Comptes de Test Créés
 
+**🔐 Mot de passe par défaut pour tous les comptes** : `Password123!`
+
 ### 🟢 Coach Actif - Jean Dupont
 
 | Champ | Valeur |

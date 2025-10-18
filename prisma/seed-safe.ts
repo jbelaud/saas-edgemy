@@ -1,12 +1,19 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
-import { randomBytes } from 'crypto';
+import { randomBytes, scryptSync } from 'crypto';
 
 const prisma = new PrismaClient();
 
 // Fonction pour générer un ID unique
 function generateId() {
   return randomBytes(16).toString('hex');
+}
+
+// Fonction pour hasher un mot de passe (compatible Better Auth)
+function hashPassword(password: string): string {
+  const salt = randomBytes(16).toString('hex');
+  const hash = scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
 }
 
 async function main() {
@@ -22,6 +29,22 @@ async function main() {
   await prisma.coach.deleteMany({});
   await prisma.coachDraft.deleteMany({});
   await prisma.player.deleteMany({});
+  
+  // Supprimer les comptes d'authentification des utilisateurs de test
+  await prisma.account.deleteMany({
+    where: {
+      user: {
+        email: {
+          in: [
+            'coach-actif@edgemy.fr',
+            'coach-inactif@edgemy.fr',
+            'coach-pending@edgemy.fr',
+            'joueur@edgemy.fr',
+          ],
+        },
+      },
+    },
+  });
   
   // Supprimer uniquement les utilisateurs de test (pas ceux qui ont des subscribers)
   await prisma.user.deleteMany({
@@ -115,6 +138,86 @@ async function main() {
   });
 
   console.log('✅ Utilisateurs créés');
+
+  // 2.5. Créer les comptes d'authentification (Better Auth)
+  console.log('🔐 Création des comptes d\'authentification...');
+  
+  const defaultPassword = hashPassword('Password123!'); // Mot de passe par défaut pour tous
+
+  await prisma.account.upsert({
+    where: {
+      providerId_accountId: {
+        providerId: 'credential',
+        accountId: coachActiveUser.id,
+      },
+    },
+    update: {},
+    create: {
+      id: generateId(),
+      userId: coachActiveUser.id,
+      accountId: coachActiveUser.id,
+      providerId: 'credential',
+      password: defaultPassword,
+      updatedAt: new Date(),
+    },
+  });
+
+  await prisma.account.upsert({
+    where: {
+      providerId_accountId: {
+        providerId: 'credential',
+        accountId: coachInactiveUser.id,
+      },
+    },
+    update: {},
+    create: {
+      id: generateId(),
+      userId: coachInactiveUser.id,
+      accountId: coachInactiveUser.id,
+      providerId: 'credential',
+      password: defaultPassword,
+      updatedAt: new Date(),
+    },
+  });
+
+  await prisma.account.upsert({
+    where: {
+      providerId_accountId: {
+        providerId: 'credential',
+        accountId: coachPendingUser.id,
+      },
+    },
+    update: {},
+    create: {
+      id: generateId(),
+      userId: coachPendingUser.id,
+      accountId: coachPendingUser.id,
+      providerId: 'credential',
+      password: defaultPassword,
+      updatedAt: new Date(),
+    },
+  });
+
+  await prisma.account.upsert({
+    where: {
+      providerId_accountId: {
+        providerId: 'credential',
+        accountId: playerUser.id,
+      },
+    },
+    update: {},
+    create: {
+      id: generateId(),
+      userId: playerUser.id,
+      accountId: playerUser.id,
+      providerId: 'credential',
+      password: defaultPassword,
+      updatedAt: new Date(),
+    },
+  });
+
+  console.log('✅ Comptes d\'authentification créés');
+  console.log('   📝 Mot de passe par défaut : Password123!');
 
   // 3. Créer les profils coach
   console.log('🎓 Création des profils coach...');
