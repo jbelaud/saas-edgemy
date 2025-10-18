@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
-import { randomBytes, scryptSync } from 'crypto';
+import { randomBytes } from 'crypto';
+import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -9,11 +10,9 @@ function generateId() {
   return randomBytes(16).toString('hex');
 }
 
-// Fonction pour hasher un mot de passe (compatible Better Auth)
-function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString('hex');
-  const hash = scryptSync(password, salt, 64).toString('hex');
-  return `${salt}:${hash}`;
+// Fonction pour hasher un mot de passe (compatible Better Auth - utilise bcrypt)
+async function hashPassword(password: string): Promise<string> {
+  return await hash(password, 10);
 }
 
 async function main() {
@@ -142,7 +141,7 @@ async function main() {
   // 2.5. Créer les comptes d'authentification (Better Auth)
   console.log('🔐 Création des comptes d\'authentification...');
   
-  const defaultPassword = hashPassword('Password123!'); // Mot de passe par défaut pour tous
+  const defaultPassword = await hashPassword('Password123!'); // Mot de passe par défaut pour tous
 
   await prisma.account.upsert({
     where: {

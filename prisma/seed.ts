@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
-import { randomBytes, scryptSync } from 'crypto';
+import { randomBytes } from 'crypto';
+import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -9,11 +10,9 @@ function generateId() {
   return randomBytes(16).toString('hex');
 }
 
-// Fonction pour hasher un mot de passe (compatible Better Auth)
-function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString('hex');
-  const hash = scryptSync(password, salt, 64).toString('hex');
-  return `${salt}:${hash}`;
+// Fonction pour hasher un mot de passe (compatible Better Auth - utilise bcrypt)
+async function hashPassword(password: string): Promise<string> {
+  return await hash(password, 10);
 }
 
 async function main() {
@@ -83,7 +82,7 @@ async function main() {
   // 1.5. Créer les comptes d'authentification (Better Auth)
   console.log('🔐 Création des comptes d\'authentification...');
   
-  const defaultPassword = hashPassword('Password123!'); // Mot de passe par défaut pour tous
+  const defaultPassword = await hashPassword('Password123!'); // Mot de passe par défaut pour tous
 
   await prisma.account.upsert({
     where: {
@@ -409,7 +408,7 @@ Ma méthode se base sur l'analyse détaillée de vos mains, le travail sur les l
   console.log('2. Connexion coach inactif → Alert abonnement expiré');
   console.log('3. Connexion coach pending → Alert validation en cours');
   console.log('4. Page publique jean-dupont → Visible avec 3 annonces');
-  console.log('5. Page publique marie-martin → 404 (inactif)');
+  console.log('5. Page publique marie-martin → Visible (inactif)');
   console.log('6. Connexion joueur → Peut réserver avec Jean Dupont');
   console.log('\n✅ Seed terminé avec succès!\n');
 }

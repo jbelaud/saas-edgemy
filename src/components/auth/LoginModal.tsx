@@ -25,19 +25,36 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const [email, setEmail] = useState(isDev ? "coach-actif@edgemy.fr" : "");
   const [password, setPassword] = useState(isDev ? "Password123!" : "");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
+    
+    console.log('🔐 Tentative de connexion avec:', { email, password: '***' });
+    
     try {
-      await signIn.email({
+      const result = await signIn.email({
         email,
         password,
         callbackURL: "/dashboard",
       });
-      onOpenChange(false);
+      
+      console.log('✅ Résultat connexion:', result);
+      
+      if (result?.error) {
+        setError(result.error.message || "Erreur de connexion");
+        console.error('❌ Erreur:', result.error);
+      } else {
+        console.log('✅ Connexion réussie, redirection...');
+        onOpenChange(false);
+        // Force reload pour s'assurer que la session est bien chargée
+        window.location.href = "/dashboard";
+      }
     } catch (error) {
-      console.error("Erreur de connexion:", error);
+      console.error("❌ Erreur de connexion:", error);
+      setError("Une erreur est survenue lors de la connexion");
     } finally {
       setIsLoading(false);
     }
@@ -107,6 +124,12 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
           </div>
 
           <form onSubmit={handleEmailLogin} className="grid gap-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -137,6 +160,13 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
                 required
               />
             </div>
+            
+            {isDev && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 px-3 py-2 rounded text-xs">
+                💡 Mode dev : Champs pré-remplis avec coach-actif@edgemy.fr
+              </div>
+            )}
+            
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Connexion..." : "Se connecter"}
             </Button>
