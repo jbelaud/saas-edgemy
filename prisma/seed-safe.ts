@@ -48,6 +48,7 @@ async function main() {
       name: 'Jean Dupont',
       emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jean',
+      updatedAt: new Date(),
     },
     create: {
       id: generateId(),
@@ -55,6 +56,7 @@ async function main() {
       name: 'Jean Dupont',
       emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jean',
+      updatedAt: new Date(),
     },
   });
 
@@ -64,6 +66,7 @@ async function main() {
       name: 'Marie Martin',
       emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=marie',
+      updatedAt: new Date(),
     },
     create: {
       id: generateId(),
@@ -71,6 +74,7 @@ async function main() {
       name: 'Marie Martin',
       emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=marie',
+      updatedAt: new Date(),
     },
   });
 
@@ -80,6 +84,7 @@ async function main() {
       name: 'Pierre Durand',
       emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pierre',
+      updatedAt: new Date(),
     },
     create: {
       id: generateId(),
@@ -87,6 +92,7 @@ async function main() {
       name: 'Pierre Durand',
       emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pierre',
+      updatedAt: new Date(),
     },
   });
 
@@ -96,6 +102,7 @@ async function main() {
       name: 'Sophie Bernard',
       emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sophie',
+      updatedAt: new Date(),
     },
     create: {
       id: generateId(),
@@ -103,6 +110,7 @@ async function main() {
       name: 'Sophie Bernard',
       emailVerified: true,
       image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sophie',
+      updatedAt: new Date(),
     },
   });
 
@@ -246,9 +254,10 @@ Ma méthode se base sur l'analyse détaillée de vos mains, le travail sur les l
 
   await prisma.player.create({
     data: {
+      id: generateId(),
       userId: playerUser.id,
-      favoriteFormat: 'MTT',
-      level: 'INTERMEDIATE',
+      formats: ['MTT', 'CASH'],
+      goals: 'Améliorer mon jeu en MTT et atteindre les limites NL100',
     },
   });
 
@@ -263,27 +272,28 @@ Ma méthode se base sur l'analyse détaillée de vos mains, le travail sur les l
   });
 
   if (announcements.length > 0) {
+    const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const pastDate = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    
     await prisma.reservation.createMany({
       data: [
         {
           playerId: playerUser.id,
           coachId: coachActive.id,
           announcementId: announcements[0].id,
-          scheduledAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          duration: 60,
-          pricePaid: 5000,
+          startDate: futureDate,
+          endDate: new Date(futureDate.getTime() + 60 * 60 * 1000), // +1h
+          priceCents: 5000,
           status: 'CONFIRMED',
-          notes: 'Première session de coaching MTT',
         },
         {
           playerId: playerUser.id,
           coachId: coachActive.id,
           announcementId: announcements[1].id,
-          scheduledAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-          duration: 90,
-          pricePaid: 8000,
+          startDate: pastDate,
+          endDate: new Date(pastDate.getTime() + 90 * 60 * 1000), // +1h30
+          priceCents: 8000,
           status: 'COMPLETED',
-          notes: 'Session Cash Game - Très instructive !',
         },
       ],
     });
