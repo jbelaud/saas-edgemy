@@ -35,29 +35,45 @@ const MOCK_AVAILABILITIES = [
 ---
 
 ### 2. Système d'Alertes pour Coachs Inactifs
-**Status**: 🟡 UI créée, backend à implémenter
+**Status**: 🟡 UI créée (2 emplacements), backend à implémenter
 
 **Description**:
 - Permettre aux joueurs de s'inscrire pour être notifiés quand un coach inactif redevient disponible
+- Notifier le coach qu'un joueur est intéressé (pour l'inciter à réactiver son abonnement)
 - Envoi automatique d'emails quand le coach réactive son profil
 
 **Fichiers concernés**:
-- `src/components/coach/public/CoachAnnouncements.tsx` (UI existante)
+- `src/components/coach/public/CoachHeader.tsx` ✅ (CTA principal - notifie le coach)
+- `src/components/coach/public/CoachAnnouncements.tsx` ✅ (CTA par annonce - notifie le joueur)
 - À créer: `src/app/api/coach-alerts/*`
 - À créer: Modèle `CoachAlert` dans Prisma
 
-**Fonctionnalité actuelle**:
+**Fonctionnalités actuelles**:
+
+1. **Dans CoachHeader** (nouveau) :
 ```typescript
+// Notifie le COACH qu'un joueur est intéressé
+const handleNotifyCoach = async () => {
+  // TODO: Envoyer email au coach pour le relancer
+  console.log('Notify coach about interested player');
+};
+```
+
+2. **Dans CoachAnnouncements** :
+```typescript
+// Notifie le JOUEUR quand le coach redevient actif
 const handleNotifyMe = async (announcementId: string) => {
-  // TODO: Implémenter l'API pour enregistrer l'alerte
-  console.log('Notify me when available:', { announcementId, email: notifyEmail });
+  // TODO: Enregistrer l'alerte joueur
+  console.log('Notify me when available');
 };
 ```
 
 **À faire**:
-- [ ] Créer le modèle `CoachAlert` dans Prisma
-- [ ] API POST `/api/coach-alerts` pour enregistrer une alerte
-- [ ] Système de notification par email (Brevo)
+- [ ] Créer le modèle `CoachAlert` dans Prisma (avec type: 'NOTIFY_COACH' | 'NOTIFY_PLAYER')
+- [ ] API POST `/api/coach-alerts/notify-coach` (email au coach)
+- [ ] API POST `/api/coach-alerts/notify-player` (enregistrement alerte)
+- [ ] Email template Brevo pour notifier le coach
+- [ ] Email template Brevo pour notifier le joueur
 - [ ] Trigger automatique lors de la réactivation du coach
 - [ ] Dashboard coach pour voir les joueurs en attente
 

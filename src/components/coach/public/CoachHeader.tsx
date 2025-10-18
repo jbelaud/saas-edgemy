@@ -1,8 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { Star, MapPin, Award, Twitch, Youtube, Twitter, AlertCircle } from 'lucide-react';
+import { Star, MapPin, Award, Twitch, Youtube, Twitter, AlertCircle, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 interface CoachHeaderProps {
   coach: {
@@ -28,6 +29,27 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
   const avatarUrl = coach.avatarUrl || coach.user?.image || '/default-avatar.png';
   const bannerUrl = coach.bannerUrl || '/default-banner.jpg';
   const isInactive = coach.status === 'INACTIVE';
+  
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [isNotifying, setIsNotifying] = useState(false);
+  const [notificationSent, setNotificationSent] = useState(false);
+
+  const handleNotifyCoach = async () => {
+    if (!notifyEmail) return;
+    
+    setIsNotifying(true);
+    // TODO: Implémenter l'API pour notifier le coach
+    console.log('Notify coach about interested player:', { 
+      coachId: coach.firstName, 
+      playerEmail: notifyEmail 
+    });
+    
+    setTimeout(() => {
+      setIsNotifying(false);
+      setNotificationSent(true);
+      setNotifyEmail('');
+    }, 1000);
+  };
 
   return (
     <div className="relative">
@@ -105,9 +127,58 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
 
                   {/* CTA */}
                   <div className="flex flex-col gap-3">
-                    <Button size="lg" className="whitespace-nowrap">
+                    {/* Bouton réserver (grisé si inactif) */}
+                    <Button 
+                      size="lg" 
+                      className="whitespace-nowrap"
+                      disabled={isInactive}
+                      variant={isInactive ? "secondary" : "default"}
+                    >
                       Réserver une session
                     </Button>
+                    
+                    {/* CTA notification coach si inactif */}
+                    {isInactive && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
+                        {!notificationSent ? (
+                          <>
+                            <p className="text-sm text-amber-900 font-medium">
+                              Intéressé par ce coach ?
+                            </p>
+                            <p className="text-xs text-amber-700">
+                              Notifiez-le pour qu'il réactive son profil
+                            </p>
+                            <div className="flex gap-2">
+                              <input
+                                type="email"
+                                placeholder="Votre email"
+                                value={notifyEmail}
+                                onChange={(e) => setNotifyEmail(e.target.value)}
+                                className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                              />
+                              <Button
+                                size="sm"
+                                onClick={handleNotifyCoach}
+                                disabled={!notifyEmail || isNotifying}
+                                className="whitespace-nowrap bg-amber-600 hover:bg-amber-700"
+                              >
+                                <Bell className="h-4 w-4 mr-1" />
+                                {isNotifying ? 'Envoi...' : 'Notifier'}
+                              </Button>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-center py-2">
+                            <p className="text-sm text-green-700 font-medium">
+                              ✓ Coach notifié !
+                            </p>
+                            <p className="text-xs text-green-600 mt-1">
+                              Vous serez contacté s'il réactive son profil
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     
                     {/* Réseaux sociaux */}
                     <div className="flex gap-2 justify-center md:justify-start">
