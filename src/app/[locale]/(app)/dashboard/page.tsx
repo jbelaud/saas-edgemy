@@ -4,11 +4,13 @@ import { Users, Calendar, Shield, Settings, Loader2 } from 'lucide-react';
 import { useSession } from '@/lib/auth-client';
 import { RoleSetupWrapper } from '@/components/auth/RoleSetupWrapper';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [roleLoading, setRoleLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -17,6 +19,16 @@ export default function DashboardPage() {
         if (response.ok) {
           const data = await response.json();
           setUserRole(data.role);
+          
+          // Rediriger vers le bon dashboard selon le rôle
+          if (data.role === 'COACH') {
+            console.log('🔄 Redirection vers /coach/dashboard');
+            router.push('/coach/dashboard');
+          } else if (data.role === 'PLAYER') {
+            console.log('🔄 Redirection vers /player/dashboard');
+            router.push('/player/dashboard');
+          }
+          // Sinon, rester sur /dashboard (pour USER ou ADMIN)
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du rôle:', error);
@@ -28,7 +40,7 @@ export default function DashboardPage() {
     if (session?.user) {
       fetchUserRole();
     }
-  }, [session]);
+  }, [session, router]);
 
   const getRoleLabel = (role: string | null) => {
     switch (role) {
