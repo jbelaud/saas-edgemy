@@ -45,12 +45,15 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       
       if (result?.error) {
         // Extraire le message d'erreur de manière robuste
+        const err = result.error as any; // eslint-disable-line @typescript-eslint/no-explicit-any
         let errorMessage = "Erreur de connexion";
-        if (typeof result.error === 'string') {
-          errorMessage = result.error;
-        } else if (result.error && typeof result.error === 'object') {
-          errorMessage = result.error.message || JSON.stringify(result.error);
+        
+        if (typeof err === 'string') {
+          errorMessage = err;
+        } else if (err && typeof err === 'object') {
+          errorMessage = err.message || JSON.stringify(err);
         }
+        
         setError(errorMessage);
         console.error('❌ Erreur détaillée:', result.error);
       } else if (result?.data) {
