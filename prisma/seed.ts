@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
 import { randomBytes } from 'crypto';
-import { hash } from 'bcryptjs';
+import { hashSync } from '@node-rs/bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -10,9 +10,9 @@ function generateId() {
   return randomBytes(16).toString('hex');
 }
 
-// Fonction pour hasher un mot de passe (compatible Better Auth - utilise bcrypt)
-async function hashPassword(password: string): Promise<string> {
-  return await hash(password, 10);
+// Fonction pour hasher un mot de passe (compatible Better Auth)
+function hashPassword(password: string): string {
+  return hashSync(password, 10);
 }
 
 async function main() {
@@ -82,7 +82,7 @@ async function main() {
   // 1.5. Créer les comptes d'authentification (Better Auth)
   console.log('🔐 Création des comptes d\'authentification...');
   
-  const defaultPassword = await hashPassword('Password123!'); // Mot de passe par défaut pour tous
+  const defaultPassword = hashPassword('Password123!'); // Mot de passe par défaut pour tous
 
   await prisma.account.upsert({
     where: {
@@ -359,7 +359,7 @@ Ma méthode se base sur l'analyse détaillée de vos mains, le travail sur les l
   // 6. Afficher le résumé
   console.log('\n📊 RÉSUMÉ DU SEED\n');
   console.log('═══════════════════════════════════════════════════════════');
-  console.log('\n🔐 COMPTES DE TEST (mot de passe: Password123!)\n');
+  console.log('\n🔐 COMPTES DE TEST (mot de passe: password123)\n');
   console.log('┌─────────────────────────────────────────────────────────┐');
   console.log('│ 🟢 COACH ACTIF                                          │');
   console.log('├─────────────────────────────────────────────────────────┤');
@@ -379,7 +379,7 @@ Ma méthode se base sur l'analyse détaillée de vos mains, le travail sur les l
   console.log('│ Slug     : marie-martin                                 │');
   console.log('│ Status   : INACTIVE ❌ (abonnement expiré)              │');
   console.log('│ Annonces : 1 (non visible publiquement)                 │');
-  console.log('│ URL      : /coach/marie-martin (404)                    │');
+  console.log('│ URL      : /coach/marie-martin (inactif)                    │');
   console.log('└─────────────────────────────────────────────────────────┘\n');
 
   console.log('┌─────────────────────────────────────────────────────────┐');
