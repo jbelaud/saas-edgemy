@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, User, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Save, User } from 'lucide-react';
 import { POKER_FORMATS, LANGUAGES } from '@/types/coach';
 
 const profileSchema = z.object({
@@ -30,8 +30,10 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
+import type { CoachWithRelations } from '@/types/dashboard';
+
 interface DashboardProfileProps {
-  coach: any;
+  coach: CoachWithRelations;
 }
 
 export function DashboardProfile({ coach }: DashboardProfileProps) {
@@ -161,19 +163,19 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
             <Label>Formats de poker *</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
               {POKER_FORMATS.map((format) => (
-                <div key={format} className="flex items-center space-x-2">
+                <div key={format.value} className="flex items-center space-x-2">
                   <Checkbox
-                    id={`format-${format}`}
-                    checked={selectedFormats.includes(format)}
+                    id={`format-${format.value}`}
+                    checked={selectedFormats.includes(format.value)}
                     onCheckedChange={(checked) => {
                       const newFormats = checked
-                        ? [...selectedFormats, format]
-                        : selectedFormats.filter((f) => f !== format);
+                        ? [...selectedFormats, format.value]
+                        : selectedFormats.filter((f) => f !== format.value);
                       setValue('pokerFormats', newFormats);
                     }}
                   />
-                  <label htmlFor={`format-${format}`} className="text-sm cursor-pointer">
-                    {format}
+                  <label htmlFor={`format-${format.value}`} className="text-sm cursor-pointer">
+                    {format.label}
                   </label>
                 </div>
               ))}
@@ -219,19 +221,19 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
             <Label>Langues parlées *</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
               {LANGUAGES.map((lang) => (
-                <div key={lang} className="flex items-center space-x-2">
+                <div key={lang.value} className="flex items-center space-x-2">
                   <Checkbox
-                    id={`lang-${lang}`}
-                    checked={selectedLanguages.includes(lang)}
+                    id={`lang-${lang.value}`}
+                    checked={selectedLanguages.includes(lang.value)}
                     onCheckedChange={(checked) => {
                       const newLangs = checked
-                        ? [...selectedLanguages, lang]
-                        : selectedLanguages.filter((l) => l !== lang);
+                        ? [...selectedLanguages, lang.value]
+                        : selectedLanguages.filter((l) => l !== lang.value);
                       setValue('languages', newLangs);
                     }}
                   />
-                  <label htmlFor={`lang-${lang}`} className="text-sm cursor-pointer">
-                    {lang}
+                  <label htmlFor={`lang-${lang.value}`} className="text-sm cursor-pointer">
+                    {lang.label}
                   </label>
                 </div>
               ))}

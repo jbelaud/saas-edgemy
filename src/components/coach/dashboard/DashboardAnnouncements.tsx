@@ -20,11 +20,13 @@ interface Announcement {
   createdAt: string;
 }
 
+import type { CoachWithRelations } from '@/types/dashboard';
+
 interface DashboardAnnouncementsProps {
-  coach: any;
+  coach: CoachWithRelations;
 }
 
-export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
+export function DashboardAnnouncements({}: DashboardAnnouncementsProps) {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

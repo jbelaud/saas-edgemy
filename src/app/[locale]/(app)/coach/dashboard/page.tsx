@@ -9,20 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardStats } from '@/components/coach/dashboard/DashboardStats';
 import { DashboardProfile } from '@/components/coach/dashboard/DashboardProfile';
 import { DashboardAnnouncements } from '@/components/coach/dashboard/DashboardAnnouncements';
-
-interface CoachDashboardData {
-  coach: any;
-  stats: {
-    totalRevenue: number;
-    monthlyRevenue: number;
-    totalReservations: number;
-    totalHours: number;
-    pendingReservations: number;
-    upcomingReservations: number;
-    activeAnnouncements: number;
-    monthlyRevenueData: Array<{ month: string; revenue: number }>;
-  };
-}
+import type { CoachDashboardData } from '@/types/dashboard';
 
 export default function CoachDashboardPage() {
   const router = useRouter();
