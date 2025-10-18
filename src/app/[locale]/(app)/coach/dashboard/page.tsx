@@ -3,13 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
-import { Loader2, TrendingUp, Users, Clock, Euro } from 'lucide-react';
+import { Loader2, TrendingUp, Users, Clock, Euro, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardStats } from '@/components/coach/dashboard/DashboardStats';
 import { DashboardProfile } from '@/components/coach/dashboard/DashboardProfile';
 import { DashboardAnnouncements } from '@/components/coach/dashboard/DashboardAnnouncements';
 import type { CoachDashboardData } from '@/types/dashboard';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function CoachDashboardPage() {
   const router = useRouter();
@@ -84,13 +86,21 @@ export default function CoachDashboardPage() {
   return (
     <div className="container mx-auto py-8 px-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Dashboard Coach
-        </h1>
-        <p className="text-gray-600">
-          Bienvenue, {coach.firstName} {coach.lastName}
-        </p>
+      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Dashboard Coach
+          </h1>
+          <p className="text-gray-600">
+            Bienvenue, {coach.firstName} {coach.lastName}
+          </p>
+        </div>
+        <Link href={`/coach/${coach.slug}`} target="_blank">
+          <Button variant="outline" size="lg">
+            <ExternalLink className="mr-2 h-4 w-4" />
+            Voir mon profil public
+          </Button>
+        </Link>
       </div>
 
       {/* Status Alerts */}
