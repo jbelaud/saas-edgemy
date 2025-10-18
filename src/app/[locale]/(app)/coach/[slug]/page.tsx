@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { CoachHeader } from '@/components/coach/public/CoachHeader';
 import { CoachAnnouncements } from '@/components/coach/public/CoachAnnouncements';
 import { CoachAbout } from '@/components/coach/public/CoachAbout';
+import { CoachAvailabilityCalendar } from '@/components/coach/public/CoachAvailabilityCalendar';
 
 interface PageProps {
   params: Promise<{
@@ -37,9 +38,12 @@ export default async function CoachPublicPage({ params }: PageProps) {
   const { slug } = await params;
   const coach = await getCoach(slug);
 
-  if (!coach || coach.status !== 'ACTIVE') {
+  // Afficher 404 uniquement pour PENDING_REVIEW, pas pour INACTIVE
+  if (!coach || coach.status === 'PENDING_REVIEW') {
     notFound();
   }
+
+  const isInactive = coach.status === 'INACTIVE';
 
   // Transformer les annonces pour le composant
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,12 +69,19 @@ export default async function CoachPublicPage({ params }: PageProps) {
             <CoachAbout coach={coach} />
 
             {/* Annonces */}
-            <CoachAnnouncements announcements={transformedAnnouncements} coachId={coach.id} />
+            <CoachAnnouncements 
+              announcements={transformedAnnouncements} 
+              coachId={coach.id}
+              isInactive={isInactive}
+            />
           </div>
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-6">
+              {/* Calendrier de disponibilités */}
+              <CoachAvailabilityCalendar coachId={coach.id} isInactive={isInactive} />
+
               {/* Stats rapides */}
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h3 className="text-lg font-semibold mb-4">Statistiques</h3>

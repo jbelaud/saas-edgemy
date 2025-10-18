@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Euro, Calendar } from 'lucide-react';
+import { Clock, Euro, Calendar, Bell } from 'lucide-react';
 import { BookingModal } from './BookingModal';
 
 interface Announcement {
@@ -18,15 +18,33 @@ interface Announcement {
 interface CoachAnnouncementsProps {
   announcements: Announcement[];
   coachId: string;
+  isInactive?: boolean;
 }
 
-export function CoachAnnouncements({ announcements, coachId }: CoachAnnouncementsProps) {
+export function CoachAnnouncements({ announcements, coachId, isInactive = false }: CoachAnnouncementsProps) {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [isNotifying, setIsNotifying] = useState(false);
 
   const handleBooking = (announcement: Announcement) => {
+    if (isInactive) return;
     setSelectedAnnouncement(announcement);
     setIsBookingOpen(true);
+  };
+
+  const handleNotifyMe = async (announcementId: string) => {
+    if (!notifyEmail) return;
+    
+    setIsNotifying(true);
+    // TODO: Implémenter l'API pour enregistrer l'alerte
+    console.log('Notify me when available:', { announcementId, email: notifyEmail });
+    
+    setTimeout(() => {
+      setIsNotifying(false);
+      setNotifyEmail('');
+      alert('Vous serez notifié(e) quand ce coach sera à nouveau disponible !');
+    }, 1000);
   };
 
   if (announcements.length === 0) {
@@ -87,13 +105,41 @@ export function CoachAnnouncements({ announcements, coachId }: CoachAnnouncement
                       </div>
                       <p className="text-sm text-gray-500">par session</p>
                     </div>
-                    <Button
-                      size="lg"
-                      onClick={() => handleBooking(announcement)}
-                      className="w-full md:w-auto"
-                    >
-                      Réserver
-                    </Button>
+                    
+                    {isInactive ? (
+                      <div className="w-full md:w-auto space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="email"
+                            placeholder="Votre email"
+                            value={notifyEmail}
+                            onChange={(e) => setNotifyEmail(e.target.value)}
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleNotifyMe(announcement.id)}
+                            disabled={!notifyEmail || isNotifying}
+                            className="whitespace-nowrap"
+                          >
+                            <Bell className="h-4 w-4 mr-1" />
+                            {isNotifying ? 'Envoi...' : 'M\'alerter'}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500 text-right">
+                          Soyez notifié quand ce coach sera disponible
+                        </p>
+                      </div>
+                    ) : (
+                      <Button
+                        size="lg"
+                        onClick={() => handleBooking(announcement)}
+                        className="w-full md:w-auto"
+                      >
+                        Réserver
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

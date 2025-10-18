@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Star, MapPin, Award, Twitch, Youtube, Twitter } from 'lucide-react';
+import { Star, MapPin, Award, Twitch, Youtube, Twitter, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface CoachHeaderProps {
@@ -12,6 +12,7 @@ interface CoachHeaderProps {
     avatarUrl: string | null;
     bannerUrl: string | null;
     stakes: string | null;
+    status: string;
     twitchUrl: string | null;
     youtubeUrl: string | null;
     twitterUrl: string | null;
@@ -26,9 +27,18 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
   const displayName = `${coach.firstName} ${coach.lastName}`;
   const avatarUrl = coach.avatarUrl || coach.user?.image || '/default-avatar.png';
   const bannerUrl = coach.bannerUrl || '/default-banner.jpg';
+  const isInactive = coach.status === 'INACTIVE';
 
   return (
     <div className="relative">
+      {/* Badge statut inactif */}
+      {isInactive && (
+        <div className="absolute top-4 right-4 z-10 bg-amber-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+          <AlertCircle className="h-5 w-5" />
+          <span className="font-semibold">Temporairement indisponible</span>
+        </div>
+      )}
+
       {/* Bannière */}
       <div className="relative h-64 md:h-80 bg-gradient-to-r from-blue-600 to-purple-600">
         {bannerUrl && bannerUrl !== '/default-banner.jpg' ? (

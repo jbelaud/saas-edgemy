@@ -213,9 +213,9 @@ pnpm db:reset
 ## 🔍 Points de Vérification
 
 ### Visibilité des Profils
-- ✅ Jean Dupont (ACTIVE) → Visible
-- ❌ Marie Martin (INACTIVE) → 404
-- ❌ Pierre Durand (PENDING_REVIEW) → 404
+- ✅ Jean Dupont (ACTIVE) → Visible + Réservations actives
+- ⚠️ Marie Martin (INACTIVE) → Visible + Badge "Temporairement indisponible" + CTA "M'alerter"
+- ❌ Pierre Durand (PENDING_REVIEW) → 404 (en cours de validation)
 
 ### Alertes Dashboard
 - Jean Dupont → Aucune alerte
