@@ -38,13 +38,110 @@ model account {
 }
 
 model coach {
-  id          String   @id
-  userId      String   @unique
-  bio         String?
-  hourlyRate  Float?
-  specialties String[]
-  experience  Int?
-  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String         @id @default(cuid())
+  userId          String         @unique
+  user            user           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug            String         @unique
+  firstName       String
+  lastName        String
+  bio             String?
+  bannerUrl       String?
+  avatarUrl       String?
+  status          CoachStatus    @default(INACTIVE)
+  stripeAccountId String?
+  subscriptionId  String?
+  badges          String[]
+  // Compétences et expérience
+  formats         String[]       // MTT, Cash Game, SNG, Spin & Go
+  stakes          String?        // Limites jouées
+  roi             Float?
+  experience      Int?           // Années d'expérience
+  languages       String[]       // fr, en, de, it, es
+  // Liens sociaux
+  twitchUrl       String?
+  youtubeUrl      String?
+  twitterUrl      String?
+  discordUrl      String?
+  // Relations
+  announcements   Announcement[]
+  availabilities  Availability[]
+  reservations    Reservation[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model CoachDraft {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Étape 1
+  firstName       String?
+  lastName        String?
+  bio             String?
+  formats         String[]
+  stakes          String?
+  roi             Float?
+  experience      Int?
+  languages       String[]
+  // Étape 2
+  twitchUrl       String?
+  youtubeUrl      String?
+  twitterUrl      String?
+  discordUrl      String?
+  // Étape 3
+  avatarUrl       String?
+  bannerUrl       String?
+  // Étape 4
+  stripeAccountId String?
+  // Étape 5
+  subscriptionId  String?
+  currentStep     Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Announcement {
+  id           String        @id @default(cuid())
+  coachId      String
+  coach        coach         @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  title        String
+  slug         String        @unique
+  description  String
+  priceCents   Int
+  durationMin  Int
+  format       String        // MTT, Cash Game, etc.
+  isActive     Boolean       @default(true)
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Availability {
+  id        String   @id @default(cuid())
+  coachId   String
+  coach     coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  start     DateTime
+  end       DateTime
+  recurring Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Reservation {
+  id              String       @id @default(cuid())
+  announcementId  String
+  announcement    Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  coachId         String
+  coach           coach        @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  playerId        String
+  player          user         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  startDate       DateTime
+  endDate         DateTime
+  status          ReservationStatus @default(PENDING)
+  priceCents      Int
+  stripePaymentId String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model player {
@@ -70,18 +167,20 @@ model session {
 }
 
 model user {
-  id            String    @id
-  email         String?   @unique
-  emailVerified Boolean   @default(false)
+  id            String        @id
+  email         String?       @unique
+  emailVerified Boolean       @default(false)
   name          String?
   image         String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
+  role          Role          @default(USER)
+  createdAt     DateTime      @default(now())
   updatedAt     DateTime
   account       account[]
   coach         coach?
+  coachDraft    CoachDraft?
   player        player?
   session       session[]
+  reservations  Reservation[]
 }
 
 model verification {
@@ -106,4 +205,18 @@ enum WaitlistRole {
   PLAYER
   COACH
   ADMIN
+}
+
+enum CoachStatus {
+  INACTIVE
+  PENDING_REVIEW
+  ACTIVE
+  SUSPENDED
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
 }
