@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
 import { randomBytes } from 'crypto';
-import { hashSync } from '@node-rs/bcrypt';
+import { hashSync } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -10,7 +10,7 @@ function generateId() {
   return randomBytes(16).toString('hex');
 }
 
-// Fonction pour hasher un mot de passe (compatible Better Auth)
+// Fonction pour hasher un mot de passe (compatible Better Auth - utilise bcryptjs)
 function hashPassword(password: string): string {
   return hashSync(password, 10);
 }
