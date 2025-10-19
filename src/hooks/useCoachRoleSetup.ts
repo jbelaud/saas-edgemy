@@ -3,10 +3,12 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
+import { useLocale } from "next-intl";
 
 export function useCoachRoleSetup() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
+  const locale = useLocale();
 
   useEffect(() => {
     const setupCoach = searchParams.get("setupCoach");
@@ -35,7 +37,7 @@ export function useCoachRoleSetup() {
             // Nettoyer le localStorage
             localStorage.removeItem("pendingCoachRole");
             // Recharger la page pour mettre à jour la session
-            window.location.href = "/coach/dashboard";
+            window.location.href = `/${locale}/coach/dashboard`;
           }
         })
         .catch((error) => {

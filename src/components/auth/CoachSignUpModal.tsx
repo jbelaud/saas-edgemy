@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 
 interface CoachSignUpModalProps {
   open: boolean;
@@ -23,6 +24,7 @@ interface CoachSignUpModalProps {
 
 export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachSignUpModalProps) {
   const router = useRouter();
+  const locale = useLocale();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -41,7 +43,7 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
         email,
         password,
         name: `${firstName} ${lastName}`.trim(),
-        callbackURL: "/coach/dashboard",
+        callbackURL: `/${locale}/coach/dashboard`,
       });
       
       // 2. Vérifier l'email automatiquement (pour dev/test)
@@ -67,7 +69,7 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
       }
       
       onOpenChange(false);
-      router.push("/coach/dashboard");
+      router.push(`/${locale}/coach/dashboard`);
     } catch (err) {
       setError((err as Error).message || "Une erreur est survenue");
     } finally {
@@ -83,7 +85,7 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
       
       await signIn.social({
         provider: "google",
-        callbackURL: "/coach/dashboard?setupCoach=true",
+        callbackURL: `/${locale}/coach/dashboard?setupCoach=true`,
       });
     } catch (error) {
       console.error("Erreur d'inscription Google:", error);

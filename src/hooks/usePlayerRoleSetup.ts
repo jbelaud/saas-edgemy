@@ -3,10 +3,12 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
+import { useLocale } from "next-intl";
 
 export function usePlayerRoleSetup() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
+  const locale = useLocale();
 
   useEffect(() => {
     const setupPlayer = searchParams.get("setupPlayer");
@@ -35,7 +37,7 @@ export function usePlayerRoleSetup() {
             // Nettoyer le localStorage
             localStorage.removeItem("pendingPlayerRole");
             // Recharger la page pour mettre à jour la session
-            window.location.href = "/player/dashboard";
+            window.location.href = `/${locale}/player/dashboard`;
           }
         })
         .catch((error) => {

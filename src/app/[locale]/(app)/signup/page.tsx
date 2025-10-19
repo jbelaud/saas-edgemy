@@ -7,10 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useLocale } from "next-intl";
 
 export default function SignUpPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const [context, setContext] = useState<'coach' | 'player'>('player');
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -33,7 +35,7 @@ export default function SignUpPage() {
 
     try {
       const role = context === 'coach' ? 'COACH' : 'PLAYER';
-      const dashboardUrl = context === 'coach' ? '/coach/dashboard' : '/player/dashboard';
+      const dashboardUrl = context === 'coach' ? `/${locale}/coach/dashboard` : `/${locale}/player/dashboard`;
       
       // 1. Inscription de l'utilisateur
       await signUp.email({
@@ -77,7 +79,7 @@ export default function SignUpPage() {
     setIsLoading(true);
     try {
       const role = context === 'coach' ? 'Coach' : 'Player';
-      const dashboardUrl = context === 'coach' ? '/coach/dashboard' : '/player/dashboard';
+      const dashboardUrl = context === 'coach' ? `/${locale}/coach/dashboard` : `/${locale}/player/dashboard`;
       const setupParam = context === 'coach' ? 'setupCoach' : 'setupPlayer';
       
       // Stocker l'intention dans le localStorage

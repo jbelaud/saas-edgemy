@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
+import { useLocale } from 'next-intl';
 import { Loader2, TrendingUp, Users, Clock, Euro, ExternalLink, Sparkles, CheckCircle2, Zap } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,6 +16,7 @@ import Link from 'next/link';
 
 export default function CoachDashboardPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { data: session, isPending } = useSession();
   const [data, setData] = useState<CoachDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -150,7 +152,7 @@ export default function CoachDashboardPage() {
             <Button 
               size="lg" 
               className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
-              onClick={() => router.push('/coach/onboarding')}
+              onClick={() => router.push(`/${locale}/coach/onboarding`)}
             >
               <Zap className="mr-2 h-5 w-5" />
               Activer mon abonnement maintenant

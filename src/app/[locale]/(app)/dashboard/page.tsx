@@ -3,10 +3,12 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
+import { useLocale } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 
 export default function DashboardRedirectPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { data: session, isPending } = useSession();
 
   useEffect(() => {
@@ -20,12 +22,12 @@ export default function DashboardRedirectPage() {
           
           // Redirection selon le rôle
           if (data.role === 'COACH') {
-            router.push('/coach/dashboard');
+            router.push(`/${locale}/coach/dashboard`);
           } else if (data.role === 'PLAYER') {
-            router.push('/player/dashboard');
+            router.push(`/${locale}/player/dashboard`);
           } else {
             // Pour USER ou ADMIN, rediriger vers la page d'accueil
-            router.push('/');
+            router.push(`/${locale}`);
           }
         }
       } catch (error) {
