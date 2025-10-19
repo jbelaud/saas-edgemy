@@ -91,6 +91,8 @@ export async function POST(request: NextRequest) {
             lastName,
             bio: '',
             formats: [],
+            languages: ['fr'], // Langue par défaut
+            badges: [],
             status: 'INACTIVE',
           },
         });

@@ -16,6 +16,8 @@ export async function GET() {
       );
     }
 
+    console.log('Fetching coach dashboard for user:', session.user.id);
+
     // Récupérer le profil coach
     const coach = await prisma.coach.findUnique({
       where: { userId: session.user.id },
@@ -42,11 +44,14 @@ export async function GET() {
     });
 
     if (!coach) {
+      console.log('Coach profile not found for user:', session.user.id);
       return NextResponse.json(
         { error: 'Profil coach non trouvé' },
         { status: 404 }
       );
     }
+
+    console.log('Coach profile found:', coach.id, 'Status:', coach.status);
 
     // Calculer les stats
     const now = new Date();
