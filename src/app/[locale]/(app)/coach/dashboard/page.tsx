@@ -22,30 +22,28 @@ export default function CoachDashboardPage() {
   const [data, setData] = useState<CoachDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSettingUpProfile, setIsSettingUpProfile] = useState(false);
   
   // Hook pour créer le profil coach lors de la première connexion Google
   useCoachRoleSetup();
 
   useEffect(() => {
     const fetchDashboard = async () => {
+      // Vérifier si on est en train de créer le profil
+      const setupCoach = new URLSearchParams(window.location.search).get('setupCoach');
+      const pendingCoachRole = localStorage.getItem('pendingCoachRole');
+      
+      if (setupCoach === 'true' || pendingCoachRole === 'true') {
+        // Profil en cours de création, afficher le loader
+        setIsSettingUpProfile(true);
+        console.log('Profil coach en cours de création...');
+        return; // Ne pas essayer de charger le dashboard
+      }
+      
       try {
         const response = await fetch('/api/coach/dashboard');
         
         if (!response.ok) {
-          if (response.status === 404) {
-            // Profil coach non trouvé, probablement en cours de création
-            // Attendre un peu et réessayer
-            console.log('Profil coach non trouvé, réessai dans 2 secondes...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Réessayer une fois
-            const retryResponse = await fetch('/api/coach/dashboard');
-            if (retryResponse.ok) {
-              const dashboardData = await retryResponse.json();
-              setData(dashboardData);
-              return;
-            }
-          }
           throw new Error('Erreur lors du chargement du dashboard');
         }
 
@@ -63,10 +61,24 @@ export default function CoachDashboardPage() {
     }
   }, [session, router]);
 
-  if (isPending || isLoading) {
+  if (isPending || isLoading || isSettingUpProfile) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+          {isSettingUpProfile ? (
+            <>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Création de votre profil coach...
+              </h2>
+              <p className="text-gray-600">
+                Veuillez patienter quelques instants
+              </p>
+            </>
+          ) : (
+            <p className="text-gray-600">Chargement...</p>
+          )}
+        </div>
       </div>
     );
   }

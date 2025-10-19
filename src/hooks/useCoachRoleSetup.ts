@@ -42,8 +42,8 @@ export function useCoachRoleSetup() {
             // Nettoyer le localStorage
             localStorage.removeItem("pendingCoachRole");
             
-            // Attendre un peu pour que la session soit mise à jour
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Attendre un tout petit peu pour que la base de données soit à jour
+            await new Promise(resolve => setTimeout(resolve, 300));
             
             // Recharger la page pour mettre à jour la session (sans le param setupCoach)
             window.location.href = `/${locale}/coach/dashboard`;
