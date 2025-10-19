@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useCoachRoleSetup } from '@/hooks/useCoachRoleSetup';
 import { useSearchParams } from 'next/navigation';
+import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 
 export default function CoachDashboardPage() {
   const router = useRouter();
@@ -94,29 +95,24 @@ export default function CoachDashboardPage() {
   const isInactive = coach.status === 'INACTIVE';
 
   return (
-    <div className="container mx-auto py-8 px-6">
-      {/* Header */}
-      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <CoachLayout>
+      {/* Header simplifié */}
+      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Dashboard Coach
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Bienvenue, {coach.firstName} 👋
           </h1>
           <p className="text-gray-600">
-            Bienvenue, {coach.firstName} {coach.lastName}
+            Gérez votre activité de coaching
           </p>
         </div>
-        {!isInactive ? (
+        {!isInactive && (
           <Link href={`/${locale}/coach/${coach.slug}`} target="_blank">
             <Button variant="outline" size="lg">
               <ExternalLink className="mr-2 h-4 w-4" />
               Voir mon profil public
             </Button>
           </Link>
-        ) : (
-          <Button variant="outline" size="lg" disabled>
-            <ExternalLink className="mr-2 h-4 w-4" />
-            Voir mon profil public
-          </Button>
         )}
       </div>
 
@@ -250,6 +246,6 @@ export default function CoachDashboardPage() {
           <DashboardAnnouncements coach={coach} />
         </TabsContent>
       </Tabs>
-    </div>
+    </CoachLayout>
   );
 }
