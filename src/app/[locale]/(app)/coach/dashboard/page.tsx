@@ -81,7 +81,6 @@ export default function CoachDashboardPage() {
   // Vérifier le statut du coach
   const { coach, stats } = data;
   const isInactive = coach.status === 'INACTIVE';
-  const isPendingReview = coach.status === 'PENDING_REVIEW';
 
   return (
     <div className="container mx-auto py-8 px-6">
@@ -104,20 +103,6 @@ export default function CoachDashboardPage() {
       </div>
 
       {/* Status Alerts */}
-      {isPendingReview && (
-        <Card className="mb-6 border-yellow-200 bg-yellow-50">
-          <CardHeader>
-            <CardTitle className="text-yellow-900 flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Profil en cours de validation
-            </CardTitle>
-            <CardDescription className="text-yellow-700">
-              Votre profil est en cours de validation par notre équipe. Vous recevrez un email sous 24-48h.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
-
       {isInactive && (
         <Card className="mb-6 border-red-200 bg-red-50">
           <CardHeader>

@@ -54,7 +54,7 @@ export async function POST(request: Request) {
             where: { userId },
             data: {
               subscriptionId,
-              status: 'PENDING_REVIEW', // En attente de validation manuelle
+              status: 'ACTIVE',
             },
           });
           console.log(`Abonnement activé pour coach ${userId}`);
@@ -102,12 +102,7 @@ export async function POST(request: Request) {
         const isComplete = account.charges_enabled && account.payouts_enabled;
 
         if (isComplete) {
-          await prisma.coach.updateMany({
-            where: { stripeAccountId },
-            data: {
-              // Le statut reste PENDING_REVIEW ou ACTIVE selon validation manuelle
-            },
-          });
+          // Le compte Stripe Connect est configuré, pas besoin de modifier le statut
           console.log(`Compte Stripe Connect configuré: ${stripeAccountId}`);
         }
         break;

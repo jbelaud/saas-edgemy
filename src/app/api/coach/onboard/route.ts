@@ -87,7 +87,7 @@ export async function POST(request: Request) {
         bannerUrl,
         stripeAccountId,
         subscriptionId,
-        status: subscriptionId ? 'PENDING_REVIEW' : 'INACTIVE',
+        status: subscriptionId ? 'ACTIVE' : 'INACTIVE',
       },
     });
 

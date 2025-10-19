@@ -38,8 +38,7 @@ export default async function CoachPublicPage({ params }: PageProps) {
   const { slug } = await params;
   const coach = await getCoach(slug);
 
-  // Afficher 404 uniquement pour PENDING_REVIEW, pas pour INACTIVE
-  if (!coach || coach.status === 'PENDING_REVIEW') {
+  if (!coach) {
     notFound();
   }
 
