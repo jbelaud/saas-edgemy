@@ -39,7 +39,7 @@ export default function DashboardRedirectPage() {
     if (session?.user) {
       redirect();
     }
-  }, [session, router]);
+  }, [session, router, locale]);
 
   if (isPending || !session) {
     return (

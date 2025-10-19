@@ -31,7 +31,7 @@ export function usePlayerRoleSetup() {
           body: JSON.stringify({ role: "PLAYER" }),
         }),
       ])
-        .then(([_verifyResponse, roleResponse]) => {
+        .then(([, roleResponse]) => {
           if (roleResponse.ok) {
             console.log("Rôle PLAYER attribué avec succès");
             // Nettoyer le localStorage
@@ -44,5 +44,5 @@ export function usePlayerRoleSetup() {
           console.error("Erreur lors de l'attribution du rôle PLAYER:", error);
         });
     }
-  }, [searchParams, session]);
+  }, [searchParams, session, locale]);
 }

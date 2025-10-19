@@ -33,7 +33,7 @@ export function useCoachRoleSetup() {
           body: JSON.stringify({ role: "COACH" }),
         }),
       ])
-        .then(async ([_verifyResponse, roleResponse]) => {
+        .then(async ([, roleResponse]) => {
           if (roleResponse.ok) {
             console.log("✅ Rôle COACH attribué avec succès");
             const data = await roleResponse.json();
