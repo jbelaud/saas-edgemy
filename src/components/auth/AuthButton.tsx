@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User } from "lucide-react";
+import { LogOut, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 
 export function AuthButton() {
@@ -54,9 +54,9 @@ export function AuthButton() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/profile" className="flex items-center cursor-pointer">
-              <User className="mr-2 h-4 w-4" />
-              <span>Profil</span>
+            <Link href="/dashboard" className="flex items-center cursor-pointer">
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <span>Dashboard</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
