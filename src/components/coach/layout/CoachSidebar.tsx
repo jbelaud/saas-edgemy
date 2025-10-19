@@ -22,8 +22,8 @@ import {
   Calendar,
   Euro,
   Settings,
-  ChevronLeft,
-  ChevronRight,
+  PanelLeftClose,
+  PanelLeft,
   LogOut,
   ExternalLink,
 } from "lucide-react";
@@ -83,8 +83,8 @@ export function CoachSidebar() {
         collapsed ? "w-16" : "w-64"
       )}
     >
-      {/* Header avec logo */}
-      <div className="flex h-16 items-center border-b px-4">
+      {/* Header avec logo et toggle */}
+      <div className="flex h-16 items-center justify-between border-b px-4">
         {!collapsed && (
           <Link href={`/${locale}`} className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
@@ -100,6 +100,20 @@ export function CoachSidebar() {
             </div>
           </Link>
         )}
+        
+        {/* Toggle button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setCollapsed(!collapsed)}
+          className="h-8 w-8"
+        >
+          {collapsed ? (
+            <PanelLeft className="h-4 w-4" />
+          ) : (
+            <PanelLeftClose className="h-4 w-4" />
+          )}
+        </Button>
       </div>
 
       {/* Navigation */}
@@ -131,25 +145,6 @@ export function CoachSidebar() {
           );
         })}
       </nav>
-
-      {/* Bouton collapse */}
-      <div className="border-t p-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setCollapsed(!collapsed)}
-          className={cn("w-full", collapsed && "px-0")}
-        >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <>
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Réduire
-            </>
-          )}
-        </Button>
-      </div>
 
       {/* Profil utilisateur en bas */}
       <div className="border-t p-3">
