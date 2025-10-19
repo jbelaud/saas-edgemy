@@ -73,7 +73,7 @@ export default function CoachAvailabilityPage() {
               <div>
                 <p className="font-medium">Durée des sessions</p>
                 <p className="text-sm text-gray-600">
-                  Durée par défaut d'une session
+                  Durée par défaut d&apos;une session
                 </p>
               </div>
               <span className="text-sm text-gray-900">1 heure</span>

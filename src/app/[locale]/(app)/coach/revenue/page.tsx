@@ -2,7 +2,7 @@
 
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Euro, TrendingUp, Calendar, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Euro, TrendingUp, Calendar, DollarSign, ArrowUpRight } from 'lucide-react';
 
 export default function CoachRevenuePage() {
   return (

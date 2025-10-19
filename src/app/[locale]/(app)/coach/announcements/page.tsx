@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function CoachAnnouncementsPage() {
   const { data: session, isPending } = useSession();
-  const [coach, setCoach] = useState<any>(null);
+  const [coach, setCoach] = useState<{ id: string; slug: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
