@@ -35,7 +35,7 @@ export function useCoachRoleSetup() {
             // Nettoyer le localStorage
             localStorage.removeItem("pendingCoachRole");
             // Recharger la page pour mettre à jour la session
-            window.location.href = "/dashboard";
+            window.location.href = "/coach/dashboard";
           }
         })
         .catch((error) => {
