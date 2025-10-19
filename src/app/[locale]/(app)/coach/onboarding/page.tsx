@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
+import { useLocale } from 'next-intl';
 import { Progress } from '@/components/ui/progress';
 import { Loader2 } from 'lucide-react';
 import { OnboardingStep1 } from '@/components/coach/onboarding/OnboardingStep1';
@@ -14,6 +15,7 @@ import type { OnboardingData } from '@/types/coach';
 
 export default function CoachOnboardingPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { data: session, isPending } = useSession();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -109,7 +111,7 @@ export default function CoachOnboardingPage() {
       }
 
       // Rediriger vers le dashboard
-      router.push('/coach/dashboard');
+      router.push(`/${locale}/coach/dashboard`);
     } catch (error) {
       console.error('Erreur:', error);
       alert(error instanceof Error ? error.message : 'Une erreur est survenue');
