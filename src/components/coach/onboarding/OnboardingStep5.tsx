@@ -159,14 +159,6 @@ export function OnboardingStep5({ data, onComplete, onBack, isLoading }: Props) 
         </div>
       </div>
 
-      {/* Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
-          ℹ️ <strong>Validation manuelle :</strong> Après paiement, votre profil sera examiné 
-          par notre équipe sous 24-48h. Vous recevrez un email de confirmation une fois activé.
-        </p>
-      </div>
-
       {/* Actions */}
       <div className="flex justify-between pt-4">
         <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>

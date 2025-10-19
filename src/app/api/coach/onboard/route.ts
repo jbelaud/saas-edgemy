@@ -54,21 +54,34 @@ export async function POST(request: Request) {
       );
     }
 
-    // Générer le slug
-    let slug = generateSlug(firstName, lastName);
+    // Vérifier si le profil coach existe déjà
+    const existingCoach = await prisma.coach.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    let slug: string;
     
-    // Vérifier l'unicité du slug
-    let slugExists = await prisma.coach.findUnique({ where: { slug } });
-    let counter = 1;
-    while (slugExists) {
-      slug = `${generateSlug(firstName, lastName)}-${counter}`;
-      slugExists = await prisma.coach.findUnique({ where: { slug } });
-      counter++;
+    if (existingCoach) {
+      // Utiliser le slug existant
+      slug = existingCoach.slug;
+    } else {
+      // Générer un nouveau slug
+      slug = generateSlug(firstName, lastName);
+      
+      // Vérifier l'unicité du slug
+      let slugExists = await prisma.coach.findUnique({ where: { slug } });
+      let counter = 1;
+      while (slugExists) {
+        slug = `${generateSlug(firstName, lastName)}-${counter}`;
+        slugExists = await prisma.coach.findUnique({ where: { slug } });
+        counter++;
+      }
     }
 
-    // Créer le profil coach
-    const coach = await prisma.coach.create({
-      data: {
+    // Créer ou mettre à jour le profil coach
+    const coach = await prisma.coach.upsert({
+      where: { userId: session.user.id },
+      create: {
         userId: session.user.id,
         slug,
         firstName,
@@ -78,7 +91,27 @@ export async function POST(request: Request) {
         stakes,
         roi,
         experience,
-        languages,
+        languages: languages || ['fr'],
+        badges: [],
+        twitchUrl,
+        youtubeUrl,
+        twitterUrl,
+        discordUrl,
+        avatarUrl,
+        bannerUrl,
+        stripeAccountId,
+        subscriptionId,
+        status: subscriptionId ? 'ACTIVE' : 'INACTIVE',
+      },
+      update: {
+        firstName,
+        lastName,
+        bio,
+        formats,
+        stakes,
+        roi,
+        experience,
+        languages: languages || ['fr'],
         twitchUrl,
         youtubeUrl,
         twitterUrl,
