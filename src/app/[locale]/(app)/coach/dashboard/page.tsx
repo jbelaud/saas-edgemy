@@ -13,6 +13,7 @@ import { DashboardAnnouncements } from '@/components/coach/dashboard/DashboardAn
 import type { CoachDashboardData } from '@/types/dashboard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useCoachRoleSetup } from '@/hooks/useCoachRoleSetup';
 
 export default function CoachDashboardPage() {
   const router = useRouter();
@@ -21,6 +22,9 @@ export default function CoachDashboardPage() {
   const [data, setData] = useState<CoachDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Hook pour créer le profil coach lors de la première connexion Google
+  useCoachRoleSetup();
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -28,6 +32,20 @@ export default function CoachDashboardPage() {
         const response = await fetch('/api/coach/dashboard');
         
         if (!response.ok) {
+          if (response.status === 404) {
+            // Profil coach non trouvé, probablement en cours de création
+            // Attendre un peu et réessayer
+            console.log('Profil coach non trouvé, réessai dans 2 secondes...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Réessayer une fois
+            const retryResponse = await fetch('/api/coach/dashboard');
+            if (retryResponse.ok) {
+              const dashboardData = await retryResponse.json();
+              setData(dashboardData);
+              return;
+            }
+          }
           throw new Error('Erreur lors du chargement du dashboard');
         }
 

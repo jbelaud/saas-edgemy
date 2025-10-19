@@ -15,6 +15,8 @@ export function useCoachRoleSetup() {
     const pendingCoachRole = localStorage.getItem("pendingCoachRole");
 
     if ((setupCoach === "true" || pendingCoachRole === "true") && session?.user) {
+      console.log("Démarrage du setup coach pour:", session.user.id);
+      
       // Vérifier l'email et mettre à jour le rôle à COACH
       Promise.all([
         fetch("/api/user/verify-email", {
@@ -31,18 +33,28 @@ export function useCoachRoleSetup() {
           body: JSON.stringify({ role: "COACH" }),
         }),
       ])
-        .then(([_verifyResponse, roleResponse]) => {
+        .then(async ([_verifyResponse, roleResponse]) => {
           if (roleResponse.ok) {
             console.log("Rôle COACH attribué avec succès");
+            const data = await roleResponse.json();
+            console.log("Profil coach créé:", data);
+            
             // Nettoyer le localStorage
             localStorage.removeItem("pendingCoachRole");
-            // Recharger la page pour mettre à jour la session
+            
+            // Attendre un peu pour que la session soit mise à jour
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Recharger la page pour mettre à jour la session (sans le param setupCoach)
             window.location.href = `/${locale}/coach/dashboard`;
+          } else {
+            const errorData = await roleResponse.json();
+            console.error("Erreur lors de la création du profil coach:", errorData);
           }
         })
         .catch((error) => {
           console.error("Erreur lors de l'attribution du rôle COACH:", error);
         });
     }
-  }, [searchParams, session]);
+  }, [searchParams, session, locale]);
 }
