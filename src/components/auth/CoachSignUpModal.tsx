@@ -80,9 +80,7 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
   const handleGoogleSignUp = async () => {
     setIsLoading(true);
     try {
-      // Stocker l'intention de devenir coach dans le localStorage
-      localStorage.setItem("pendingCoachRole", "true");
-      
+      // Le profil coach sera créé automatiquement dans le callback Google
       await signIn.social({
         provider: "google",
         callbackURL: `/${locale}/coach/dashboard?setupCoach=true`,

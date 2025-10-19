@@ -13,7 +13,6 @@ import { DashboardAnnouncements } from '@/components/coach/dashboard/DashboardAn
 import type { CoachDashboardData } from '@/types/dashboard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useCoachRoleSetup } from '@/hooks/useCoachRoleSetup';
 
 export default function CoachDashboardPage() {
   const router = useRouter();
@@ -22,24 +21,9 @@ export default function CoachDashboardPage() {
   const [data, setData] = useState<CoachDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSettingUpProfile, setIsSettingUpProfile] = useState(false);
-  
-  // Hook pour créer le profil coach lors de la première connexion Google
-  useCoachRoleSetup();
 
   useEffect(() => {
     const fetchDashboard = async () => {
-      // Vérifier si on est en train de créer le profil
-      const setupCoach = new URLSearchParams(window.location.search).get('setupCoach');
-      const pendingCoachRole = localStorage.getItem('pendingCoachRole');
-      
-      if (setupCoach === 'true' || pendingCoachRole === 'true') {
-        // Profil en cours de création, afficher le loader
-        setIsSettingUpProfile(true);
-        console.log('Profil coach en cours de création...');
-        return; // Ne pas essayer de charger le dashboard
-      }
-      
       try {
         const response = await fetch('/api/coach/dashboard');
         
@@ -61,24 +45,10 @@ export default function CoachDashboardPage() {
     }
   }, [session, router]);
 
-  if (isPending || isLoading || isSettingUpProfile) {
+  if (isPending || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          {isSettingUpProfile ? (
-            <>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Création de votre profil coach...
-              </h2>
-              <p className="text-gray-600">
-                Veuillez patienter quelques instants
-              </p>
-            </>
-          ) : (
-            <p className="text-gray-600">Chargement...</p>
-          )}
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
