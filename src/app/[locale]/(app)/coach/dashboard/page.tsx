@@ -106,7 +106,7 @@ export default function CoachDashboardPage() {
           </p>
         </div>
         {!isInactive ? (
-          <Link href={`/coach/${coach.slug}`} target="_blank">
+          <Link href={`/${locale}/coach/${coach.slug}`} target="_blank">
             <Button variant="outline" size="lg">
               <ExternalLink className="mr-2 h-4 w-4" />
               Voir mon profil public
