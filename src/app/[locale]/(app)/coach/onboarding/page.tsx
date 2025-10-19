@@ -19,25 +19,49 @@ export default function CoachOnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<OnboardingData>>({});
 
-  // Charger le brouillon au montage
+  // Charger le brouillon et le profil coach existant au montage
   useEffect(() => {
-    const loadDraft = async () => {
+    const loadData = async () => {
       try {
-        const response = await fetch('/api/coach/draft');
-        if (response.ok) {
-          const { draft } = await response.json();
+        // Charger le profil coach existant
+        const coachResponse = await fetch('/api/coach/profile');
+        if (coachResponse.ok) {
+          const { coach } = await coachResponse.json();
+          if (coach) {
+            // Pré-remplir avec les données existantes
+            setFormData({
+              firstName: coach.firstName,
+              lastName: coach.lastName,
+              bio: coach.bio || '',
+              formats: coach.formats || [],
+              stakes: coach.stakes || '',
+              roi: coach.roi || undefined,
+              experience: coach.experience || undefined,
+              languages: coach.languages || ['fr'],
+              twitchUrl: coach.twitchUrl || '',
+              youtubeUrl: coach.youtubeUrl || '',
+              twitterUrl: coach.twitterUrl || '',
+              discordUrl: coach.discordUrl || '',
+            });
+          }
+        }
+        
+        // Charger le brouillon (qui écrase les données du profil si présent)
+        const draftResponse = await fetch('/api/coach/draft');
+        if (draftResponse.ok) {
+          const { draft } = await draftResponse.json();
           if (draft) {
-            setFormData(draft);
+            setFormData(prev => ({ ...prev, ...draft }));
             setCurrentStep(draft.currentStep || 1);
           }
         }
       } catch (error) {
-        console.error('Erreur lors du chargement du brouillon:', error);
+        console.error('Erreur lors du chargement des données:', error);
       }
     };
 
     if (session?.user) {
-      loadDraft();
+      loadData();
     }
   }, [session]);
 
