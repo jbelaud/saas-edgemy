@@ -57,12 +57,43 @@ export async function POST(request: NextRequest) {
       });
 
       if (!existingCoach) {
-        // Ne pas créer automatiquement le profil coach ici
-        // Le coach doit passer par l'onboarding complet
-        return NextResponse.json(
-          { error: 'Le profil coach doit être créé via l\'onboarding' },
-          { status: 400 }
-        );
+        // Créer un profil coach minimal avec statut INACTIVE
+        // Le coach pourra compléter son profil via l'onboarding
+        const userName = session.user.name || '';
+        const nameParts = userName.split(' ');
+        const firstName = nameParts[0] || 'Coach';
+        const lastName = nameParts.slice(1).join(' ') || 'Edgemy';
+        
+        // Générer un slug unique
+        const baseSlug = `${firstName}-${lastName}`
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9-]/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+        
+        let slug = baseSlug;
+        let counter = 1;
+        let slugExists = await prisma.coach.findUnique({ where: { slug } });
+        
+        while (slugExists) {
+          slug = `${baseSlug}-${counter}`;
+          slugExists = await prisma.coach.findUnique({ where: { slug } });
+          counter++;
+        }
+
+        await prisma.coach.create({
+          data: {
+            userId: session.user.id,
+            slug,
+            firstName,
+            lastName,
+            bio: '',
+            formats: [],
+            status: 'INACTIVE',
+          },
+        });
       }
     } else if (role === "PLAYER") {
       // Vérifier si l'entrée player existe déjà

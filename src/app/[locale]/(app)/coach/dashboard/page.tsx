@@ -26,11 +26,6 @@ export default function CoachDashboardPage() {
         const response = await fetch('/api/coach/dashboard');
         
         if (!response.ok) {
-          if (response.status === 404) {
-            // Pas de profil coach, rediriger vers onboarding
-            router.push('/coach/onboarding');
-            return;
-          }
           throw new Error('Erreur lors du chargement du dashboard');
         }
 
