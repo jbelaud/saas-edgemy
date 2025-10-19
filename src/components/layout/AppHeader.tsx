@@ -13,6 +13,7 @@ export function AppHeader() {
   const { data: session, isPending } = useSession();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCoachSignUpModal, setShowCoachSignUpModal] = useState(false);
+  const [signupContext, setSignupContext] = useState<'coach' | 'player'>('player');
 
   return (
     <>
@@ -51,20 +52,20 @@ export function AppHeader() {
               <>
                 <Button 
                   variant="outline"
-                  onClick={() => setShowCoachSignUpModal(true)}
+                  onClick={() => {
+                    setSignupContext('coach');
+                    setShowCoachSignUpModal(true);
+                  }}
                   className="border-orange-500 text-orange-600 hover:bg-orange-50"
                 >
                   Devenir Coach
                 </Button>
                 <Button 
-                  variant="outline"
-                  asChild
+                  onClick={() => {
+                    setSignupContext('player');
+                    setShowLoginModal(true);
+                  }}
                 >
-                  <Link href="/signup">
-                    S&apos;inscrire
-                  </Link>
-                </Button>
-                <Button onClick={() => setShowLoginModal(true)}>
                   Se connecter
                 </Button>
               </>
@@ -73,8 +74,29 @@ export function AppHeader() {
         </div>
       </header>
 
-      <LoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
-      <CoachSignUpModal open={showCoachSignUpModal} onOpenChange={setShowCoachSignUpModal} />
+      <LoginModal 
+        open={showLoginModal} 
+        onOpenChange={setShowLoginModal}
+        context={signupContext}
+        onSwitchToSignup={() => {
+          setShowLoginModal(false);
+          if (signupContext === 'coach') {
+            setShowCoachSignUpModal(true);
+          } else {
+            // Pour player, on redirige vers /signup avec le contexte
+            window.location.href = '/signup?context=player';
+          }
+        }}
+      />
+      <CoachSignUpModal 
+        open={showCoachSignUpModal} 
+        onOpenChange={setShowCoachSignUpModal}
+        onSwitchToLogin={() => {
+          setShowCoachSignUpModal(false);
+          setSignupContext('coach');
+          setShowLoginModal(true);
+        }}
+      />
     </>
   );
 }

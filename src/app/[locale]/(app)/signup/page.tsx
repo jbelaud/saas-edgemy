@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signUp, signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SignUpPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [context, setContext] = useState<'coach' | 'player'>('player');
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -17,18 +19,28 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const contextParam = searchParams.get('context');
+    if (contextParam === 'coach' || contextParam === 'player') {
+      setContext(contextParam);
+    }
+  }, [searchParams]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     try {
+      const role = context === 'coach' ? 'COACH' : 'PLAYER';
+      const dashboardUrl = context === 'coach' ? '/coach/dashboard' : '/player/dashboard';
+      
       // 1. Inscription de l'utilisateur
       await signUp.email({
         email,
         password,
         name: `${firstName} ${lastName}`.trim(),
-        callbackURL: "/player/dashboard",
+        callbackURL: dashboardUrl,
       });
       
       // 2. Vérifier l'email automatiquement (pour dev/test)
@@ -39,13 +51,13 @@ export default function SignUpPage() {
         },
       });
       
-      // 3. Mettre à jour le rôle à PLAYER (crée aussi l'entrée dans la table player)
+      // 3. Mettre à jour le rôle
       const response = await fetch("/api/user/update-role", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ role: "PLAYER" }),
+        body: JSON.stringify({ role }),
       });
 
       if (!response.ok) {
@@ -53,7 +65,7 @@ export default function SignUpPage() {
         throw new Error(data.error || "Erreur lors de la mise à jour du rôle");
       }
       
-      router.push("/player/dashboard");
+      router.push(dashboardUrl);
     } catch (err) {
       setError((err as Error).message || "Une erreur est survenue");
     } finally {
@@ -64,12 +76,16 @@ export default function SignUpPage() {
   const handleGoogleSignUp = async () => {
     setIsLoading(true);
     try {
-      // Stocker l'intention de devenir joueur dans le localStorage
-      localStorage.setItem("pendingPlayerRole", "true");
+      const role = context === 'coach' ? 'Coach' : 'Player';
+      const dashboardUrl = context === 'coach' ? '/coach/dashboard' : '/player/dashboard';
+      const setupParam = context === 'coach' ? 'setupCoach' : 'setupPlayer';
+      
+      // Stocker l'intention dans le localStorage
+      localStorage.setItem(`pending${role}Role`, "true");
       
       await signIn.social({
         provider: "google",
-        callbackURL: "/player/dashboard?setupPlayer=true",
+        callbackURL: `${dashboardUrl}?${setupParam}=true`,
       });
     } catch (error) {
       console.error("Erreur d'inscription Google:", error);
@@ -87,7 +103,7 @@ export default function SignUpPage() {
               Edgemy
             </Link>
             <h2 className="mt-8 text-2xl font-bold leading-9 tracking-tight text-gray-900">
-              Créer un compte
+              {context === 'coach' ? 'Devenir Coach Edgemy' : 'Créer un compte joueur'}
             </h2>
             <p className="mt-2 text-sm leading-6 text-gray-500">
               Déjà inscrit ?{" "}

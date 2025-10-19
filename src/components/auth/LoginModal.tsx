@@ -17,9 +17,11 @@ import Link from "next/link";
 interface LoginModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  context?: 'coach' | 'player';
+  onSwitchToSignup?: () => void;
 }
 
-export function LoginModal({ open, onOpenChange }: LoginModalProps) {
+export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToSignup }: LoginModalProps) {
   // En dev, pré-remplir avec le compte de test
   const isDev = process.env.NODE_ENV === 'development';
   const [email, setEmail] = useState(isDev ? "coach-actif@edgemy.fr" : "");
@@ -193,9 +195,19 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
 
           <div className="text-center text-sm">
             Pas encore de compte ?{" "}
-            <Link href="/signup" className="text-primary hover:underline">
-              S&apos;inscrire
-            </Link>
+            {onSwitchToSignup ? (
+              <button
+                type="button"
+                onClick={onSwitchToSignup}
+                className="text-primary hover:underline font-medium"
+              >
+                S&apos;inscrire
+              </button>
+            ) : (
+              <Link href={`/signup?context=${context}`} className="text-primary hover:underline">
+                S&apos;inscrire
+              </Link>
+            )}
           </div>
         </div>
       </DialogContent>

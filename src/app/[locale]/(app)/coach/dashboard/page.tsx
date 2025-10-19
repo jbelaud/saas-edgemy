@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
-import { Loader2, TrendingUp, Users, Clock, Euro, ExternalLink } from 'lucide-react';
+import { Loader2, TrendingUp, Users, Clock, Euro, ExternalLink, Sparkles, CheckCircle2, Zap } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardStats } from '@/components/coach/dashboard/DashboardStats';
@@ -94,23 +94,73 @@ export default function CoachDashboardPage() {
             Bienvenue, {coach.firstName} {coach.lastName}
           </p>
         </div>
-        <Link href={`/coach/${coach.slug}`} target="_blank">
-          <Button variant="outline" size="lg">
+        {!isInactive ? (
+          <Link href={`/coach/${coach.slug}`} target="_blank">
+            <Button variant="outline" size="lg">
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Voir mon profil public
+            </Button>
+          </Link>
+        ) : (
+          <Button variant="outline" size="lg" disabled>
             <ExternalLink className="mr-2 h-4 w-4" />
             Voir mon profil public
           </Button>
-        </Link>
+        )}
       </div>
 
       {/* Status Alerts */}
       {isInactive && (
-        <Card className="mb-6 border-red-200 bg-red-50">
+        <Card className="mb-6 border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
           <CardHeader>
-            <CardTitle className="text-red-900">Profil inactif</CardTitle>
-            <CardDescription className="text-red-700">
-              Votre profil est actuellement inactif. Veuillez renouveler votre abonnement pour continuer à recevoir des réservations.
+            <CardTitle className="text-orange-900 flex items-center gap-2 text-2xl">
+              <Sparkles className="h-6 w-6" />
+              Activez votre abonnement coach
+            </CardTitle>
+            <CardDescription className="text-orange-800 text-base mt-3">
+              Votre profil est créé mais pas encore actif. Activez votre abonnement pour débloquer tous les avantages :
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-gray-900">Profil public visible</p>
+                  <p className="text-sm text-gray-600">Apparaissez dans les résultats de recherche</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-gray-900">Réservations illimitées</p>
+                  <p className="text-sm text-gray-600">Recevez autant de réservations que vous le souhaitez</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-gray-900">Gestion des disponibilités</p>
+                  <p className="text-sm text-gray-600">Calendrier intelligent et synchronisation</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-gray-900">Paiements sécurisés</p>
+                  <p className="text-sm text-gray-600">Recevez vos paiements directement</p>
+                </div>
+              </div>
+            </div>
+            <Button 
+              size="lg" 
+              className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
+              onClick={() => router.push('/coach/onboarding')}
+            >
+              <Zap className="mr-2 h-5 w-5" />
+              Activer mon abonnement maintenant
+            </Button>
+          </CardContent>
         </Card>
       )}
 

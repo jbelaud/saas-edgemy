@@ -18,9 +18,10 @@ import { useRouter } from "next/navigation";
 interface CoachSignUpModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSwitchToLogin?: () => void;
 }
 
-export function CoachSignUpModal({ open, onOpenChange }: CoachSignUpModalProps) {
+export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachSignUpModalProps) {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -204,9 +205,19 @@ export function CoachSignUpModal({ open, onOpenChange }: CoachSignUpModalProps) 
 
           <div className="text-center text-sm">
             Déjà inscrit ?{" "}
-            <Link href="/app" className="text-primary hover:underline" onClick={() => onOpenChange(false)}>
-              Se connecter
-            </Link>
+            {onSwitchToLogin ? (
+              <button
+                type="button"
+                onClick={onSwitchToLogin}
+                className="text-primary hover:underline font-medium"
+              >
+                Se connecter
+              </button>
+            ) : (
+              <Link href="/app" className="text-primary hover:underline" onClick={() => onOpenChange(false)}>
+                Se connecter
+              </Link>
+            )}
           </div>
         </div>
       </DialogContent>
