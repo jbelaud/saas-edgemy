@@ -1,0 +1,64 @@
+'use client';
+
+import { CoachLayout } from '@/components/coach/layout/CoachLayout';
+import { DashboardAnnouncements } from '@/components/coach/dashboard/DashboardAnnouncements';
+import { useSession } from '@/lib/auth-client';
+import { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
+
+export default function CoachAnnouncementsPage() {
+  const { data: session, isPending } = useSession();
+  const [coach, setCoach] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCoach = async () => {
+      try {
+        const response = await fetch('/api/coach/dashboard');
+        if (response.ok) {
+          const data = await response.json();
+          setCoach(data.coach);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement du profil coach:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (session?.user) {
+      fetchCoach();
+    }
+  }, [session]);
+
+  if (isPending || isLoading) {
+    return (
+      <CoachLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </CoachLayout>
+    );
+  }
+
+  if (!coach) {
+    return null;
+  }
+
+  return (
+    <CoachLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Mes Annonces
+          </h1>
+          <p className="text-gray-600">
+            Gérez vos annonces de coaching
+          </p>
+        </div>
+
+        <DashboardAnnouncements coach={coach} />
+      </div>
+    </CoachLayout>
+  );
+}

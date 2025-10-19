@@ -84,29 +84,31 @@ export function CoachSidebar() {
       )}
     >
       {/* Header avec logo et toggle */}
-      <div className="flex h-16 items-center justify-between border-b px-4">
-        {!collapsed && (
-          <Link href={`/${locale}`} className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-              E
-            </div>
-            <span className="text-xl font-bold">Edgemy</span>
-          </Link>
-        )}
-        {collapsed && (
-          <Link href={`/${locale}`} className="flex items-center justify-center w-full">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-              E
-            </div>
-          </Link>
-        )}
+      <div className="flex h-16 items-center justify-between border-b px-3">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {!collapsed && (
+            <Link href={`/${locale}`} className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+                E
+              </div>
+              <span className="text-xl font-bold">Edgemy</span>
+            </Link>
+          )}
+          {collapsed && (
+            <Link href={`/${locale}`} className="flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+                E
+              </div>
+            </Link>
+          )}
+        </div>
         
         {/* Toggle button */}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className="h-8 w-8"
+          className="h-8 w-8 flex-shrink-0"
         >
           {collapsed ? (
             <PanelLeft className="h-4 w-4" />
