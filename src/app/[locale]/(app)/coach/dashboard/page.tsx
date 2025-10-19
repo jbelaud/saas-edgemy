@@ -13,17 +13,31 @@ import { DashboardAnnouncements } from '@/components/coach/dashboard/DashboardAn
 import type { CoachDashboardData } from '@/types/dashboard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useCoachRoleSetup } from '@/hooks/useCoachRoleSetup';
+import { useSearchParams } from 'next/navigation';
 
 export default function CoachDashboardPage() {
   const router = useRouter();
   const locale = useLocale();
+  const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
   const [data, setData] = useState<CoachDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Hook pour créer le profil coach lors de la première connexion Google
+  useCoachRoleSetup();
+  
+  // Vérifier si on est en mode setup
+  const isSettingUp = searchParams.get('setupCoach') === 'true' || localStorage.getItem('pendingCoachRole') === 'true';
 
   useEffect(() => {
     const fetchDashboard = async () => {
+      // Ne pas charger le dashboard si on est en mode setup
+      if (isSettingUp) {
+        return;
+      }
+      
       try {
         const response = await fetch('/api/coach/dashboard');
         
@@ -43,7 +57,7 @@ export default function CoachDashboardPage() {
     if (session?.user) {
       fetchDashboard();
     }
-  }, [session, router]);
+  }, [session, router, isSettingUp]);
 
   if (isPending || isLoading) {
     return (
