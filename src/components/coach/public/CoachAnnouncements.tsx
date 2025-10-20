@@ -28,6 +28,8 @@ interface Announcement {
   toolName?: string;
   toolObjective?: string;
   prerequisites?: string;
+  // MENTAL
+  mentalFocus?: string;
 }
 
 interface CoachAnnouncementsProps {
@@ -40,6 +42,7 @@ const TYPE_LABELS: Record<string, string> = {
   STRATEGY: 'Stratégie',
   REVIEW: 'Review',
   TOOL: 'Outil',
+  MENTAL: 'Mental',
 };
 
 const VARIANT_LABELS: Record<string, string> = {
@@ -130,6 +133,7 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                         className={`font-normal ${
                           announcement.type === 'STRATEGY' ? 'bg-blue-600 hover:bg-blue-700' :
                           announcement.type === 'REVIEW' ? 'bg-green-600 hover:bg-green-700' :
+                          announcement.type === 'MENTAL' ? 'bg-pink-600 hover:bg-pink-700' :
                           'bg-purple-600 hover:bg-purple-700'
                         }`}
                       >
@@ -189,6 +193,12 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                             </Badge>
                           )}
                         </>
+                      )}
+                      
+                      {announcement.type === 'MENTAL' && announcement.mentalFocus && (
+                        <Badge className="bg-pink-100 text-pink-800 hover:bg-pink-200 border-pink-300">
+                          {announcement.mentalFocus.replace(/_/g, ' ')}
+                        </Badge>
                       )}
                     </div>
                     

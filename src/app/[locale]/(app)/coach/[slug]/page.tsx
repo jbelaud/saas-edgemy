@@ -66,6 +66,8 @@ export default async function CoachPublicPage({ params }: PageProps) {
     toolName: announcement.toolName,
     toolObjective: announcement.toolObjective,
     prerequisites: announcement.prerequisites,
+    // MENTAL
+    mentalFocus: announcement.mentalFocus,
   }));
 
   return (
