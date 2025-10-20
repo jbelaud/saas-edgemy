@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock } from 'lucide-react';
+import { AnnouncementPacksSection } from '@/components/coach/announcements/AnnouncementPacksSection';
 
 interface Announcement {
   id: string;
@@ -302,6 +303,12 @@ export function DashboardAnnouncements({}: DashboardAnnouncementsProps) {
                   Supprimer
                 </Button>
               </div>
+
+              {/* Section Packs d'heures */}
+              <AnnouncementPacksSection 
+                announcementId={announcement.id}
+                hourlyRate={announcement.priceCents}
+              />
             </div>
           </CardContent>
         </Card>
