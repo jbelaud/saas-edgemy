@@ -78,6 +78,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Vérifier que le coach a un abonnement actif
+    if (coach.status !== 'ACTIVE') {
+      return NextResponse.json(
+        { error: 'Abonnement inactif. Activez votre abonnement pour créer des annonces.' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { title, description, priceCents, durationMin, format, isActive } = body;
 
