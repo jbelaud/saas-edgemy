@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, Euro, Loader2, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, Euro, Loader2, AlertCircle, Package } from 'lucide-react';
 
 // TODO: Remplacer par de vraies données depuis l'API
 const MOCK_AVAILABILITIES = [
@@ -24,6 +24,13 @@ const MOCK_AVAILABILITIES = [
   { date: '2025-10-24', slots: ['09:00', '10:00', '14:00'] },
 ];
 
+interface AnnouncementPack {
+  id: string;
+  hours: number;
+  totalPrice: number;
+  discountPercent: number | null;
+}
+
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -33,11 +40,13 @@ interface BookingModalProps {
     description: string;
     price: number;
     duration: number;
+    packs?: AnnouncementPack[];
   };
   coachId: string;
+  selectedPackId?: string | null;
 }
 
-export function BookingModal({ isOpen, onClose, announcement, coachId }: BookingModalProps) {
+export function BookingModal({ isOpen, onClose, announcement, coachId, selectedPackId }: BookingModalProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +55,16 @@ export function BookingModal({ isOpen, onClose, announcement, coachId }: Booking
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
   const selectedAvailability = MOCK_AVAILABILITIES.find((a) => a.date === selectedDate);
+  
+  // Trouver le pack sélectionné
+  const selectedPack = selectedPackId 
+    ? announcement.packs?.find(pack => pack.id === selectedPackId)
+    : null;
+  
+  // Calculer le prix et la durée selon si c'est un pack ou une session
+  const displayPrice = selectedPack ? selectedPack.totalPrice / 100 : announcement.price;
+  const displayDuration = announcement.duration;
+  const isPack = !!selectedPack;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +116,9 @@ export function BookingModal({ isOpen, onClose, announcement, coachId }: Booking
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Réserver une session</DialogTitle>
+          <DialogTitle className="text-2xl">
+            {isPack ? `Réserver un pack de ${selectedPack?.hours}h` : 'Réserver une session'}
+          </DialogTitle>
           <DialogDescription>
             {announcement.title}
           </DialogDescription>
@@ -106,21 +127,54 @@ export function BookingModal({ isOpen, onClose, announcement, coachId }: Booking
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Récapitulatif */}
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            {isPack && (
+              <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Package className="h-4 w-4" />
+                  <span className="text-sm">Type</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">Pack {selectedPack?.hours}h</span>
+                  {selectedPack?.discountPercent && selectedPack.discountPercent > 0 && (
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">
+                      -{selectedPack.discountPercent}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-gray-600">
                 <Clock className="h-4 w-4" />
-                <span className="text-sm">Durée</span>
+                <span className="text-sm">Durée {isPack ? 'par session' : ''}</span>
               </div>
-              <span className="font-semibold">{announcement.duration} minutes</span>
+              <span className="font-semibold">{displayDuration} minutes</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-gray-600">
                 <Euro className="h-4 w-4" />
-                <span className="text-sm">Prix</span>
+                <span className="text-sm">Prix {isPack ? 'total' : ''}</span>
               </div>
-              <span className="font-semibold text-lg">{announcement.price}€</span>
+              <span className="font-semibold text-lg">{displayPrice}€</span>
             </div>
+            {isPack && selectedPack && (
+              <div className="pt-2 border-t border-gray-200">
+                <p className="text-xs text-gray-600">
+                  Soit {(displayPrice / selectedPack.hours).toFixed(0)}€ par heure
+                </p>
+              </div>
+            )}
           </div>
+
+          {/* Message info pour les packs */}
+          {isPack && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-900">
+                <strong>📦 Pack de {selectedPack?.hours}h :</strong> Vous réservez la première session maintenant. 
+                Les {(selectedPack?.hours || 1) - 1} autres sessions seront planifiées avec votre coach après le paiement.
+              </p>
+            </div>
+          )}
 
           {/* Sélection de créneaux disponibles */}
           <div className="space-y-4">

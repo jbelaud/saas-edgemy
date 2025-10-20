@@ -446,6 +446,7 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
           onClose={() => setIsBookingOpen(false)}
           announcement={selectedAnnouncement}
           coachId={coachId}
+          selectedPackId={selectedPacks[selectedAnnouncement.id]}
         />
       )}
     </>
