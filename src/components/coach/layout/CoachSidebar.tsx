@@ -22,6 +22,7 @@ import {
   Calendar,
   Euro,
   Settings,
+  Package,
   PanelLeftClose,
   PanelLeft,
   LogOut,
@@ -45,6 +46,11 @@ const navItems: NavItem[] = [
     title: "Annonces",
     href: "/coach/announcements",
     icon: Megaphone,
+  },
+  {
+    title: "Packs",
+    href: "/coach/packs",
+    icon: Package,
   },
   {
     title: "Disponibilités",
