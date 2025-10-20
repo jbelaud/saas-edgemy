@@ -52,6 +52,7 @@ export default async function CoachPublicPage({ params }: PageProps) {
     description: announcement.description,
     price: announcement.priceCents / 100, // Convertir centimes en euros
     duration: announcement.durationMin,
+    format: announcement.format,
     slug: announcement.slug,
   }));
 
