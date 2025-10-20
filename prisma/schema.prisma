@@ -104,12 +104,28 @@ model Announcement {
   id           String        @id @default(cuid())
   coachId      String
   coach        coach         @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  type         String        @default("STRATEGY") // STRATEGY, REVIEW, TOOL
   title        String
   slug         String        @unique
   description  String
   priceCents   Int
   durationMin  Int
-  format       String        // MTT, Cash Game, etc.
+  
+  // Champs spécifiques selon le type (JSON)
+  variant      String?       // Pour STRATEGY: MTT, Cash Game, etc.
+  format       String?       // NLHE, PLO, PLO5, etc.
+  abiRange     String?       // Pour STRATEGY: "20-25€"
+  tags         String[]      // Tags facultatifs
+  
+  // Pour REVIEW
+  reviewType   String?       // "Session MTT", "Session Cash Game", etc.
+  reviewSupport String?      // "Replay vidéo", "Partage d'écran", etc.
+  
+  // Pour TOOL
+  toolName     String?       // GTO Wizard, Hold'em Manager, etc.
+  toolObjective String?      // "Prise en main", "Optimisation avancée", etc.
+  prerequisites String?      // Prérequis optionnels
+  
   isActive     Boolean       @default(true)
   reservations Reservation[]
   createdAt    DateTime      @default(now())
