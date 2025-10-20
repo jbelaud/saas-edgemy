@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -143,14 +144,17 @@ export default function CoachPacksPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <CoachLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </CoachLayout>
     );
   }
 
   return (
-    <div className="container mx-auto px-6 py-8">
+    <CoachLayout>
+      <div className="container mx-auto px-6 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Mes Packs</h1>
         <p className="text-muted-foreground">
@@ -295,6 +299,7 @@ export default function CoachPacksPage() {
           onSuccess={handleScheduleSuccess}
         />
       )}
-    </div>
+      </div>
+    </CoachLayout>
   );
 }

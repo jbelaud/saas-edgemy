@@ -3,10 +3,17 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Euro, Calendar, Bell, Eye } from 'lucide-react';
+import { Clock, Euro, Calendar, Bell, Eye, Package, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { BookingModal } from './BookingModal';
+
+interface AnnouncementPack {
+  id: string;
+  hours: number;
+  totalPrice: number;
+  discountPercent: number | null;
+}
 
 interface Announcement {
   id: string;
@@ -16,6 +23,7 @@ interface Announcement {
   price: number;
   duration: number;
   slug: string;
+  packs?: AnnouncementPack[];
   // STRATEGY
   variant?: string;
   format?: string;
@@ -63,6 +71,7 @@ const FORMAT_LABELS: Record<string, string> = {
 
 export function CoachAnnouncements({ announcements, coachId, isInactive = false }: CoachAnnouncementsProps) {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+  const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [notifyEmail, setNotifyEmail] = useState('');
@@ -228,16 +237,89 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-start md:items-end gap-3">
-                    <div className="text-right">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-gray-900">
-                          {announcement.price}
-                        </span>
-                        <Euro className="h-5 w-5 text-gray-600" />
+                  <div className="flex flex-col items-start md:items-end gap-3 w-full md:w-auto">
+                    {/* Sélection du type de réservation */}
+                    {!isInactive && (
+                      <div className="w-full space-y-2">
+                        <p className="text-sm font-medium text-gray-700 mb-2">Choisissez votre formule :</p>
+                        
+                        {/* Session unitaire */}
+                        <button
+                          onClick={() => setSelectedPackId(null)}
+                          className={`w-full p-3 border-2 rounded-lg text-left transition-all ${
+                            selectedPackId === null
+                              ? 'border-primary bg-primary/5'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                selectedPackId === null ? 'border-primary bg-primary' : 'border-gray-300'
+                              }`}>
+                                {selectedPackId === null && <Check className="h-3 w-3 text-white" />}
+                              </div>
+                              <div>
+                                <p className="font-medium">Session 1h</p>
+                                <p className="text-xs text-gray-500">{announcement.duration} minutes</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-gray-900">{announcement.price}€</p>
+                            </div>
+                          </div>
+                        </button>
+
+                        {/* Packs disponibles */}
+                        {announcement.packs && announcement.packs.length > 0 && (
+                          <>
+                            {announcement.packs.map((pack) => {
+                              const discount = pack.discountPercent || 0;
+                              return (
+                                <button
+                                  key={pack.id}
+                                  onClick={() => setSelectedPackId(pack.id)}
+                                  className={`w-full p-3 border-2 rounded-lg text-left transition-all ${
+                                    selectedPackId === pack.id
+                                      ? 'border-primary bg-primary/5'
+                                      : 'border-gray-200 hover:border-gray-300'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                        selectedPackId === pack.id ? 'border-primary bg-primary' : 'border-gray-300'
+                                      }`}>
+                                        {selectedPackId === pack.id && <Check className="h-3 w-3 text-white" />}
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Package className="h-4 w-4 text-gray-500" />
+                                        <div>
+                                          <p className="font-medium">Pack {pack.hours}h</p>
+                                          {discount > 0 && (
+                                            <Badge className="text-xs bg-green-100 text-green-800 border-0">
+                                              -{discount}%
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-lg font-bold text-gray-900">{(pack.totalPrice / 100).toFixed(0)}€</p>
+                                      {discount > 0 && (
+                                        <p className="text-xs text-gray-500 line-through">
+                                          {(announcement.price * pack.hours).toFixed(0)}€
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </>
+                        )}
                       </div>
-                      <p className="text-sm text-gray-500">par session</p>
-                    </div>
+                    )}
                     
                     {isInactive ? (
                       <div className="w-full md:w-auto space-y-2">

@@ -19,6 +19,12 @@ async function getCoach(slug: string) {
       announcements: {
         where: { isActive: true },
         orderBy: { createdAt: 'desc' },
+        include: {
+          packs: {
+            where: { isActive: true },
+            orderBy: { hours: 'asc' },
+          },
+        },
       },
       user: {
         select: {
@@ -54,6 +60,8 @@ export default async function CoachPublicPage({ params }: PageProps) {
     price: announcement.priceCents ? announcement.priceCents / 100 : 0,
     duration: announcement.durationMin || 60,
     slug: announcement.slug || '',
+    // Packs
+    packs: announcement.packs || [],
     // STRATEGY
     variant: announcement.variant,
     format: announcement.format,
