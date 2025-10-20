@@ -48,12 +48,12 @@ export default async function CoachPublicPage({ params }: PageProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const transformedAnnouncements = coach.announcements.map((announcement: any) => ({
     id: announcement.id,
-    title: announcement.title,
-    description: announcement.description,
-    price: announcement.priceCents / 100, // Convertir centimes en euros
-    duration: announcement.durationMin,
-    format: announcement.format,
-    slug: announcement.slug,
+    title: announcement.title || 'Sans titre',
+    description: announcement.description || '',
+    price: announcement.priceCents ? announcement.priceCents / 100 : 0, // Convertir centimes en euros
+    duration: announcement.durationMin || 60,
+    format: announcement.format || 'AUTRE',
+    slug: announcement.slug || '',
   }));
 
   return (
