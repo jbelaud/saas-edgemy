@@ -10,12 +10,24 @@ import { BookingModal } from './BookingModal';
 
 interface Announcement {
   id: string;
+  type: string;
   title: string;
   description: string;
   price: number;
   duration: number;
-  format?: string;
   slug: string;
+  // STRATEGY
+  variant?: string;
+  format?: string;
+  abiRange?: string;
+  tags?: string[];
+  // REVIEW
+  reviewType?: string;
+  reviewSupport?: string;
+  // TOOL
+  toolName?: string;
+  toolObjective?: string;
+  prerequisites?: string;
 }
 
 interface CoachAnnouncementsProps {
@@ -24,12 +36,24 @@ interface CoachAnnouncementsProps {
   isInactive?: boolean;
 }
 
-const FORMAT_LABELS: Record<string, string> = {
+const TYPE_LABELS: Record<string, string> = {
+  STRATEGY: 'Stratégie',
+  REVIEW: 'Review',
+  TOOL: 'Outil',
+};
+
+const VARIANT_LABELS: Record<string, string> = {
   MTT: 'MTT',
   CASH_GAME: 'Cash Game',
   SNG: 'Sit & Go',
   SPIN: 'Spin & Go',
-  MENTAL: 'Mental',
+};
+
+const FORMAT_LABELS: Record<string, string> = {
+  NLHE: 'NLHE',
+  PLO: 'PLO',
+  PLO5: 'PLO5',
+  MIXED: 'Mixed',
 };
 
 export function CoachAnnouncements({ announcements, coachId, isInactive = false }: CoachAnnouncementsProps) {
@@ -94,16 +118,89 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
               >
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-start gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-gray-900 flex-1">
-                        {announcement.title}
-                      </h3>
-                      {announcement.format && (
-                        <Badge variant="outline">
-                          {FORMAT_LABELS[announcement.format] || announcement.format}
-                        </Badge>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                      {announcement.title}
+                    </h3>
+                    
+                    {/* Badges colorés */}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <Badge 
+                        className={`font-normal ${
+                          announcement.type === 'STRATEGY' ? 'bg-blue-600 hover:bg-blue-700' :
+                          announcement.type === 'REVIEW' ? 'bg-green-600 hover:bg-green-700' :
+                          'bg-purple-600 hover:bg-purple-700'
+                        }`}
+                      >
+                        {TYPE_LABELS[announcement.type] || announcement.type}
+                      </Badge>
+                      
+                      {announcement.type === 'STRATEGY' && (
+                        <>
+                          {announcement.variant && (
+                            <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-300">
+                              {VARIANT_LABELS[announcement.variant] || announcement.variant}
+                            </Badge>
+                          )}
+                          {announcement.format && (
+                            <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-indigo-300">
+                              {FORMAT_LABELS[announcement.format] || announcement.format}
+                            </Badge>
+                          )}
+                          {announcement.abiRange && (
+                            <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-300">
+                              ABI: {announcement.abiRange}
+                            </Badge>
+                          )}
+                        </>
+                      )}
+                      
+                      {announcement.type === 'REVIEW' && (
+                        <>
+                          {announcement.reviewType && (
+                            <Badge className="bg-teal-100 text-teal-800 hover:bg-teal-200 border-teal-300">
+                              {announcement.reviewType.replace(/_/g, ' ')}
+                            </Badge>
+                          )}
+                          {announcement.format && (
+                            <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-indigo-300">
+                              {FORMAT_LABELS[announcement.format] || announcement.format}
+                            </Badge>
+                          )}
+                          {announcement.reviewSupport && (
+                            <Badge className="bg-cyan-100 text-cyan-800 hover:bg-cyan-200 border-cyan-300">
+                              {announcement.reviewSupport.replace(/_/g, ' ')}
+                            </Badge>
+                          )}
+                        </>
+                      )}
+                      
+                      {announcement.type === 'TOOL' && (
+                        <>
+                          {announcement.toolName && (
+                            <Badge className="bg-violet-100 text-violet-800 hover:bg-violet-200 border-violet-300">
+                              {announcement.toolName.replace(/_/g, ' ')}
+                            </Badge>
+                          )}
+                          {announcement.toolObjective && (
+                            <Badge className="bg-fuchsia-100 text-fuchsia-800 hover:bg-fuchsia-200 border-fuchsia-300">
+                              {announcement.toolObjective.replace(/_/g, ' ')}
+                            </Badge>
+                          )}
+                        </>
                       )}
                     </div>
+                    
+                    {/* Tags pour STRATEGY */}
+                    {announcement.type === 'STRATEGY' && announcement.tags && announcement.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {announcement.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    
                     <p className="text-gray-600 mb-4 line-clamp-2">
                       {announcement.description}
                     </p>

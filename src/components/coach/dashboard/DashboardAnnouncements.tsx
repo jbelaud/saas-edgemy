@@ -154,24 +154,31 @@ export function DashboardAnnouncements({}: DashboardAnnouncementsProps) {
 
               {/* Type et infos spécifiques */}
               <div className="flex flex-wrap gap-2">
-                <Badge variant="default" className="font-normal">
+                {/* Badge Type avec couleur */}
+                <Badge 
+                  className={`font-normal ${
+                    announcement.type === 'STRATEGY' ? 'bg-blue-600 hover:bg-blue-700' :
+                    announcement.type === 'REVIEW' ? 'bg-green-600 hover:bg-green-700' :
+                    'bg-purple-600 hover:bg-purple-700'
+                  }`}
+                >
                   {TYPE_LABELS[announcement.type] || announcement.type}
                 </Badge>
                 
                 {announcement.type === 'STRATEGY' && (
                   <>
                     {announcement.variant && (
-                      <Badge variant="outline">
+                      <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-300">
                         {VARIANT_LABELS[announcement.variant] || announcement.variant}
                       </Badge>
                     )}
                     {announcement.format && (
-                      <Badge variant="outline">
+                      <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-indigo-300">
                         {FORMAT_LABELS[announcement.format] || announcement.format}
                       </Badge>
                     )}
                     {announcement.abiRange && (
-                      <Badge variant="outline">
+                      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-300">
                         ABI: {announcement.abiRange}
                       </Badge>
                     )}
@@ -180,18 +187,37 @@ export function DashboardAnnouncements({}: DashboardAnnouncementsProps) {
                 
                 {announcement.type === 'REVIEW' && (
                   <>
+                    {announcement.reviewType && (
+                      <Badge className="bg-teal-100 text-teal-800 hover:bg-teal-200 border-teal-300">
+                        {announcement.reviewType.replace(/_/g, ' ')}
+                      </Badge>
+                    )}
                     {announcement.format && (
-                      <Badge variant="outline">
+                      <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-indigo-300">
                         {FORMAT_LABELS[announcement.format] || announcement.format}
+                      </Badge>
+                    )}
+                    {announcement.reviewSupport && (
+                      <Badge className="bg-cyan-100 text-cyan-800 hover:bg-cyan-200 border-cyan-300">
+                        {announcement.reviewSupport.replace(/_/g, ' ')}
                       </Badge>
                     )}
                   </>
                 )}
                 
-                {announcement.type === 'TOOL' && announcement.toolName && (
-                  <Badge variant="outline">
-                    {announcement.toolName}
-                  </Badge>
+                {announcement.type === 'TOOL' && (
+                  <>
+                    {announcement.toolName && (
+                      <Badge className="bg-violet-100 text-violet-800 hover:bg-violet-200 border-violet-300">
+                        {announcement.toolName.replace(/_/g, ' ')}
+                      </Badge>
+                    )}
+                    {announcement.toolObjective && (
+                      <Badge className="bg-fuchsia-100 text-fuchsia-800 hover:bg-fuchsia-200 border-fuchsia-300">
+                        {announcement.toolObjective.replace(/_/g, ' ')}
+                      </Badge>
+                    )}
+                  </>
                 )}
               </div>
               
@@ -230,6 +256,14 @@ export function DashboardAnnouncements({}: DashboardAnnouncementsProps) {
 
               {/* Actions */}
               <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => alert('Fonctionnalité de modification en cours de développement')}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Modifier
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"

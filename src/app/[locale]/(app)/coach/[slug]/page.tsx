@@ -48,12 +48,24 @@ export default async function CoachPublicPage({ params }: PageProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const transformedAnnouncements = coach.announcements.map((announcement: any) => ({
     id: announcement.id,
+    type: announcement.type || 'STRATEGY',
     title: announcement.title || 'Sans titre',
     description: announcement.description || '',
-    price: announcement.priceCents ? announcement.priceCents / 100 : 0, // Convertir centimes en euros
+    price: announcement.priceCents ? announcement.priceCents / 100 : 0,
     duration: announcement.durationMin || 60,
-    format: announcement.format || 'MENTAL',
     slug: announcement.slug || '',
+    // STRATEGY
+    variant: announcement.variant,
+    format: announcement.format,
+    abiRange: announcement.abiRange,
+    tags: announcement.tags || [],
+    // REVIEW
+    reviewType: announcement.reviewType,
+    reviewSupport: announcement.reviewSupport,
+    // TOOL
+    toolName: announcement.toolName,
+    toolObjective: announcement.toolObjective,
+    prerequisites: announcement.prerequisites,
   }));
 
   return (
