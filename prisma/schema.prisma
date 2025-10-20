@@ -131,8 +131,27 @@ model Announcement {
   
   isActive     Boolean       @default(true)
   reservations Reservation[]
+  packs        AnnouncementPack[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+}
+
+model AnnouncementPack {
+  id             String   @id @default(cuid())
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  
+  hours          Int      // Nombre d'heures (5, 10, etc.)
+  totalPrice     Int      // Prix total en centimes
+  discountPercent Int?    // Pourcentage de réduction optionnel
+  
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  reservations   Reservation[]
+  
+  @@index([announcementId])
 }
 
 model Availability {
@@ -154,6 +173,12 @@ model Reservation {
   coach           coach        @relation(fields: [coachId], references: [id], onDelete: Cascade)
   playerId        String
   player          user         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  // Pack d'heures
+  packId          String?
+  pack            AnnouncementPack? @relation(fields: [packId], references: [id], onDelete: SetNull)
+  sessionNumber   Int?         // Numéro de session dans le pack (1, 2, 3...)
+  
   startDate       DateTime
   endDate         DateTime
   status          ReservationStatus @default(PENDING)
@@ -161,6 +186,8 @@ model Reservation {
   stripePaymentId String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+  
+  @@index([packId])
 }
 
 model player {
