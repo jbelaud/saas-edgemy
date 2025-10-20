@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLocale } from "next-intl";
@@ -64,9 +64,10 @@ const navItems: NavItem[] = [
 ];
 
 export function CoachSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const locale = useLocale();
+  const [collapsed, setCollapsed] = useState(false);
+  const [coachSlug, setCoachSlug] = useState<string | null>(null);
   const { data: session } = useSession();
 
   const user = session?.user;
@@ -75,6 +76,25 @@ export function CoachSidebar() {
     .map((n) => n[0])
     .join("")
     .toUpperCase() || "U";
+
+  // Récupérer le slug du coach
+  useEffect(() => {
+    const fetchCoachSlug = async () => {
+      try {
+        const response = await fetch('/api/coach/profile');
+        if (response.ok) {
+          const data = await response.json();
+          setCoachSlug(data.coach?.slug || null);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du slug:', error);
+      }
+    };
+
+    if (session?.user) {
+      fetchCoachSlug();
+    }
+  }, [session]);
 
   return (
     <div
@@ -191,12 +211,14 @@ export function CoachSidebar() {
                 <span>Dashboard</span>
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/${locale}`} className="flex items-center cursor-pointer">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                <span>Voir le site</span>
-              </Link>
-            </DropdownMenuItem>
+            {coachSlug && (
+              <DropdownMenuItem asChild>
+                <Link href={`/${locale}/coach/${coachSlug}`} className="flex items-center cursor-pointer">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  <span>Voir mon profil</span>
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => signOut()}
