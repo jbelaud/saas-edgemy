@@ -89,21 +89,27 @@ export function CreateAnnouncementModal({
   const onSubmit = async (data: AnnouncementFormValues) => {
     setIsLoading(true);
     try {
+      const payload = {
+        title: data.title,
+        description: data.description,
+        format: data.format,
+        priceCents: Math.round(parseFloat(data.price) * 100),
+        durationMin: parseInt(data.duration, 10),
+        isActive: data.isActive,
+      };
+
+      console.log("📤 Envoi de l'annonce:", payload);
+
       const response = await fetch("/api/coach/announcement", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: data.title,
-          description: data.description,
-          format: data.format,
-          priceCents: Math.round(parseFloat(data.price) * 100),
-          durationMin: parseInt(data.duration),
-          isActive: data.isActive,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la création de l'annonce");
+        const errorData = await response.json();
+        console.error("❌ Erreur API:", errorData);
+        throw new Error(errorData.error || "Erreur lors de la création de l'annonce");
       }
 
       form.reset();
@@ -111,7 +117,7 @@ export function CreateAnnouncementModal({
       onSuccess?.();
     } catch (error) {
       console.error("Erreur:", error);
-      alert("Une erreur est survenue lors de la création de l'annonce");
+      alert(error instanceof Error ? error.message : "Une erreur est survenue lors de la création de l'annonce");
     } finally {
       setIsLoading(false);
     }

@@ -89,10 +89,13 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { title, description, priceCents, durationMin, format, isActive } = body;
 
+    console.log('📝 Création annonce - Body reçu:', body);
+
     // Validation
-    if (!title || !description || !priceCents || !durationMin || !format) {
+    if (!title || !description || priceCents === undefined || priceCents === null || durationMin === undefined || durationMin === null || !format) {
+      console.error('❌ Validation échouée:', { title, description, priceCents, durationMin, format });
       return NextResponse.json(
-        { error: 'Champs requis manquants' },
+        { error: 'Champs requis manquants', received: { title, description, priceCents, durationMin, format } },
         { status: 400 }
       );
     }
