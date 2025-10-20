@@ -41,6 +41,7 @@ const TOOLS = [
   { value: 'PIOSOLVER', label: 'PioSolver' },
   { value: 'FLOPZILLA', label: 'Flopzilla' },
   { value: 'ICMIZER', label: 'ICMizer' },
+  { value: 'MENTAL', label: 'Mental' },
   { value: 'OTHER', label: 'Autre' },
 ];
 

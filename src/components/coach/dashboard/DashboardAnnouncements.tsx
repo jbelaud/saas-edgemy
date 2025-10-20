@@ -47,6 +47,8 @@ const VARIANT_LABELS: Record<string, string> = {
   CASH_GAME: 'Cash Game',
   SNG: 'Sit & Go',
   SPIN: 'Spin & Go',
+  AUTRE: 'Mental',
+  MENTAL: 'Mental',
 };
 
 const FORMAT_LABELS: Record<string, string> = {
