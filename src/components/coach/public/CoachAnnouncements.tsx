@@ -238,35 +238,35 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-start md:items-end gap-2 w-full md:w-auto">
+                  <div className="flex flex-col items-start md:items-end gap-1.5 w-full md:w-auto">
                     {/* Sélection du type de réservation */}
                     {!isInactive && (
-                      <div className="w-full space-y-1.5">
-                        <p className="text-xs font-medium text-gray-700 mb-1">Choisissez votre formule :</p>
+                      <div className="w-full space-y-1">
+                        <p className="text-xs font-medium text-gray-700">Choisissez votre formule :</p>
                         
                         {/* Session unitaire */}
                         <button
                           onClick={() => setSelectedPacks({ ...selectedPacks, [announcement.id]: null })}
-                          className={`w-full p-2 border-2 rounded-md text-left transition-all ${
+                          className={`w-full p-1.5 border-2 rounded text-left transition-all ${
                             !selectedPacks[announcement.id]
                               ? 'border-primary bg-primary/5'
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                            <div className="flex items-center gap-1.5">
+                              <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${
                                 !selectedPacks[announcement.id] ? 'border-primary bg-primary' : 'border-gray-300'
                               }`}>
-                                {!selectedPacks[announcement.id] && <Check className="h-2.5 w-2.5 text-white" />}
+                                {!selectedPacks[announcement.id] && <Check className="h-2 w-2 text-white" />}
                               </div>
                               <div>
-                                <p className="text-sm font-medium">Session 1h</p>
+                                <p className="text-sm font-medium">Session</p>
                                 <p className="text-xs text-gray-500">{announcement.duration} min</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-base font-bold text-gray-900">{announcement.price}€</p>
+                              <p className="text-sm font-bold text-gray-900">{announcement.price}€</p>
                             </div>
                           </div>
                         </button>
@@ -281,21 +281,21 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                                 <button
                                   key={pack.id}
                                   onClick={() => setSelectedPacks({ ...selectedPacks, [announcement.id]: pack.id })}
-                                  className={`w-full p-2 border-2 rounded-md text-left transition-all ${
+                                  className={`w-full p-1.5 border-2 rounded text-left transition-all ${
                                     isSelected
                                       ? 'border-primary bg-primary/5'
                                       : 'border-gray-200 hover:border-gray-300'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                    <div className="flex items-center gap-1.5">
+                                      <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${
                                         isSelected ? 'border-primary bg-primary' : 'border-gray-300'
                                       }`}>
-                                        {isSelected && <Check className="h-2.5 w-2.5 text-white" />}
+                                        {isSelected && <Check className="h-2 w-2 text-white" />}
                                       </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <Package className="h-3.5 w-3.5 text-gray-500" />
+                                      <div className="flex items-center gap-1">
+                                        <Package className="h-3 w-3 text-gray-500" />
                                         <div>
                                           <p className="text-sm font-medium">Pack {pack.hours}h</p>
                                           {discount > 0 && (
@@ -307,7 +307,7 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                                       </div>
                                     </div>
                                     <div className="text-right">
-                                      <p className="text-base font-bold text-gray-900">{(pack.totalPrice / 100).toFixed(0)}€</p>
+                                      <p className="text-sm font-bold text-gray-900">{(pack.totalPrice / 100).toFixed(0)}€</p>
                                       {discount > 0 && (
                                         <p className="text-xs text-gray-500 line-through">
                                           {(announcement.price * pack.hours).toFixed(0)}€
