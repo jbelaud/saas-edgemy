@@ -41,9 +41,9 @@ const announcementSchema = z.object({
   price: z.string()
     .min(1, "Le prix est requis")
     .refine((val) => {
-      const num = parseFloat(val);
-      return !isNaN(num) && num >= 0 && num <= 9999;
-    }, "Le prix doit être entre 0€ et 9999€"),
+      const num = parseInt(val, 10);
+      return !isNaN(num) && num >= 0 && num <= 9999 && Number.isInteger(parseFloat(val));
+    }, "Le prix doit être un nombre entier entre 0€ et 9999€"),
   duration: z.string().min(1, "La durée est requise"),
   isActive: z.boolean().default(true),
 });
@@ -98,7 +98,7 @@ export function CreateAnnouncementModal({
         title: data.title,
         description: data.description,
         format: data.format,
-        priceCents: Math.round(parseFloat(data.price) * 100),
+        priceCents: parseInt(data.price, 10) * 100, // Convertir euros en centimes
         durationMin: parseInt(data.duration, 10),
         isActive: data.isActive,
       };
@@ -209,7 +209,7 @@ export function CreateAnnouncementModal({
                             <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                             <Input
                               type="number"
-                              step="any"
+                              step="1"
                               min="0"
                               max="9999"
                               placeholder="50"
