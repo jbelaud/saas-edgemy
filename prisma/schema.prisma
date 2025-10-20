@@ -126,6 +126,9 @@ model Announcement {
   toolObjective String?      // "Prise en main", "Optimisation avancée", etc.
   prerequisites String?      // Prérequis optionnels
   
+  // Pour MENTAL
+  mentalFocus  String?       // "Gestion du tilt", "Confiance", etc.
+  
   isActive     Boolean       @default(true)
   reservations Reservation[]
   createdAt    DateTime      @default(now())

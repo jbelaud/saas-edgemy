@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Sparkles, Target, Search, Wrench, ArrowRight } from 'lucide-react';
+import { Sparkles, Target, Search, Wrench, Brain, ArrowRight } from 'lucide-react';
 
 // Import des formulaires spécifiques
 import { StrategyForm } from './forms/StrategyForm';
 import { ReviewForm } from './forms/ReviewForm';
 import { ToolForm } from './forms/ToolForm';
+import { MentalForm } from './forms/MentalForm';
 
 interface CreateAnnouncementModalV2Props {
   open: boolean;
@@ -17,7 +18,7 @@ interface CreateAnnouncementModalV2Props {
   onSuccess?: () => void;
 }
 
-type AnnouncementType = 'STRATEGY' | 'REVIEW' | 'TOOL' | null;
+type AnnouncementType = 'STRATEGY' | 'REVIEW' | 'TOOL' | 'MENTAL' | null;
 
 const ANNOUNCEMENT_TYPES = [
   {
@@ -40,6 +41,13 @@ const ANNOUNCEMENT_TYPES = [
     description: 'Enseignement de l\'utilisation d\'un logiciel',
     icon: Wrench,
     color: 'bg-purple-50 hover:bg-purple-100 border-purple-200',
+  },
+  {
+    type: 'MENTAL' as const,
+    title: 'Mental',
+    description: 'Coaching mental et préparation psychologique',
+    icon: Brain,
+    color: 'bg-pink-50 hover:bg-pink-100 border-pink-200',
   },
 ];
 
@@ -139,6 +147,13 @@ export function CreateAnnouncementModalV2({
             )}
             {selectedType === 'TOOL' && (
               <ToolForm
+                onSuccess={handleSuccess}
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+              />
+            )}
+            {selectedType === 'MENTAL' && (
+              <MentalForm
                 onSuccess={handleSuccess}
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}

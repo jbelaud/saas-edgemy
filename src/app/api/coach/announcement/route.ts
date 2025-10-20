@@ -106,6 +106,8 @@ export async function POST(request: Request) {
       toolName,
       toolObjective,
       prerequisites,
+      // Champs MENTAL
+      mentalFocus,
     } = body;
 
     console.log('📝 Création annonce - Body reçu:', body);
@@ -135,6 +137,12 @@ export async function POST(request: Request) {
     if (type === 'TOOL' && (!toolName || !toolObjective)) {
       return NextResponse.json(
         { error: 'Champs TOOL manquants: toolName, toolObjective requis' },
+        { status: 400 }
+      );
+    }
+    if (type === 'MENTAL' && !mentalFocus) {
+      return NextResponse.json(
+        { error: 'Champs MENTAL manquants: mentalFocus requis' },
         { status: 400 }
       );
     }
@@ -177,6 +185,10 @@ export async function POST(request: Request) {
           toolName,
           toolObjective,
           prerequisites: prerequisites || null,
+        }),
+        // Champs MENTAL
+        ...(type === 'MENTAL' && {
+          mentalFocus,
         }),
       },
     });
