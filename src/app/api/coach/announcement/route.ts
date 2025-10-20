@@ -87,15 +87,54 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, description, priceCents, durationMin, format, isActive } = body;
+    const { 
+      type, 
+      title, 
+      description, 
+      priceCents, 
+      durationMin, 
+      isActive,
+      // Champs STRATEGY
+      variant,
+      format,
+      abiRange,
+      tags,
+      // Champs REVIEW
+      reviewType,
+      reviewSupport,
+      // Champs TOOL
+      toolName,
+      toolObjective,
+      prerequisites,
+    } = body;
 
     console.log('📝 Création annonce - Body reçu:', body);
 
-    // Validation
-    if (!title || !description || priceCents === undefined || priceCents === null || durationMin === undefined || durationMin === null || !format) {
-      console.error('❌ Validation échouée:', { title, description, priceCents, durationMin, format });
+    // Validation des champs communs
+    if (!type || !title || !description || priceCents === undefined || priceCents === null || durationMin === undefined || durationMin === null) {
+      console.error('❌ Validation échouée:', { type, title, description, priceCents, durationMin });
       return NextResponse.json(
-        { error: 'Champs requis manquants', received: { title, description, priceCents, durationMin, format } },
+        { error: 'Champs requis manquants', received: { type, title, description, priceCents, durationMin } },
+        { status: 400 }
+      );
+    }
+
+    // Validation spécifique par type
+    if (type === 'STRATEGY' && (!variant || !format || !abiRange)) {
+      return NextResponse.json(
+        { error: 'Champs STRATEGY manquants: variant, format, abiRange requis' },
+        { status: 400 }
+      );
+    }
+    if (type === 'REVIEW' && (!reviewType || !format || !reviewSupport)) {
+      return NextResponse.json(
+        { error: 'Champs REVIEW manquants: reviewType, format, reviewSupport requis' },
+        { status: 400 }
+      );
+    }
+    if (type === 'TOOL' && (!toolName || !toolObjective)) {
+      return NextResponse.json(
+        { error: 'Champs TOOL manquants: toolName, toolObjective requis' },
         { status: 400 }
       );
     }
@@ -113,13 +152,32 @@ export async function POST(request: Request) {
     const announcement = await prisma.announcement.create({
       data: {
         coachId: coach.id,
+        type,
         title,
         slug,
         description,
         priceCents,
         durationMin,
-        format,
         isActive: isActive ?? true,
+        // Champs STRATEGY
+        ...(type === 'STRATEGY' && {
+          variant,
+          format,
+          abiRange,
+          tags: tags || [],
+        }),
+        // Champs REVIEW
+        ...(type === 'REVIEW' && {
+          reviewType,
+          format,
+          reviewSupport,
+        }),
+        // Champs TOOL
+        ...(type === 'TOOL' && {
+          toolName,
+          toolObjective,
+          prerequisites: prerequisites || null,
+        }),
       },
     });
 

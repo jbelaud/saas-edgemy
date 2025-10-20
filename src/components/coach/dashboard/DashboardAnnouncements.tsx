@@ -8,14 +8,26 @@ import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock } from 'lucide-react';
 
 interface Announcement {
   id: string;
+  type: string;
   title: string;
   description: string;
   priceCents: number;
   durationMin: number;
-  format: string;
   isActive: boolean;
   slug: string;
   createdAt: string;
+  // STRATEGY
+  variant?: string;
+  format?: string;
+  abiRange?: string;
+  tags?: string[];
+  // REVIEW
+  reviewType?: string;
+  reviewSupport?: string;
+  // TOOL
+  toolName?: string;
+  toolObjective?: string;
+  prerequisites?: string;
 }
 
 import type { CoachWithRelations } from '@/types/dashboard';
@@ -24,12 +36,24 @@ interface DashboardAnnouncementsProps {
   coach: CoachWithRelations;
 }
 
-const FORMAT_LABELS: Record<string, string> = {
+const TYPE_LABELS: Record<string, string> = {
+  STRATEGY: 'Stratégie',
+  REVIEW: 'Review',
+  TOOL: 'Outil',
+};
+
+const VARIANT_LABELS: Record<string, string> = {
   MTT: 'MTT',
   CASH_GAME: 'Cash Game',
   SNG: 'Sit & Go',
   SPIN: 'Spin & Go',
-  MENTAL: 'Mental',
+};
+
+const FORMAT_LABELS: Record<string, string> = {
+  NLHE: 'NLHE',
+  PLO: 'PLO',
+  PLO5: 'PLO5',
+  MIXED: 'Mixed',
 };
 
 export function DashboardAnnouncements({}: DashboardAnnouncementsProps) {
@@ -128,12 +152,64 @@ export function DashboardAnnouncements({}: DashboardAnnouncementsProps) {
                 </Badge>
               </div>
 
-              {/* Format */}
-              <div>
-                <Badge variant="outline" className="font-normal">
-                  {FORMAT_LABELS[announcement.format] || announcement.format}
+              {/* Type et infos spécifiques */}
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="default" className="font-normal">
+                  {TYPE_LABELS[announcement.type] || announcement.type}
                 </Badge>
+                
+                {announcement.type === 'STRATEGY' && (
+                  <>
+                    {announcement.variant && (
+                      <Badge variant="outline">
+                        {VARIANT_LABELS[announcement.variant] || announcement.variant}
+                      </Badge>
+                    )}
+                    {announcement.format && (
+                      <Badge variant="outline">
+                        {FORMAT_LABELS[announcement.format] || announcement.format}
+                      </Badge>
+                    )}
+                    {announcement.abiRange && (
+                      <Badge variant="outline">
+                        ABI: {announcement.abiRange}
+                      </Badge>
+                    )}
+                  </>
+                )}
+                
+                {announcement.type === 'REVIEW' && (
+                  <>
+                    {announcement.format && (
+                      <Badge variant="outline">
+                        {FORMAT_LABELS[announcement.format] || announcement.format}
+                      </Badge>
+                    )}
+                  </>
+                )}
+                
+                {announcement.type === 'TOOL' && announcement.toolName && (
+                  <Badge variant="outline">
+                    {announcement.toolName}
+                  </Badge>
+                )}
               </div>
+              
+              {/* Tags pour STRATEGY */}
+              {announcement.type === 'STRATEGY' && announcement.tags && announcement.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {announcement.tags.slice(0, 3).map((tag) => (
+                    <Badge key={tag} variant="secondary" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
+                  {announcement.tags.length > 3 && (
+                    <Badge variant="secondary" className="text-xs">
+                      +{announcement.tags.length - 3}
+                    </Badge>
+                  )}
+                </div>
+              )}
 
               {/* Description */}
               <p className="text-sm text-gray-600 line-clamp-2">

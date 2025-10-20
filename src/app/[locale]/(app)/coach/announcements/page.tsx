@@ -2,7 +2,7 @@
 
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { DashboardAnnouncements } from '@/components/coach/dashboard/DashboardAnnouncements';
-import { CreateAnnouncementModal } from '@/components/coach/announcements/CreateAnnouncementModal';
+import { CreateAnnouncementModalV2 } from '@/components/coach/announcements/CreateAnnouncementModalV2';
 import { useSession } from '@/lib/auth-client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -82,7 +82,7 @@ export default function CoachAnnouncementsPage() {
         <DashboardAnnouncements coach={coach} key={refreshKey} />
       </div>
 
-      <CreateAnnouncementModal
+      <CreateAnnouncementModalV2
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
         onSuccess={() => setRefreshKey(prev => prev + 1)}
