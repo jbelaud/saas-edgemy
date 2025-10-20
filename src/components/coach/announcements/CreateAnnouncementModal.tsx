@@ -61,7 +61,7 @@ const FORMATS = [
   { value: "CASH_GAME", label: "Cash Game" },
   { value: "SNG", label: "Sit & Go" },
   { value: "SPIN", label: "Spin & Go" },
-  { value: "AUTRE", label: "Autre" },
+  { value: "MENTAL", label: "Mental" },
 ];
 
 const DURATIONS = [

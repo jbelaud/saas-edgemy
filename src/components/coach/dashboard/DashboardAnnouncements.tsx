@@ -29,7 +29,7 @@ const FORMAT_LABELS: Record<string, string> = {
   CASH_GAME: 'Cash Game',
   SNG: 'Sit & Go',
   SPIN: 'Spin & Go',
-  AUTRE: 'Autre',
+  MENTAL: 'Mental',
 };
 
 export function DashboardAnnouncements({}: DashboardAnnouncementsProps) {

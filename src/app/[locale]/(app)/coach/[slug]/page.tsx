@@ -52,7 +52,7 @@ export default async function CoachPublicPage({ params }: PageProps) {
     description: announcement.description || '',
     price: announcement.priceCents ? announcement.priceCents / 100 : 0, // Convertir centimes en euros
     duration: announcement.durationMin || 60,
-    format: announcement.format || 'AUTRE',
+    format: announcement.format || 'MENTAL',
     slug: announcement.slug || '',
   }));
 
