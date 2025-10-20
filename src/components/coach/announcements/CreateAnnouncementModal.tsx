@@ -38,7 +38,12 @@ const announcementSchema = z.object({
   title: z.string().min(5, "Le titre doit contenir au moins 5 caractères"),
   description: z.string().min(20, "La description doit contenir au moins 20 caractères"),
   format: z.string().min(1, "Veuillez sélectionner un format"),
-  price: z.string().min(1, "Le prix est requis"),
+  price: z.string()
+    .min(1, "Le prix est requis")
+    .refine((val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0 && num <= 9999;
+    }, "Le prix doit être entre 0€ et 9999€"),
   duration: z.string().min(1, "La durée est requise"),
   isActive: z.boolean().default(true),
 });
@@ -204,9 +209,10 @@ export function CreateAnnouncementModal({
                             <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                             <Input
                               type="number"
-                              step="0.01"
+                              step="any"
                               min="0"
-                              placeholder="50.00"
+                              max="9999"
+                              placeholder="50"
                               className="pl-10"
                               {...field}
                             />
