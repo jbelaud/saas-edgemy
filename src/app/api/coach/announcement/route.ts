@@ -43,7 +43,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ announcements: coach.announcements });
+    return NextResponse.json(coach.announcements);
   } catch (error) {
     console.error('Erreur lors de la récupération des annonces:', error);
     return NextResponse.json(
@@ -78,16 +78,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Vérifier que le coach a un abonnement actif
-    if (coach.status !== 'ACTIVE') {
-      return NextResponse.json(
-        { error: 'Abonnement inactif. Activez votre abonnement pour créer des annonces.' },
-        { status: 403 }
-      );
-    }
-
     const body = await request.json();
-    const { title, description, priceCents, durationMin, format } = body;
+    const { title, description, priceCents, durationMin, format, isActive } = body;
 
     // Validation
     if (!title || !description || !priceCents || !durationMin || !format) {
@@ -116,7 +108,7 @@ export async function POST(request: Request) {
         priceCents,
         durationMin,
         format,
-        isActive: true,
+        isActive: isActive ?? true,
       },
     });
 
