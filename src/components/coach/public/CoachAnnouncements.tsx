@@ -71,7 +71,8 @@ const FORMAT_LABELS: Record<string, string> = {
 
 export function CoachAnnouncements({ announcements, coachId, isInactive = false }: CoachAnnouncementsProps) {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
-  const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
+  // État pour chaque annonce : { announcementId: packId | null }
+  const [selectedPacks, setSelectedPacks] = useState<Record<string, string | null>>({});
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [notifyEmail, setNotifyEmail] = useState('');
@@ -237,35 +238,35 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-start md:items-end gap-3 w-full md:w-auto">
+                  <div className="flex flex-col items-start md:items-end gap-2 w-full md:w-auto">
                     {/* Sélection du type de réservation */}
                     {!isInactive && (
-                      <div className="w-full space-y-2">
-                        <p className="text-sm font-medium text-gray-700 mb-2">Choisissez votre formule :</p>
+                      <div className="w-full space-y-1.5">
+                        <p className="text-xs font-medium text-gray-700 mb-1">Choisissez votre formule :</p>
                         
                         {/* Session unitaire */}
                         <button
-                          onClick={() => setSelectedPackId(null)}
-                          className={`w-full p-3 border-2 rounded-lg text-left transition-all ${
-                            selectedPackId === null
+                          onClick={() => setSelectedPacks({ ...selectedPacks, [announcement.id]: null })}
+                          className={`w-full p-2 border-2 rounded-md text-left transition-all ${
+                            !selectedPacks[announcement.id]
                               ? 'border-primary bg-primary/5'
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                selectedPackId === null ? 'border-primary bg-primary' : 'border-gray-300'
+                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                !selectedPacks[announcement.id] ? 'border-primary bg-primary' : 'border-gray-300'
                               }`}>
-                                {selectedPackId === null && <Check className="h-3 w-3 text-white" />}
+                                {!selectedPacks[announcement.id] && <Check className="h-2.5 w-2.5 text-white" />}
                               </div>
                               <div>
-                                <p className="font-medium">Session 1h</p>
-                                <p className="text-xs text-gray-500">{announcement.duration} minutes</p>
+                                <p className="text-sm font-medium">Session 1h</p>
+                                <p className="text-xs text-gray-500">{announcement.duration} min</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-lg font-bold text-gray-900">{announcement.price}€</p>
+                              <p className="text-base font-bold text-gray-900">{announcement.price}€</p>
                             </div>
                           </div>
                         </button>
@@ -275,37 +276,38 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                           <>
                             {announcement.packs.map((pack) => {
                               const discount = pack.discountPercent || 0;
+                              const isSelected = selectedPacks[announcement.id] === pack.id;
                               return (
                                 <button
                                   key={pack.id}
-                                  onClick={() => setSelectedPackId(pack.id)}
-                                  className={`w-full p-3 border-2 rounded-lg text-left transition-all ${
-                                    selectedPackId === pack.id
+                                  onClick={() => setSelectedPacks({ ...selectedPacks, [announcement.id]: pack.id })}
+                                  className={`w-full p-2 border-2 rounded-md text-left transition-all ${
+                                    isSelected
                                       ? 'border-primary bg-primary/5'
                                       : 'border-gray-200 hover:border-gray-300'
                                   }`}
                                 >
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                        selectedPackId === pack.id ? 'border-primary bg-primary' : 'border-gray-300'
+                                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                        isSelected ? 'border-primary bg-primary' : 'border-gray-300'
                                       }`}>
-                                        {selectedPackId === pack.id && <Check className="h-3 w-3 text-white" />}
+                                        {isSelected && <Check className="h-2.5 w-2.5 text-white" />}
                                       </div>
-                                      <div className="flex items-center gap-2">
-                                        <Package className="h-4 w-4 text-gray-500" />
+                                      <div className="flex items-center gap-1.5">
+                                        <Package className="h-3.5 w-3.5 text-gray-500" />
                                         <div>
-                                          <p className="font-medium">Pack {pack.hours}h</p>
+                                          <p className="text-sm font-medium">Pack {pack.hours}h</p>
                                           {discount > 0 && (
-                                            <Badge className="text-xs bg-green-100 text-green-800 border-0">
+                                            <span className="text-xs text-green-600 font-medium">
                                               -{discount}%
-                                            </Badge>
+                                            </span>
                                           )}
                                         </div>
                                       </div>
                                     </div>
                                     <div className="text-right">
-                                      <p className="text-lg font-bold text-gray-900">{(pack.totalPrice / 100).toFixed(0)}€</p>
+                                      <p className="text-base font-bold text-gray-900">{(pack.totalPrice / 100).toFixed(0)}€</p>
                                       {discount > 0 && (
                                         <p className="text-xs text-gray-500 line-through">
                                           {(announcement.price * pack.hours).toFixed(0)}€
