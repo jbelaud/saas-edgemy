@@ -45,7 +45,7 @@ const announcementSchema = z.object({
       return !isNaN(num) && num >= 0 && num <= 9999 && Number.isInteger(parseFloat(val));
     }, "Le prix doit être un nombre entier entre 0€ et 9999€"),
   duration: z.string().min(1, "La durée est requise"),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 type AnnouncementFormValues = z.infer<typeof announcementSchema>;
