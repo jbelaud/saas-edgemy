@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from '@/lib/auth-client';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,8 +51,10 @@ interface Pack {
 }
 
 export default function CoachPacksPage() {
+  const { data: session, isPending } = useSession();
   const [packs, setPacks] = useState<Pack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [coachStatus, setCoachStatus] = useState<string | null>(null);
   const [scheduleModal, setScheduleModal] = useState<{
     open: boolean;
     packId: string;
@@ -69,6 +72,13 @@ export default function CoachPacksPage() {
 
   const fetchPacks = async () => {
     try {
+      // Récupérer le statut du coach
+      const dashboardResponse = await fetch('/api/coach/dashboard');
+      if (dashboardResponse.ok) {
+        const dashboardData = await dashboardResponse.json();
+        setCoachStatus(dashboardData.coach.status);
+      }
+
       const response = await fetch('/api/coach/packs');
       if (response.ok) {
         const data = await response.json();
@@ -142,11 +152,39 @@ export default function CoachPacksPage() {
     }
   };
 
-  if (isLoading) {
+  if (isPending || isLoading) {
     return (
       <CoachLayout>
         <div className="flex items-center justify-center min-h-screen">
           <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </CoachLayout>
+    );
+  }
+
+  const isInactive = coachStatus === 'INACTIVE';
+
+  if (isInactive) {
+    return (
+      <CoachLayout>
+        <div className="container mx-auto px-6 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Mes Packs</h1>
+            <p className="text-muted-foreground">
+              Gérez les sessions de vos packs d&apos;heures achetés par vos élèves
+            </p>
+          </div>
+          <Card className="border-orange-200 bg-orange-50">
+            <CardContent className="py-12 text-center">
+              <Package className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+              <p className="text-orange-900 font-semibold mb-2 text-lg">
+                Abonnement requis
+              </p>
+              <p className="text-orange-700 text-sm">
+                Vous devez activer votre abonnement pour accéder à la gestion des packs
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </CoachLayout>
     );
