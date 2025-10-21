@@ -62,9 +62,10 @@ const FORMAT_LABELS: Record<string, string> = {
   MIXED: 'Mixed',
 };
 
-export function DashboardAnnouncements({}: DashboardAnnouncementsProps) {
+export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isInactive = coach.status === 'INACTIVE';
 
   useEffect(() => {
     fetchAnnouncements();
@@ -126,6 +127,21 @@ export function DashboardAnnouncements({}: DashboardAnnouncementsProps) {
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  if (isInactive) {
+    return (
+      <Card className="border-orange-200 bg-orange-50">
+        <CardContent className="py-12 text-center">
+          <p className="text-orange-900 font-semibold mb-2">
+            Abonnement requis
+          </p>
+          <p className="text-orange-700 text-sm">
+            Vous devez activer votre abonnement pour créer des annonces
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 

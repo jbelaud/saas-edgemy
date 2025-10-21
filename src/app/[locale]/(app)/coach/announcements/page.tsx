@@ -13,7 +13,7 @@ export default function CoachAnnouncementsPage() {
   const { data: session, isPending } = useSession();
   const params = useParams();
   const locale = params.locale as string;
-  const [coach, setCoach] = useState<{ id: string; slug: string } | null>(null);
+  const [coach, setCoach] = useState<{ id: string; slug: string; status: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -52,6 +52,8 @@ export default function CoachAnnouncementsPage() {
     return null;
   }
 
+  const isInactive = coach.status === 'INACTIVE';
+
   return (
     <CoachLayout>
       <div className="space-y-6">
@@ -65,28 +67,34 @@ export default function CoachAnnouncementsPage() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => window.open(`/${locale}/coach/${coach.slug}`, '_blank')}
-            >
-              Voir mon profil en ligne
-            </Button>
-            <Button onClick={() => setIsCreateModalOpen(true)} size="lg">
-              <Plus className="mr-2 h-4 w-4" />
-              Créer une annonce
-            </Button>
+            {!isInactive && (
+              <>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => window.open(`/${locale}/coach/${coach.slug}`, '_blank')}
+                >
+                  Voir mon profil en ligne
+                </Button>
+                <Button onClick={() => setIsCreateModalOpen(true)} size="lg">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Créer une annonce
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
         <DashboardAnnouncements coach={coach} key={refreshKey} />
       </div>
 
-      <CreateAnnouncementModalV2
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-        onSuccess={() => setRefreshKey(prev => prev + 1)}
-      />
+      {!isInactive && (
+        <CreateAnnouncementModalV2
+          open={isCreateModalOpen}
+          onOpenChange={setIsCreateModalOpen}
+          onSuccess={() => setRefreshKey(prev => prev + 1)}
+        />
+      )}
     </CoachLayout>
   );
 }
