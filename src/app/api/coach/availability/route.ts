@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
 // GET - Récupérer toutes les disponibilités du coach
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -24,12 +24,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer toutes les disponibilités
+    const orderBy: any = [
+      { dayOfWeek: 'asc' },
+      { startTime: 'asc' },
+    ];
     const availabilities = await prisma.availability.findMany({
       where: { coachId: coach.id },
-      orderBy: [
-        { dayOfWeek: 'asc' },
-        { startTime: 'asc' },
-      ],
+      orderBy,
     });
 
     return NextResponse.json({ availabilities });
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
         endTime,
         specificDate: type === 'SPECIFIC' ? new Date(specificDate) : null,
         isBlocked: isBlocked || false,
-      },
+      } as any,
     });
 
     return NextResponse.json({ availability }, { status: 201 });

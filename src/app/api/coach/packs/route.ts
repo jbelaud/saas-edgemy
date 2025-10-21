@@ -63,7 +63,6 @@ export async function GET(request: NextRequest) {
     });
 
     // Grouper les réservations par joueur
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const packsWithPlayers = packs.map((pack) => {
       // Grouper par playerId
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,7 +89,9 @@ export async function GET(request: NextRequest) {
           player: group.player,
           sessions: group.sessions,
           totalSessions: pack.hours,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           completedSessions: group.sessions.filter((s: any) => s.status === 'COMPLETED').length,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           scheduledSessions: group.sessions.filter((s: any) => s.status === 'CONFIRMED').length,
           remainingSessions: pack.hours - group.sessions.length,
         })),

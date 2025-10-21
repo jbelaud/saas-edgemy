@@ -120,7 +120,6 @@ export async function PUT(
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const { id: announcementId } = params;
     const body = await request.json();
     const { packId, hours, totalPrice, discountPercent, isActive } = body;
 
@@ -171,7 +170,7 @@ export async function PUT(
 // DELETE /api/coach/announcement/[id]/packs - Supprimer un pack
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  _context: { params: { id: string } }
 ) {
   try {
     const session = await auth.api.getSession({

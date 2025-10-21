@@ -55,7 +55,7 @@ export default function CoachPacksPage() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
-  const { data: session, isPending } = useSession();
+  const { isPending } = useSession();
   const [packs, setPacks] = useState<Pack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [coachStatus, setCoachStatus] = useState<string | null>(null);
