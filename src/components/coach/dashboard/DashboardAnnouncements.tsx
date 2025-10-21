@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock } from 'lucide-react';
+import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock, Megaphone } from 'lucide-react';
 import { AnnouncementPacksSection } from '@/components/coach/announcements/AnnouncementPacksSection';
 
 interface Announcement {
@@ -134,7 +134,8 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
     return (
       <Card className="border-orange-200 bg-orange-50">
         <CardContent className="py-12 text-center">
-          <p className="text-orange-900 font-semibold mb-2">
+          <Megaphone className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+          <p className="text-orange-900 font-semibold mb-2 text-lg">
             Abonnement requis
           </p>
           <p className="text-orange-700 text-sm">
