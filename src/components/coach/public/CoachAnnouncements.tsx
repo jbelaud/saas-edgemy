@@ -238,7 +238,7 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-start md:items-end gap-1.5 w-full md:w-auto">
+                  <div className="flex flex-col items-start md:items-end gap-1.5 w-full md:w-[400px]">
                     {/* Sélection du type de réservation */}
                     {!isInactive && (
                       <div className="w-full space-y-1">
