@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 
 const reviewSchema = z.object({
@@ -23,7 +23,7 @@ const reviewSchema = z.object({
       return !isNaN(num) && num >= 0 && num <= 9999 && Number.isInteger(parseFloat(val));
     }, 'Le prix doit être un nombre entier entre 0€ et 9999€'),
   description: z.string().min(20, 'La description doit contenir au moins 20 caractères'),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 type ReviewFormValues = z.infer<typeof reviewSchema>;
