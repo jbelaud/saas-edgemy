@@ -21,14 +21,6 @@ export async function GET(
           where: { isActive: true },
           orderBy: { createdAt: 'desc' },
         },
-        availabilities: {
-          where: {
-            start: {
-              gte: new Date(),
-            },
-          },
-          orderBy: { start: 'asc' },
-        },
       },
     });
 
