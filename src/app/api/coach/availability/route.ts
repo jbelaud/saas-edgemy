@@ -24,13 +24,12 @@ export async function GET() {
     }
 
     // Récupérer toutes les disponibilités
-    const orderBy: any = [
-      { dayOfWeek: 'asc' },
-      { startTime: 'asc' },
-    ];
     const availabilities = await prisma.availability.findMany({
       where: { coachId: coach.id },
-      orderBy,
+      orderBy: [
+        { dayOfWeek: 'asc' },
+        { startTime: 'asc' },
+      ],
     });
 
     return NextResponse.json({ availabilities });
@@ -90,7 +89,7 @@ export async function POST(request: NextRequest) {
         endTime,
         specificDate: type === 'SPECIFIC' ? new Date(specificDate) : null,
         isBlocked: isBlocked || false,
-      } as any,
+      },
     });
 
     return NextResponse.json({ availability }, { status: 201 });
