@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 // GET /api/coach/announcement/[id]/packs - Récupérer les packs d'une annonce
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({
@@ -16,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const { id: announcementId } = params;
+    const { id: announcementId } = await params;
 
     // Vérifier que l'annonce appartient au coach
     const announcement = await prisma.announcement.findUnique({
@@ -50,7 +50,7 @@ export async function GET(
 // POST /api/coach/announcement/[id]/packs - Créer un pack
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({
@@ -61,7 +61,7 @@ export async function POST(
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const { id: announcementId } = params;
+    const { id: announcementId } = await params;
     const body = await request.json();
     const { hours, totalPrice, discountPercent } = body;
 
