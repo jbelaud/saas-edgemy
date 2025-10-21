@@ -158,7 +158,7 @@ export default function CoachPacksPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Mes Packs</h1>
         <p className="text-muted-foreground">
-          Gérez les sessions de vos packs d'heures achetés par vos élèves
+          Gérez les sessions de vos packs d&apos;heures achetés par vos élèves
         </p>
       </div>
 

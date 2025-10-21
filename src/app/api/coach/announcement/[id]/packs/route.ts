@@ -171,7 +171,7 @@ export async function PUT(
 // DELETE /api/coach/announcement/[id]/packs - Supprimer un pack
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await auth.api.getSession({

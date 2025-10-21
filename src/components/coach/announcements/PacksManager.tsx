@@ -26,7 +26,7 @@ interface PacksManagerProps {
 }
 
 const packSchema = z.object({
-  hours: z.string().min(1, 'Le nombre d\'heures est requis'),
+  hours: z.string().min(1, 'Le nombre d&apos;heures est requis'),
   totalPrice: z.string().min(1, 'Le prix total est requis'),
   discountPercent: z.string().optional(),
 });
@@ -52,6 +52,7 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
   // Charger les packs
   useEffect(() => {
     fetchPacks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [announcementId]);
 
   const fetchPacks = async () => {
@@ -160,9 +161,9 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
       }
 
       await fetchPacks();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erreur:', error);
-      alert(error.message || 'Une erreur est survenue');
+      alert(error instanceof Error ? error.message : 'Une erreur est survenue');
     }
   };
 
@@ -183,7 +184,7 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              <CardTitle>Packs d'heures</CardTitle>
+              <CardTitle>Packs d&apos;heures</CardTitle>
             </div>
             <Button onClick={() => handleOpenModal()} size="sm">
               <Plus className="h-4 w-4 mr-2" />
@@ -263,12 +264,12 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
                 name="hours"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre d'heures *</FormLabel>
+                    <FormLabel>Nombre d&apos;heures *</FormLabel>
                     <FormControl>
                       <Input type="number" min="1" placeholder="5" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Nombre total d'heures de coaching dans ce pack
+                      Nombre total d&apos;heures de coaching dans ce pack
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

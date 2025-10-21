@@ -156,7 +156,7 @@ export function CreateAnnouncementModal({
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Titre de l'annonce *</FormLabel>
+                      <FormLabel>Titre de l&apos;annonce *</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Ex: Coaching MTT pour débutants"
@@ -276,10 +276,10 @@ export function CreateAnnouncementModal({
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">
-                          Activer l'annonce
+                          Activer l&apos;annonce
                         </FormLabel>
                         <FormDescription>
-                          L'annonce sera visible publiquement
+                          L&apos;annonce sera visible publiquement
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -311,7 +311,7 @@ export function CreateAnnouncementModal({
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Créer l'annonce
+                        Créer l&apos;annonce
                       </>
                     )}
                   </Button>
@@ -324,7 +324,7 @@ export function CreateAnnouncementModal({
           <div className="lg:sticky lg:top-4 lg:self-start">
             <Card className="border-2 border-dashed">
               <CardHeader>
-                <CardTitle className="text-lg">Aperçu de l'annonce</CardTitle>
+                <CardTitle className="text-lg">Aperçu de l&apos;annonce</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>

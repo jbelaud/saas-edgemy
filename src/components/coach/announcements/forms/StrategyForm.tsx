@@ -136,7 +136,7 @@ export function StrategyForm({ onSuccess, isLoading, setIsLoading }: StrategyFor
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Titre de l'annonce *</FormLabel>
+              <FormLabel>Titre de l&apos;annonce *</FormLabel>
               <FormControl>
                 <Input placeholder="Ex: Coaching MTT - Stratégie ICM avancée" {...field} />
               </FormControl>

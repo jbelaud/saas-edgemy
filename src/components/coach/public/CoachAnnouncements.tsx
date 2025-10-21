@@ -356,7 +356,7 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                           onClick={() => handleViewDetails(announcement)}
                         >
                           <Eye className="mr-2 h-4 w-4" />
-                          Voir l'annonce
+                          Voir l&apos;annonce
                         </Button>
                         <Button
                           size="lg"

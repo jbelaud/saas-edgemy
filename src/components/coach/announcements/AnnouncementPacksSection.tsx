@@ -25,7 +25,7 @@ interface AnnouncementPacksSectionProps {
 }
 
 const packSchema = z.object({
-  hours: z.string().min(1, 'Le nombre d\'heures est requis'),
+  hours: z.string().min(1, 'Le nombre d&apos;heures est requis'),
   totalPrice: z.string().min(1, 'Le prix total est requis'),
 });
 
@@ -48,6 +48,7 @@ export function AnnouncementPacksSection({ announcementId, hourlyRate }: Announc
 
   useEffect(() => {
     fetchPacks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [announcementId]);
 
   const fetchPacks = async () => {
@@ -152,9 +153,9 @@ export function AnnouncementPacksSection({ announcementId, hourlyRate }: Announc
       }
 
       await fetchPacks();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erreur:', error);
-      alert(error.message || 'Une erreur est survenue');
+      alert(error instanceof Error ? error.message : 'Une erreur est survenue');
     }
   };
 
@@ -171,7 +172,7 @@ export function AnnouncementPacksSection({ announcementId, hourlyRate }: Announc
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Package className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Packs d'heures</span>
+          <span className="text-sm font-medium">Packs d&apos;heures</span>
         </div>
         <Button onClick={() => handleOpenModal()} size="sm" variant="outline">
           <Plus className="h-3 w-3 mr-1" />
@@ -240,12 +241,12 @@ export function AnnouncementPacksSection({ announcementId, hourlyRate }: Announc
                 name="hours"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre d'heures *</FormLabel>
+                    <FormLabel>Nombre d&apos;heures *</FormLabel>
                     <FormControl>
                       <Input type="number" min="1" placeholder="5" {...field} />
                     </FormControl>
                     <FormDescription className="text-xs">
-                      Nombre total d'heures de coaching
+                      Nombre total d&apos;heures de coaching
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     // Vérifier l'authentification
     const session = await auth.api.getSession({

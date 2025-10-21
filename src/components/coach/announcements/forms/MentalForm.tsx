@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 
 const mentalSchema = z.object({
@@ -106,7 +106,7 @@ export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormPro
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Titre de l'annonce *</FormLabel>
+              <FormLabel>Titre de l&apos;annonce *</FormLabel>
               <Input placeholder="Ex: Coaching mental - Gestion du tilt" {...field} />
               <FormMessage />
             </FormItem>

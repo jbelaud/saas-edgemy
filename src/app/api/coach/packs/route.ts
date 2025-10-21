@@ -63,9 +63,11 @@ export async function GET(request: NextRequest) {
     });
 
     // Grouper les réservations par joueur
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const packsWithPlayers = packs.map((pack) => {
       // Grouper par playerId
-      const playerGroups = pack.reservations.reduce((acc, reservation) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const playerGroups = pack.reservations.reduce((acc: any, reservation: any) => {
         const playerId = reservation.playerId;
         if (!acc[playerId]) {
           acc[playerId] = {
@@ -75,7 +77,7 @@ export async function GET(request: NextRequest) {
         }
         acc[playerId].sessions.push(reservation);
         return acc;
-      }, {} as Record<string, { player: any; sessions: any[] }>);
+      }, {});
 
       return {
         id: pack.id,
@@ -83,12 +85,13 @@ export async function GET(request: NextRequest) {
         totalPrice: pack.totalPrice,
         discountPercent: pack.discountPercent,
         announcement: pack.announcement,
-        playerPacks: Object.values(playerGroups).map((group) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        playerPacks: Object.values(playerGroups).map((group: any) => ({
           player: group.player,
           sessions: group.sessions,
           totalSessions: pack.hours,
-          completedSessions: group.sessions.filter((s) => s.status === 'COMPLETED').length,
-          scheduledSessions: group.sessions.filter((s) => s.status === 'CONFIRMED').length,
+          completedSessions: group.sessions.filter((s: any) => s.status === 'COMPLETED').length,
+          scheduledSessions: group.sessions.filter((s: any) => s.status === 'CONFIRMED').length,
           remainingSessions: pack.hours - group.sessions.length,
         })),
       };

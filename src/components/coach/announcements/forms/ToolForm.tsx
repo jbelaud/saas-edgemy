@@ -118,7 +118,7 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Titre de l'annonce *</FormLabel>
+              <FormLabel>Titre de l&apos;annonce *</FormLabel>
               <Input placeholder="Ex: Prise en main GTO Wizard" {...field} />
               <FormMessage />
             </FormItem>
@@ -131,7 +131,7 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
             name="toolName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nom de l'outil *</FormLabel>
+                <FormLabel>Nom de l&apos;outil *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionnez" />
@@ -260,7 +260,7 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
                 Création...
               </>
             ) : (
-              'Créer l\'annonce'
+              'Créer l&apos;annonce'
             )}
           </Button>
         </div>
