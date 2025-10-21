@@ -107,10 +107,7 @@ export async function POST(
 }
 
 // PUT /api/coach/announcement/[id]/packs - Modifier un pack
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
@@ -168,10 +165,7 @@ export async function PUT(
 }
 
 // DELETE /api/coach/announcement/[id]/packs - Supprimer un pack
-export async function DELETE(
-  request: NextRequest,
-  _context: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
