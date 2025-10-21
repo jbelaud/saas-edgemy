@@ -25,12 +25,17 @@ export default function CoachDashboardPage() {
   const [data, setData] = useState<CoachDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSettingUp, setIsSettingUp] = useState(false);
   
   // Hook pour créer le profil coach lors de la première connexion Google
   useCoachRoleSetup();
   
-  // Vérifier si on est en mode setup
-  const isSettingUp = searchParams.get('setupCoach') === 'true' || localStorage.getItem('pendingCoachRole') === 'true';
+  // Vérifier si on est en mode setup (côté client uniquement)
+  useEffect(() => {
+    const setupFromUrl = searchParams.get('setupCoach') === 'true';
+    const setupFromStorage = typeof window !== 'undefined' && localStorage.getItem('pendingCoachRole') === 'true';
+    setIsSettingUp(setupFromUrl || setupFromStorage);
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchDashboard = async () => {

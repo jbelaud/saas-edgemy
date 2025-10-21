@@ -14,20 +14,16 @@ export default async function BaseLayout({children, locale}: Props) {
   setRequestLocale(locale)
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <body>
-        <NextIntlClientProvider>
-          <LanguageProvider>
-            <div className="min-h-screen bg-background flex flex-col">
-              <AppHeader />
-              <main className="flex-1">
-                {children}
-              </main>
-              <AppFooter />
-            </div>
-          </LanguageProvider>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider>
+      <LanguageProvider>
+        <div className="min-h-screen bg-background flex flex-col">
+          <AppHeader />
+          <main className="flex-1">
+            {children}
+          </main>
+          <AppFooter />
+        </div>
+      </LanguageProvider>
+    </NextIntlClientProvider>
   )
 }
