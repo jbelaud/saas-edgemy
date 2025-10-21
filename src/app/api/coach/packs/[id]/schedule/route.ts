@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 // POST /api/coach/packs/[id]/schedule - Planifier une nouvelle session d'un pack
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({
@@ -16,7 +16,7 @@ export async function POST(
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const { id: packId } = params;
+    const { id: packId } = await params;
     const body = await request.json();
     const { playerId, startDate, endDate } = body;
 
