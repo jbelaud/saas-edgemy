@@ -5,6 +5,7 @@ import { useSession } from '@/lib/auth-client';
 import { useRouter, useParams } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Euro, TrendingUp, Calendar, DollarSign, ArrowUpRight, Loader2, Zap, CheckCircle2 } from 'lucide-react';
 
 export default function CoachRevenuePage() {

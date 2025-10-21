@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { AvailabilityManager } from '@/components/coach/availability/AvailabilityManager';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Calendar, Loader2, Zap, CheckCircle2 } from 'lucide-react';
 
 export default function CoachAvailabilityPage() {
