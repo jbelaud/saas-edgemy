@@ -2,11 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
+import { useRouter, useParams } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Euro, TrendingUp, Calendar, DollarSign, ArrowUpRight, Loader2 } from 'lucide-react';
+import { Euro, TrendingUp, Calendar, DollarSign, ArrowUpRight, Loader2, Zap, CheckCircle2 } from 'lucide-react';
 
 export default function CoachRevenuePage() {
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
   const { data: session, isPending } = useSession();
   const [coachStatus, setCoachStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,15 +59,57 @@ export default function CoachRevenuePage() {
               Suivez vos revenus et statistiques financières
             </p>
           </div>
-          <Card className="border-orange-200 bg-orange-50">
-            <CardContent className="py-12 text-center">
-              <Euro className="h-12 w-12 text-orange-600 mx-auto mb-4" />
-              <p className="text-orange-900 font-semibold mb-2 text-lg">
-                Abonnement requis
-              </p>
-              <p className="text-orange-700 text-sm">
-                Vous devez activer votre abonnement pour accéder à vos statistiques de revenus
-              </p>
+          <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+            <CardContent className="py-12">
+              <div className="text-center mb-6">
+                <Euro className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+                <p className="text-orange-900 font-semibold mb-2 text-xl">
+                  Activez votre abonnement pour suivre vos revenus
+                </p>
+                <p className="text-orange-700 text-sm">
+                  Débloquez toutes les fonctionnalités de la plateforme
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 max-w-2xl mx-auto">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Statistiques détaillées</p>
+                    <p className="text-xs text-gray-600">Suivez vos revenus en temps réel</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Paiements sécurisés</p>
+                    <p className="text-xs text-gray-600">Recevez vos paiements directement</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Historique complet</p>
+                    <p className="text-xs text-gray-600">Accédez à l&apos;historique de toutes vos transactions</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Rapports mensuels</p>
+                    <p className="text-xs text-gray-600">Générez des rapports pour votre comptabilité</p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
+                  onClick={() => router.push(`/${locale}/coach/onboarding`)}
+                >
+                  <Zap className="mr-2 h-5 w-5" />
+                  Activer mon abonnement maintenant
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

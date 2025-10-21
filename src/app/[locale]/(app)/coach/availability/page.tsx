@@ -2,12 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
+import { useRouter, useParams } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { AvailabilityManager } from '@/components/coach/availability/AvailabilityManager';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, Loader2 } from 'lucide-react';
+import { Calendar, Loader2, Zap, CheckCircle2 } from 'lucide-react';
 
 export default function CoachAvailabilityPage() {
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
   const { data: session, isPending } = useSession();
   const [coachStatus, setCoachStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,15 +60,57 @@ export default function CoachAvailabilityPage() {
               Gérez vos créneaux de disponibilité pour les réservations
             </p>
           </div>
-          <Card className="border-orange-200 bg-orange-50">
-            <CardContent className="py-12 text-center">
-              <Calendar className="h-12 w-12 text-orange-600 mx-auto mb-4" />
-              <p className="text-orange-900 font-semibold mb-2 text-lg">
-                Abonnement requis
-              </p>
-              <p className="text-orange-700 text-sm">
-                Vous devez activer votre abonnement pour gérer vos disponibilités
-              </p>
+          <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+            <CardContent className="py-12">
+              <div className="text-center mb-6">
+                <Calendar className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+                <p className="text-orange-900 font-semibold mb-2 text-xl">
+                  Activez votre abonnement pour gérer vos disponibilités
+                </p>
+                <p className="text-orange-700 text-sm">
+                  Débloquez toutes les fonctionnalités de la plateforme
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 max-w-2xl mx-auto">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Calendrier intelligent</p>
+                    <p className="text-xs text-gray-600">Gérez vos créneaux de disponibilité</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Synchronisation</p>
+                    <p className="text-xs text-gray-600">Synchronisez avec votre calendrier personnel</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Réservations automatiques</p>
+                    <p className="text-xs text-gray-600">Les élèves réservent sur vos créneaux libres</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Notifications</p>
+                    <p className="text-xs text-gray-600">Recevez des rappels pour vos sessions</p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
+                  onClick={() => router.push(`/${locale}/coach/onboarding`)}
+                >
+                  <Zap className="mr-2 h-5 w-5" />
+                  Activer mon abonnement maintenant
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

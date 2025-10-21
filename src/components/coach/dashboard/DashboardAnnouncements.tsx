@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock, Megaphone } from 'lucide-react';
+import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock, Megaphone, Zap, CheckCircle2 } from 'lucide-react';
 import { AnnouncementPacksSection } from '@/components/coach/announcements/AnnouncementPacksSection';
 
 interface Announcement {
@@ -34,6 +34,8 @@ interface Announcement {
 }
 
 import type { CoachWithRelations } from '@/types/dashboard';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 interface DashboardAnnouncementsProps {
   coach: CoachWithRelations;
@@ -63,6 +65,8 @@ const FORMAT_LABELS: Record<string, string> = {
 };
 
 export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
+  const router = useRouter();
+  const locale = useLocale();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isInactive = coach.status === 'INACTIVE';
@@ -132,15 +136,57 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
 
   if (isInactive) {
     return (
-      <Card className="border-orange-200 bg-orange-50">
-        <CardContent className="py-12 text-center">
-          <Megaphone className="h-12 w-12 text-orange-600 mx-auto mb-4" />
-          <p className="text-orange-900 font-semibold mb-2 text-lg">
-            Abonnement requis
-          </p>
-          <p className="text-orange-700 text-sm">
-            Vous devez activer votre abonnement pour créer des annonces
-          </p>
+      <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+        <CardContent className="py-12">
+          <div className="text-center mb-6">
+            <Megaphone className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+            <p className="text-orange-900 font-semibold mb-2 text-xl">
+              Activez votre abonnement pour créer des annonces
+            </p>
+            <p className="text-orange-700 text-sm">
+              Débloquez toutes les fonctionnalités de la plateforme
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 max-w-2xl mx-auto">
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="text-left">
+                <p className="font-semibold text-gray-900 text-sm">Annonces illimitées</p>
+                <p className="text-xs text-gray-600">Créez autant d&apos;annonces que vous le souhaitez</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="text-left">
+                <p className="font-semibold text-gray-900 text-sm">Profil public visible</p>
+                <p className="text-xs text-gray-600">Apparaissez dans les résultats de recherche</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="text-left">
+                <p className="font-semibold text-gray-900 text-sm">Réservations illimitées</p>
+                <p className="text-xs text-gray-600">Recevez autant de réservations que vous voulez</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="text-left">
+                <p className="font-semibold text-gray-900 text-sm">Paiements sécurisés</p>
+                <p className="text-xs text-gray-600">Recevez vos paiements directement</p>
+              </div>
+            </div>
+          </div>
+          <div className="text-center">
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
+              onClick={() => router.push(`/${locale}/coach/onboarding`)}
+            >
+              <Zap className="mr-2 h-5 w-5" />
+              Activer mon abonnement maintenant
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

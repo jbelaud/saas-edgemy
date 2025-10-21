@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
+import { useRouter, useParams } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Package, CheckCircle2, Clock, Settings, Plus, Loader2, Calendar } from 'lucide-react';
+import { Package, CheckCircle2, Clock, Settings, Plus, Loader2, Calendar, Zap } from 'lucide-react';
 import { SchedulePackSessionModal } from '@/components/coach/packs/SchedulePackSessionModal';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -51,6 +52,9 @@ interface Pack {
 }
 
 export default function CoachPacksPage() {
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
   const { data: session, isPending } = useSession();
   const [packs, setPacks] = useState<Pack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -174,15 +178,57 @@ export default function CoachPacksPage() {
               Gérez les sessions de vos packs d&apos;heures achetés par vos élèves
             </p>
           </div>
-          <Card className="border-orange-200 bg-orange-50">
-            <CardContent className="py-12 text-center">
-              <Package className="h-12 w-12 text-orange-600 mx-auto mb-4" />
-              <p className="text-orange-900 font-semibold mb-2 text-lg">
-                Abonnement requis
-              </p>
-              <p className="text-orange-700 text-sm">
-                Vous devez activer votre abonnement pour accéder à la gestion des packs
-              </p>
+          <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+            <CardContent className="py-12">
+              <div className="text-center mb-6">
+                <Package className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+                <p className="text-orange-900 font-semibold mb-2 text-xl">
+                  Activez votre abonnement pour gérer vos packs
+                </p>
+                <p className="text-orange-700 text-sm">
+                  Débloquez toutes les fonctionnalités de la plateforme
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 max-w-2xl mx-auto">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Packs d&apos;heures</p>
+                    <p className="text-xs text-gray-600">Proposez des packs avantageux à vos élèves</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Gestion des sessions</p>
+                    <p className="text-xs text-gray-600">Planifiez et suivez toutes vos sessions</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Réservations illimitées</p>
+                    <p className="text-xs text-gray-600">Recevez autant de réservations que vous voulez</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 text-sm">Paiements sécurisés</p>
+                    <p className="text-xs text-gray-600">Recevez vos paiements directement</p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
+                  onClick={() => router.push(`/${locale}/coach/onboarding`)}
+                >
+                  <Zap className="mr-2 h-5 w-5" />
+                  Activer mon abonnement maintenant
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
