@@ -17,16 +17,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  LayoutDashboard,
-  Megaphone,
-  Calendar,
-  Euro,
+  Home,
+  Search,
+  Users,
+  Target,
   Settings,
-  Package,
   PanelLeftClose,
   PanelLeft,
   LogOut,
-  ExternalLink,
   ArrowRightLeft,
 } from "lucide-react";
 
@@ -39,43 +37,37 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    title: "Dashboard",
-    href: "/coach/dashboard",
-    icon: LayoutDashboard,
+    title: "Tableau de bord",
+    href: "/player/dashboard",
+    icon: Home,
   },
   {
-    title: "Annonces",
-    href: "/coach/announcements",
-    icon: Megaphone,
+    title: "Trouver un coach",
+    href: "/player/coaches/explore",
+    icon: Search,
   },
   {
-    title: "Packs",
-    href: "/coach/packs",
-    icon: Package,
+    title: "Mes coachs",
+    href: "/player/coaches",
+    icon: Users,
   },
   {
-    title: "Disponibilités",
-    href: "/coach/availability",
-    icon: Calendar,
-  },
-  {
-    title: "Revenus",
-    href: "/coach/revenue",
-    icon: Euro,
+    title: "Mes objectifs",
+    href: "/player/goals",
+    icon: Target,
   },
   {
     title: "Paramètres",
-    href: "/coach/settings",
+    href: "/player/settings",
     icon: Settings,
   },
 ];
 
-export function CoachSidebar() {
+export function PlayerSidebar() {
   const pathname = usePathname();
   const locale = useLocale();
   const [collapsed, setCollapsed] = useState(false);
-  const [coachSlug, setCoachSlug] = useState<string | null>(null);
-  const [hasPlayerProfile, setHasPlayerProfile] = useState(false);
+  const [hasCoachProfile, setHasCoachProfile] = useState(false);
   const { data: session } = useSession();
 
   const user = session?.user;
@@ -85,39 +77,26 @@ export function CoachSidebar() {
     .join("")
     .toUpperCase() || "U";
 
-  // Récupérer le slug du coach et vérifier le profil joueur
+  // Vérifier le profil coach
   useEffect(() => {
-    const fetchCoachSlug = async () => {
+    const checkCoachProfile = async () => {
       try {
         const response = await fetch('/api/coach/profile');
-        if (response.ok) {
-          const data = await response.json();
-          setCoachSlug(data.coach?.slug || null);
-        }
+        setHasCoachProfile(response.ok);
       } catch (error) {
-        console.error('Erreur lors de la récupération du slug:', error);
-      }
-    };
-
-    const checkPlayerProfile = async () => {
-      try {
-        const response = await fetch('/api/player/profile');
-        setHasPlayerProfile(response.ok);
-      } catch (error) {
-        setHasPlayerProfile(false);
+        setHasCoachProfile(false);
       }
     };
 
     if (session?.user) {
-      fetchCoachSlug();
-      checkPlayerProfile();
+      checkCoachProfile();
     }
   }, [session]);
 
   return (
     <div
       className={cn(
-        "relative flex flex-col border-r bg-gray-50/40 transition-all duration-300",
+        "relative flex flex-col border-r bg-emerald-50/40 transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}
     >
@@ -126,7 +105,7 @@ export function CoachSidebar() {
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {!collapsed && (
             <Link href={`/${locale}`} className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold">
                 E
               </div>
               <span className="text-xl font-bold">Edgemy</span>
@@ -134,7 +113,7 @@ export function CoachSidebar() {
           )}
           {collapsed && (
             <Link href={`/${locale}`} className="flex items-center justify-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold">
                 E
               </div>
             </Link>
@@ -169,15 +148,15 @@ export function CoachSidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-gray-700 hover:bg-gray-100",
+                  ? "bg-emerald-600 text-white"
+                  : "text-gray-700 hover:bg-emerald-100",
                 collapsed && "justify-center"
               )}
             >
               <Icon className={cn("h-5 w-5 flex-shrink-0")} />
               {!collapsed && <span>{item.title}</span>}
               {!collapsed && item.badge && (
-                <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                <span className="ml-auto rounded-full bg-emerald-600/10 px-2 py-0.5 text-xs font-semibold text-emerald-600">
                   {item.badge}
                 </span>
               )}
@@ -224,26 +203,18 @@ export function CoachSidebar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/coach/dashboard`} className="flex items-center cursor-pointer">
-                <LayoutDashboard className="mr-2 h-4 w-4" />
+              <Link href={`/${locale}/player/dashboard`} className="flex items-center cursor-pointer">
+                <Home className="mr-2 h-4 w-4" />
                 <span>Dashboard</span>
               </Link>
             </DropdownMenuItem>
-            {coachSlug && (
-              <DropdownMenuItem asChild>
-                <Link href={`/${locale}/coach/${coachSlug}`} className="flex items-center cursor-pointer">
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  <span>Voir mon profil</span>
-                </Link>
-              </DropdownMenuItem>
-            )}
             <DropdownMenuSeparator />
-            {hasPlayerProfile && (
+            {hasCoachProfile && (
               <>
                 <DropdownMenuItem asChild>
-                  <Link href={`/${locale}/player/dashboard`} className="flex items-center cursor-pointer">
+                  <Link href={`/${locale}/coach/dashboard`} className="flex items-center cursor-pointer">
                     <ArrowRightLeft className="mr-2 h-4 w-4" />
-                    <span>Basculer en mode Joueur</span>
+                    <span>Basculer en mode Coach</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

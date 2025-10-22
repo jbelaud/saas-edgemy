@@ -104,11 +104,19 @@ export async function POST(request: NextRequest) {
       });
 
       if (!existingPlayer) {
+        // Extraire prénom et nom du nom complet
+        const userName = session.user.name || '';
+        const nameParts = userName.split(' ');
+        const firstName = nameParts[0] || 'Joueur';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
         await prisma.player.create({
           data: {
-            id: `player_${session.user.id}`,
             userId: session.user.id,
+            firstName,
+            lastName,
             formats: [],
+            timezone: 'Europe/Paris', // Timezone par défaut
           },
         });
       }

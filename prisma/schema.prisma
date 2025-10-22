@@ -254,13 +254,18 @@ model PackageSession {
 }
 
 model player {
-  id       String   @id
-  userId   String   @unique
-  abi      Float?
-  formats  String[]
-  goals    String?
-  winnings Float?
-  user     user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  firstName String?
+  lastName  String?
+  abi       Float?
+  formats   String[]
+  goals     String?
+  winnings  Float?
+  timezone  String?  // ex: "Europe/Paris", "America/Montreal"
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model session {
