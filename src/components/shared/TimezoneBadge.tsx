@@ -2,7 +2,7 @@
 
 import { Clock } from 'lucide-react';
 import { format } from 'date-fns';
-import { utcToZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 import { fr } from 'date-fns/locale';
 
 interface TimezoneBadgeProps {
@@ -19,10 +19,10 @@ export function TimezoneBadge({
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   
   // Convertir en heure locale du coach
-  const coachTime = utcToZonedTime(dateObj, coachTimezone);
+  const coachTime = toZonedTime(dateObj, coachTimezone);
   
   // Convertir en heure française (Europe/Paris)
-  const parisTime = utcToZonedTime(dateObj, 'Europe/Paris');
+  const parisTime = toZonedTime(dateObj, 'Europe/Paris');
   
   const coachTimeStr = format(coachTime, 'HH:mm');
   const parisTimeStr = format(parisTime, 'HH:mm');

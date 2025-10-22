@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { format } from 'date-fns';
-import { utcToZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 
 // GET - Endpoint CRON pour rappeler aux coachs de mettre à jour leurs disponibilités
 // À appeler chaque dimanche à 10h (heure locale de chaque coach)
@@ -38,7 +38,7 @@ export async function GET() {
     for (const coach of coaches) {
       const timezone = coach.timezone || 'Europe/Paris';
       const now = new Date();
-      const localTime = utcToZonedTime(now, timezone);
+      const localTime = toZonedTime(now, timezone);
       const localTimeStr = format(localTime, 'HH:mm');
 
       reminders.push({
