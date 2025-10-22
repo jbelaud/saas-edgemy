@@ -10,8 +10,9 @@ export function AppFooter() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
   const segments = pathname?.split('/').filter(Boolean) ?? [];
-  const locale = routing.locales.includes(segments[0] ?? '')
-    ? (segments[0] as string)
+  const firstSegment = segments[0] ?? '';
+  const locale = routing.locales.includes(firstSegment as typeof routing.locales[number])
+    ? (firstSegment as typeof routing.locales[number])
     : routing.defaultLocale;
   const localizedPath = (path: string) => `/${locale}/pages${path}`;
 
