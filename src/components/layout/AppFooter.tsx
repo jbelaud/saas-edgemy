@@ -2,9 +2,18 @@
 
 import { MessageCircle, Twitter } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { routing } from '@/i18n/routing';
 
 export function AppFooter() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+  const segments = pathname?.split('/').filter(Boolean) ?? [];
+  const locale = routing.locales.includes(segments[0] ?? '')
+    ? (segments[0] as string)
+    : routing.defaultLocale;
+  const localizedPath = (path: string) => `/${locale}/pages${path}`;
 
   return (
     <footer className="bg-white border-t border-gray-200 mt-auto">
@@ -30,26 +39,26 @@ export function AppFooter() {
           {/* Navigation + Legal */}
           <div className="text-center">
             <div className="flex flex-wrap justify-center space-x-6 text-sm mb-4">
-              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <Link href={localizedPath('/a-propos')} className="text-gray-600 hover:text-gray-900 transition-colors">
                 À propos
-              </a>
-              <a 
-                href="mailto:contact@edgemy.fr" 
+              </Link>
+              <Link 
+                href={localizedPath('/contact')} 
                 className="text-gray-600 hover:text-gray-900 transition-colors"
               >
                 Contact
-              </a>
-              <a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">
+              </Link>
+              <Link href={localizedPath('/blog')} className="text-gray-600 hover:text-gray-900 transition-colors">
                 Blog
-              </a>
+              </Link>
             </div>
             <div className="flex flex-wrap justify-center space-x-4 text-xs text-gray-500">
-              <a href="#" className="hover:text-gray-700 transition-colors">
+              <Link href={localizedPath('/mentions-legales')} className="hover:text-gray-700 transition-colors">
                 Mentions légales
-              </a>
-              <a href="#" className="hover:text-gray-700 transition-colors">
+              </Link>
+              <Link href={localizedPath('/politique-de-confidentialite')} className="hover:text-gray-700 transition-colors">
                 Confidentialité
-              </a>
+              </Link>
             </div>
           </div>
 
