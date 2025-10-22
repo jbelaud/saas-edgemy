@@ -16,8 +16,8 @@ export async function GET() {
       );
     }
 
-    // Récupérer le profil joueur
-    const player = await prisma.player.findUnique({
+    // Récupérer ou créer le profil joueur
+    let player = await prisma.player.findUnique({
       where: { userId: session.user.id },
       include: {
         user: {
@@ -31,11 +31,32 @@ export async function GET() {
       },
     });
 
+    // Si le profil n'existe pas, le créer automatiquement
     if (!player) {
-      return NextResponse.json(
-        { error: "Profil joueur non trouvé" },
-        { status: 404 }
-      );
+      const userName = session.user.name || '';
+      const nameParts = userName.split(' ');
+      const firstName = nameParts[0] || 'Joueur';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      player = await prisma.player.create({
+        data: {
+          userId: session.user.id,
+          firstName,
+          lastName,
+          formats: [],
+          timezone: 'Europe/Paris',
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              image: true,
+            },
+          },
+        },
+      });
     }
 
     return NextResponse.json({ player });
