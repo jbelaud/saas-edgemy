@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Calendar, Clock, User, Package, Ban, Loader2 } from 'lucide-react';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { TimezoneBadge } from '@/components/shared/TimezoneBadge';
 
 interface Availability {
   id: string;
@@ -32,10 +31,9 @@ interface Reservation {
 
 interface CoachCalendarProps {
   coachId: string;
-  coachTimezone?: string;
 }
 
-export function CoachCalendar({ coachId, coachTimezone = 'Europe/Paris' }: CoachCalendarProps) {
+export function CoachCalendar({ coachId }: CoachCalendarProps) {
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);

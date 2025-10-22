@@ -90,14 +90,27 @@ export async function GET(
 }
 
 // Fonction de génération des créneaux
-function generateAvailableSlots(
+interface Availability {
+  dayOfWeek?: number;
+  startTime?: string;
+  endTime?: string;
+  specificDate?: Date;
+  isBlocked?: boolean;
+}
+
+interface Reservation {
+  startDate: Date;
+  endDate: Date;
+}
+
+function generateSlots(
   startDate: Date,
   endDate: Date,
   durationMin: number,
-  recurringAvailabilities: any[],
-  specificAvailabilities: any[],
-  exceptions: any[],
-  reservations: any[]
+  recurringAvailabilities: Availability[],
+  specificAvailabilities: Availability[],
+  exceptions: Availability[],
+  reservations: Reservation[]
 ) {
   const slots: { start: string; end: string }[] = [];
   const currentDate = new Date(startDate);
@@ -128,7 +141,7 @@ function generateAvailableSlots(
         const [startHour, startMin] = avail.startTime.split(':').map(Number);
         const [endHour, endMin] = avail.endTime.split(':').map(Number);
 
-        let slotStart = new Date(currentDate);
+        const slotStart = new Date(currentDate);
         slotStart.setHours(startHour, startMin, 0, 0);
 
         const availEnd = new Date(currentDate);

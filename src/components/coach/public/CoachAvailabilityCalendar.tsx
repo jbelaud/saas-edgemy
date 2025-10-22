@@ -32,6 +32,7 @@ export function CoachAvailabilityCalendar({
     if (!isInactive) {
       fetchSlots(selectedDate);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate, isInactive]);
 
   const fetchSlots = async (date: Date) => {
