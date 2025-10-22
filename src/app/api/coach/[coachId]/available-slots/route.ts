@@ -91,10 +91,10 @@ export async function GET(
 
 // Fonction de génération des créneaux
 interface Availability {
-  dayOfWeek?: number;
-  startTime?: string;
-  endTime?: string;
-  specificDate?: Date;
+  dayOfWeek?: number | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  specificDate?: Date | null;
   isBlocked?: boolean;
 }
 
