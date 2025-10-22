@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './src/i18n/routing';
-import { auth } from './src/lib/auth';
 
 // Créer le middleware next-intl
 const intlMiddleware = createMiddleware(routing);
@@ -22,40 +21,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Vérifier l'authentification pour les routes protégées
-  const isProtectedRoute = pathname.match(/^\/(fr|en|de|it|es)\/(coach|player)\//);
-  
-  if (isProtectedRoute) {
-    try {
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-
-      if (!session?.user) {
-        // Rediriger vers la page de connexion
-        const locale = pathname.split('/')[1];
-        return NextResponse.redirect(new URL(`/${locale}/app`, request.url));
-      }
-
-      // Vérifier le rôle pour les routes spécifiques
-      const isCoachRoute = pathname.includes('/coach/');
-      const isPlayerRoute = pathname.includes('/player/');
-
-      if (isCoachRoute && session.user.role !== 'COACH' && session.user.role !== 'ADMIN') {
-        const locale = pathname.split('/')[1];
-        return NextResponse.redirect(new URL(`/${locale}/unauthorized`, request.url));
-      }
-
-      if (isPlayerRoute && session.user.role !== 'PLAYER' && session.user.role !== 'ADMIN') {
-        const locale = pathname.split('/')[1];
-        return NextResponse.redirect(new URL(`/${locale}/unauthorized`, request.url));
-      }
-    } catch (error) {
-      console.error('Erreur middleware auth:', error);
-      const locale = pathname.split('/')[1];
-      return NextResponse.redirect(new URL(`/${locale}/app`, request.url));
-    }
-  }
+  // Note: Authentication checks are now handled at the page level
+  // to reduce middleware bundle size (Edge Function limit: 1 MB)
 
   // Vérifier si c'est le sous-domaine app
   if (hostname.startsWith('app.')) {
