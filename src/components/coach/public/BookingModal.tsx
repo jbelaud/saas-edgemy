@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import {
@@ -14,15 +14,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Calendar, Clock, Euro, Loader2, AlertCircle, Package } from 'lucide-react';
-
-// TODO: Remplacer par de vraies données depuis l'API
-const MOCK_AVAILABILITIES = [
-  { date: '2025-10-20', slots: ['09:00', '14:00', '16:00'] },
-  { date: '2025-10-21', slots: ['10:00', '15:00'] },
-  { date: '2025-10-22', slots: ['09:00', '11:00', '14:00', '17:00'] },
-  { date: '2025-10-23', slots: ['13:00', '15:00', '18:00'] },
-  { date: '2025-10-24', slots: ['09:00', '10:00', '14:00'] },
-];
 
 interface AnnouncementPack {
   id: string;
@@ -50,11 +41,38 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [message, setMessage] = useState('');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [availabilities, setAvailabilities] = useState<{ date: string; slots: string[] }[]>([]);
 
-  const selectedAvailability = MOCK_AVAILABILITIES.find((a) => a.date === selectedDate);
+  // Charger les disponibilités depuis l'API
+  useEffect(() => {
+    if (isOpen && coachId && announcement.id) {
+      fetchAvailabilities();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, coachId, announcement.id]);
+
+  const fetchAvailabilities = async () => {
+    setIsLoadingSlots(true);
+    try {
+      const response = await fetch(
+        `/api/coach/${coachId}/available-slots?announcementId=${announcement.id}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setAvailabilities(data.availableSlots || []);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des disponibilités:', error);
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  };
+
+  const selectedAvailability = availabilities.find((a) => a.date === selectedDate);
   
   // Trouver le pack sélectionné
   const selectedPack = selectedPackId 
@@ -183,8 +201,18 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
               <Label className="text-base font-semibold mb-3 block">
                 1. Choisissez une date disponible
               </Label>
-              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-                {MOCK_AVAILABILITIES.map((availability) => {
+              {isLoadingSlots ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                </div>
+              ) : availabilities.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+                  <p className="text-sm">Aucun créneau disponible pour le moment</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                  {availabilities.map((availability) => {
                   const date = new Date(availability.date);
                   const isSelected = selectedDate === availability.date;
                   
@@ -223,6 +251,7 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
                   );
                 })}
               </div>
+              )}
             </div>
 
             {/* Sélection du créneau horaire */}
