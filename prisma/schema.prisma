@@ -51,6 +51,7 @@ model coach {
   stripeAccountId String?
   subscriptionId  String?
   badges          String[]
+  timezone        String?        // ex: "Europe/Paris", "America/Montreal"
   // Compétences et expérience
   formats         String[]       // MTT, Cash Game, SNG, Spin & Go
   stakes          String?        // Limites jouées
@@ -66,6 +67,7 @@ model coach {
   announcements   Announcement[]
   availabilities  Availability[]
   reservations    Reservation[]
+  coachingPackages CoachingPackage[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }
@@ -132,6 +134,7 @@ model Announcement {
   isActive     Boolean       @default(true)
   reservations Reservation[]
   packs        AnnouncementPack[]
+  coachingPackages CoachingPackage[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }
@@ -206,10 +209,48 @@ model Reservation {
   status          ReservationStatus @default(PENDING)
   priceCents      Int
   stripePaymentId String?
+  packageSession  PackageSession?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   
   @@index([packId])
+}
+
+model CoachingPackage {
+  id             String       @id @default(cuid())
+  playerId       String
+  player         user         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  coachId        String
+  coach          coach        @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  totalHours     Int
+  remainingHours Int
+  priceCents     Int
+  stripePaymentId String?
+  status         PackageStatus @default(ACTIVE)
+  sessions       PackageSession[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@index([playerId])
+  @@index([coachId])
+}
+
+model PackageSession {
+  id               String       @id @default(cuid())
+  packageId        String
+  package          CoachingPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  reservationId    String?      @unique
+  reservation      Reservation? @relation(fields: [reservationId], references: [id])
+  startDate        DateTime
+  endDate          DateTime
+  durationMinutes  Int
+  status           PackageSessionStatus @default(SCHEDULED)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([packageId])
 }
 
 model player {
@@ -249,6 +290,7 @@ model user {
   player        player?
   session       session[]
   reservations  Reservation[]
+  coachingPackages CoachingPackage[]
 }
 
 model verification {
@@ -287,4 +329,16 @@ enum ReservationStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+}
+
+enum PackageStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum PackageSessionStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
 }

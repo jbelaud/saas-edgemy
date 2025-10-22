@@ -1,26 +1,88 @@
 'use client';
 
-import { Calendar, Clock, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Calendar, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
+interface Slot {
+  start: string;
+  end: string;
+}
 
 interface CoachAvailabilityCalendarProps {
   coachId: string;
+  announcementId: string;
+  onSelectSlot?: (slot: Slot) => void;
   isInactive?: boolean;
 }
 
-// TODO: Remplacer par de vraies données de disponibilités depuis la DB
-const MOCK_AVAILABILITIES = [
-  { date: '2025-10-20', slots: ['09:00', '14:00', '16:00'] },
-  { date: '2025-10-21', slots: ['10:00', '15:00'] },
-  { date: '2025-10-22', slots: ['09:00', '11:00', '14:00', '17:00'] },
-  { date: '2025-10-23', slots: ['13:00', '15:00', '18:00'] },
-  { date: '2025-10-24', slots: ['09:00', '10:00', '14:00'] },
-];
+export function CoachAvailabilityCalendar({ 
+  coachId, 
+  announcementId, 
+  onSelectSlot,
+  isInactive = false 
+}: CoachAvailabilityCalendarProps) {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
 
-export function CoachAvailabilityCalendar({ isInactive = false }: CoachAvailabilityCalendarProps) {
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  useEffect(() => {
+    if (!isInactive) {
+      fetchSlots(selectedDate);
+    }
+  }, [selectedDate, isInactive]);
 
-  const selectedAvailability = MOCK_AVAILABILITIES.find((a) => a.date === selectedDate);
+  const fetchSlots = async (date: Date) => {
+    setIsLoading(true);
+    try {
+      // Récupérer les créneaux pour la semaine sélectionnée
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 7);
+      endDate.setHours(23, 59, 59, 999);
+
+      const response = await fetch(
+        `/api/coach/${coachId}/available-slots?` +
+        `startDate=${startDate.toISOString()}&` +
+        `endDate=${endDate.toISOString()}&` +
+        `announcementId=${announcementId}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setSlots(data.slots || []);
+      }
+    } catch (error) {
+      console.error('Erreur chargement créneaux:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSelectSlot = (slot: Slot) => {
+    setSelectedSlot(slot);
+    if (onSelectSlot) {
+      onSelectSlot(slot);
+    }
+  };
+
+  // Grouper les créneaux par date
+  const slotsByDate = slots.reduce((acc, slot) => {
+    const dateKey = slot.start.split('T')[0];
+    if (!acc[dateKey]) {
+      acc[dateKey] = [];
+    }
+    acc[dateKey].push(slot);
+    return acc;
+  }, {} as Record<string, Slot[]>);
+
+  const availableDates = Object.keys(slotsByDate).sort();
+  const selectedDateKey = format(selectedDate, 'yyyy-MM-dd');
+  const selectedDaySlots = slotsByDate[selectedDateKey] || [];
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -42,71 +104,86 @@ export function CoachAvailabilityCalendar({ isInactive = false }: CoachAvailabil
       {/* Mini calendrier */}
       <div className="space-y-2 mb-4">
         <p className="text-sm text-gray-600">Prochaines disponibilités :</p>
-        <div className="grid grid-cols-1 gap-2">
-          {MOCK_AVAILABILITIES.slice(0, 5).map((availability) => {
-            const date = new Date(availability.date);
-            const isSelected = selectedDate === availability.date;
-            
-            return (
-              <button
-                key={availability.date}
-                onClick={() => setSelectedDate(isSelected ? null : availability.date)}
-                disabled={isInactive}
-                className={`
-                  p-3 rounded-lg border-2 text-left transition-all
-                  ${isSelected 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                  }
-                  ${isInactive ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                `}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {date.toLocaleDateString('fr-FR', { 
-                        weekday: 'short', 
-                        day: 'numeric', 
-                        month: 'short' 
-                      })}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {availability.slots.length} créneaux
-                    </p>
+        
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+          </div>
+        ) : availableDates.length === 0 ? (
+          <p className="text-sm text-gray-500 text-center py-8">
+            Aucun créneau disponible pour le moment
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-2">
+            {availableDates.slice(0, 7).map((dateKey) => {
+              const date = new Date(dateKey);
+              const isSelected = selectedDateKey === dateKey;
+              const daySlots = slotsByDate[dateKey];
+              
+              return (
+                <button
+                  key={dateKey}
+                  onClick={() => setSelectedDate(date)}
+                  disabled={isInactive}
+                  className={`
+                    p-3 rounded-lg border-2 text-left transition-all
+                    ${isSelected 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                    }
+                    ${isInactive ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {format(date, 'EEE d MMM', { locale: fr })}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {daySlots.length} créneaux
+                      </p>
+                    </div>
+                    <Clock className="w-4 h-4 text-gray-400" />
                   </div>
-                  <Clock className="w-4 h-4 text-gray-400" />
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Créneaux horaires */}
-      {selectedAvailability && !isInactive && (
+      {selectedDaySlots.length > 0 && !isInactive && (
         <div className="pt-4 border-t border-gray-200">
           <p className="text-sm font-medium text-gray-700 mb-3">
-            Créneaux disponibles :
+            Créneaux disponibles le {format(selectedDate, 'PPP', { locale: fr })} :
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            {selectedAvailability.slots.map((slot) => (
-              <button
-                key={slot}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-              >
-                {slot}
-              </button>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {selectedDaySlots.map((slot, index) => {
+              const startTime = format(new Date(slot.start), 'HH:mm');
+              const endTime = format(new Date(slot.end), 'HH:mm');
+              const isSelected = selectedSlot?.start === slot.start;
+
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleSelectSlot(slot)}
+                  className={`
+                    px-3 py-2 text-sm border-2 rounded-lg transition-all flex items-center justify-center gap-2
+                    ${isSelected
+                      ? 'border-blue-500 bg-blue-500 text-white'
+                      : 'border-gray-200 hover:border-blue-500 hover:bg-blue-50'
+                    }
+                  `}
+                >
+                  <Clock className="h-4 w-4" />
+                  {startTime} - {endTime}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
-
-      {/* Note pour développement futur */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <p className="text-xs text-gray-500 italic">
-          💡 À implémenter : Synchronisation avec Google Calendar / Calendly
-        </p>
-      </div>
     </div>
   );
 }

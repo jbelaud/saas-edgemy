@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { addDays, format, parse, setHours, setMinutes, startOfDay, isBefore, isAfter } from 'date-fns';
 
-// GET - Récupérer les créneaux disponibles d'un coach
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ coachId: string }> }
@@ -10,146 +8,167 @@ export async function GET(
   try {
     const { coachId } = await params;
     const { searchParams } = new URL(request.url);
+    
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     const announcementId = searchParams.get('announcementId');
 
-    if (!announcementId) {
+    if (!startDate || !endDate || !announcementId) {
       return NextResponse.json(
-        { error: 'announcementId requis' },
+        { error: 'startDate, endDate et announcementId requis' },
         { status: 400 }
       );
     }
 
-    // Récupérer l'annonce pour connaître la durée
+    // 1. Récupérer l'annonce pour connaître la durée
     const announcement = await prisma.announcement.findUnique({
       where: { id: announcementId },
-      select: { duration: true },
+      select: { durationMin: true, coachId: true },
     });
 
-    if (!announcement) {
-      return NextResponse.json(
-        { error: 'Annonce non trouvée' },
-        { status: 404 }
-      );
+    if (!announcement || announcement.coachId !== coachId) {
+      return NextResponse.json({ error: 'Annonce non trouvée' }, { status: 404 });
     }
 
-    const sessionDuration = announcement.duration; // en minutes
+    const durationMin = announcement.durationMin;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
-    // Récupérer les disponibilités récurrentes du coach
-    const availabilities = await prisma.availability.findMany({
+    // 2. Récupérer les disponibilités
+    const [recurringAvailabilities, specificAvailabilities, exceptions] = await Promise.all([
+      // Disponibilités récurrentes
+      prisma.availability.findMany({
+        where: { coachId, type: 'RECURRING', isBlocked: false },
+      }),
+      // Disponibilités spécifiques dans la période
+      prisma.availability.findMany({
+        where: {
+          coachId,
+          type: 'SPECIFIC',
+          isBlocked: false,
+          specificDate: { gte: start, lte: end },
+        },
+      }),
+      // Exceptions/blocages dans la période
+      prisma.availability.findMany({
+        where: {
+          coachId,
+          type: 'EXCEPTION',
+          isBlocked: true,
+          specificDate: { gte: start, lte: end },
+        },
+      }),
+    ]);
+
+    // 3. Récupérer les réservations existantes
+    const reservations = await prisma.reservation.findMany({
       where: {
         coachId,
-        type: 'RECURRING',
-        isBlocked: false,
+        startDate: { gte: start },
+        endDate: { lte: end },
+        status: { in: ['CONFIRMED', 'PENDING'] },
       },
-      orderBy: [
-        { dayOfWeek: 'asc' },
-        { startTime: 'asc' },
-      ],
+      select: { startDate: true, endDate: true },
     });
 
-    if (availabilities.length === 0) {
-      return NextResponse.json({ availableSlots: [] });
-    }
+    // 4. Générer les créneaux disponibles
+    const slots = generateAvailableSlots(
+      start,
+      end,
+      durationMin,
+      recurringAvailabilities,
+      specificAvailabilities,
+      exceptions,
+      reservations
+    );
 
-    // Récupérer les réservations existantes pour les 30 prochains jours
-    const today = startOfDay(new Date());
-    const endDate = addDays(today, 30);
+    return NextResponse.json({ slots });
+  } catch (error) {
+    console.error('Erreur calcul créneaux:', error);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  }
+}
 
-    const existingReservations = await prisma.reservation.findMany({
-      where: {
-        coachId,
-        startDate: {
-          gte: today,
-          lte: endDate,
-        },
-        status: {
-          in: ['PENDING', 'CONFIRMED'],
-        },
-      },
-      select: {
-        startDate: true,
-        endDate: true,
-      },
-    });
+// Fonction de génération des créneaux
+function generateAvailableSlots(
+  startDate: Date,
+  endDate: Date,
+  durationMin: number,
+  recurringAvailabilities: any[],
+  specificAvailabilities: any[],
+  exceptions: any[],
+  reservations: any[]
+) {
+  const slots: { start: string; end: string }[] = [];
+  const currentDate = new Date(startDate);
+  const SLOT_INTERVAL_MIN = 30; // Créneaux tous les 30 minutes
 
-    // Générer les créneaux disponibles pour les 30 prochains jours
-    const availableSlots: { date: string; slots: string[] }[] = [];
+  while (currentDate <= endDate) {
+    const dayOfWeek = currentDate.getDay();
+    const dateString = currentDate.toISOString().split('T')[0];
 
-    for (let i = 0; i < 30; i++) {
-      const currentDate = addDays(today, i);
-      const dayOfWeek = currentDate.getDay(); // 0=Dimanche, 1=Lundi, ..., 6=Samedi
+    // Vérifier si le jour est bloqué
+    const isBlocked = exceptions.some(
+      (exc) => exc.specificDate?.toISOString().split('T')[0] === dateString
+    );
 
-      // Trouver les disponibilités pour ce jour de la semaine
-      const dayAvailabilities = availabilities.filter(
-        (avail) => avail.dayOfWeek === dayOfWeek
-      );
+    if (!isBlocked) {
+      // Récupérer les disponibilités pour ce jour
+      const dayAvailabilities = [
+        ...recurringAvailabilities.filter((a) => a.dayOfWeek === dayOfWeek),
+        ...specificAvailabilities.filter(
+          (a) => a.specificDate?.toISOString().split('T')[0] === dateString
+        ),
+      ];
 
-      if (dayAvailabilities.length === 0) continue;
+      // Générer les créneaux pour chaque disponibilité
+      for (const avail of dayAvailabilities) {
+        if (!avail.startTime || !avail.endTime) continue;
 
-      const slots: string[] = [];
+        const [startHour, startMin] = avail.startTime.split(':').map(Number);
+        const [endHour, endMin] = avail.endTime.split(':').map(Number);
 
-      for (const availability of dayAvailabilities) {
-        if (!availability.startTime || !availability.endTime) continue;
+        let slotStart = new Date(currentDate);
+        slotStart.setHours(startHour, startMin, 0, 0);
 
-        // Parser les heures de début et fin
-        const [startHour, startMinute] = availability.startTime.split(':').map(Number);
-        const [endHour, endMinute] = availability.endTime.split(':').map(Number);
+        const availEnd = new Date(currentDate);
+        availEnd.setHours(endHour, endMin, 0, 0);
 
-        let currentSlotTime = setMinutes(setHours(currentDate, startHour), startMinute);
-        const endTime = setMinutes(setHours(currentDate, endHour), endMinute);
+        // Générer créneaux tous les SLOT_INTERVAL_MIN minutes
+        while (slotStart < availEnd) {
+          const slotEnd = new Date(slotStart);
+          slotEnd.setMinutes(slotEnd.getMinutes() + durationMin);
 
-        // Générer les créneaux toutes les heures (ou selon la durée de la session)
-        while (isBefore(currentSlotTime, endTime)) {
-          const slotEndTime = addDays(currentSlotTime, 0);
-          slotEndTime.setMinutes(slotEndTime.getMinutes() + sessionDuration);
+          // Vérifier que le créneau ne dépasse pas la disponibilité
+          if (slotEnd <= availEnd) {
+            // Vérifier que le créneau ne chevauche pas une réservation
+            const isReserved = reservations.some((res) => {
+              const resStart = new Date(res.startDate);
+              const resEnd = new Date(res.endDate);
+              return (
+                (slotStart >= resStart && slotStart < resEnd) ||
+                (slotEnd > resStart && slotEnd <= resEnd) ||
+                (slotStart <= resStart && slotEnd >= resEnd)
+              );
+            });
 
-          // Vérifier que le créneau ne dépasse pas la fin de disponibilité
-          if (isAfter(slotEndTime, endTime)) break;
-
-          // Vérifier que le créneau n'est pas dans le passé
-          if (isBefore(currentSlotTime, new Date())) {
-            currentSlotTime = addDays(currentSlotTime, 0);
-            currentSlotTime.setMinutes(currentSlotTime.getMinutes() + sessionDuration);
-            continue;
+            if (!isReserved) {
+              slots.push({
+                start: slotStart.toISOString(),
+                end: slotEnd.toISOString(),
+              });
+            }
           }
 
-          // Vérifier que le créneau ne chevauche pas une réservation existante
-          const isSlotAvailable = !existingReservations.some((reservation) => {
-            const resStart = new Date(reservation.startDate);
-            const resEnd = new Date(reservation.endDate);
-            
-            // Vérifier le chevauchement
-            return (
-              (currentSlotTime >= resStart && currentSlotTime < resEnd) ||
-              (slotEndTime > resStart && slotEndTime <= resEnd) ||
-              (currentSlotTime <= resStart && slotEndTime >= resEnd)
-            );
-          });
-
-          if (isSlotAvailable) {
-            slots.push(format(currentSlotTime, 'HH:mm'));
-          }
-
-          // Passer au créneau suivant
-          currentSlotTime = addDays(currentSlotTime, 0);
-          currentSlotTime.setMinutes(currentSlotTime.getMinutes() + sessionDuration);
+          // Avancer de SLOT_INTERVAL_MIN minutes
+          slotStart.setMinutes(slotStart.getMinutes() + SLOT_INTERVAL_MIN);
         }
       }
-
-      if (slots.length > 0) {
-        availableSlots.push({
-          date: format(currentDate, 'yyyy-MM-dd'),
-          slots: slots.sort(),
-        });
-      }
     }
 
-    return NextResponse.json({ availableSlots });
-  } catch (error) {
-    console.error('Erreur lors de la récupération des créneaux disponibles:', error);
-    return NextResponse.json(
-      { error: 'Erreur serveur' },
-      { status: 500 }
-    );
+    // Passer au jour suivant
+    currentDate.setDate(currentDate.getDate() + 1);
   }
+
+  return slots;
 }

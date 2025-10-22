@@ -102,6 +102,67 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PATCH - Modifier une disponibilité
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
+
+    const coach = await prisma.coach.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!coach) {
+      return NextResponse.json({ error: 'Coach non trouvé' }, { status: 404 });
+    }
+
+    const body = await request.json();
+    const { id, startTime, endTime, isBlocked } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'ID de disponibilité requis' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier que la disponibilité appartient au coach
+    const availability = await prisma.availability.findUnique({
+      where: { id },
+    });
+
+    if (!availability || availability.coachId !== coach.id) {
+      return NextResponse.json(
+        { error: 'Disponibilité non trouvée' },
+        { status: 404 }
+      );
+    }
+
+    // Mettre à jour la disponibilité
+    const updatedAvailability = await prisma.availability.update({
+      where: { id },
+      data: {
+        ...(startTime && { startTime }),
+        ...(endTime && { endTime }),
+        ...(isBlocked !== undefined && { isBlocked }),
+      },
+    });
+
+    return NextResponse.json({ availability: updatedAvailability });
+  } catch (error) {
+    console.error('Erreur lors de la modification de la disponibilité:', error);
+    return NextResponse.json(
+      { error: 'Erreur serveur' },
+      { status: 500 }
+    );
+  }
+}
+
 // DELETE - Supprimer une disponibilité
 export async function DELETE(request: NextRequest) {
   try {
