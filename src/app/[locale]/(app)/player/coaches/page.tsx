@@ -15,7 +15,7 @@ export default function PlayerCoachesPage() {
   const router = useRouter();
   const locale = useLocale();
   const { data: session, isPending } = useSession();
-  const [coaches, setCoaches] = useState<any[]>([]);
+  const [coaches, setCoaches] = useState<unknown[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,7 +94,7 @@ export default function PlayerCoachesPage() {
           <CardHeader>
             <CardTitle className="text-emerald-900 flex items-center gap-2 text-2xl">
               <Search className="h-6 w-6" />
-              Tu n'as pas encore réservé de coach
+              Tu n&apos;as pas encore réservé de coach
             </CardTitle>
             <CardDescription className="text-emerald-800 text-base mt-3">
               Commence ton parcours de progression en réservant ta première session avec un coach professionnel.

@@ -14,7 +14,7 @@ export default function PlayerDashboardPage() {
   const router = useRouter();
   const locale = useLocale();
   const { data: session, isPending } = useSession();
-  const [playerData, setPlayerData] = useState<any>(null);
+  const [playerData, setPlayerData] = useState<{ player?: { firstName?: string; lastName?: string } } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,7 +78,7 @@ export default function PlayerDashboardPage() {
           Salut {firstName} 👋
         </h1>
         <p className="text-gray-600">
-          Prêt à progresser aujourd'hui ?
+          Prêt à progresser aujourd&apos;hui ?
         </p>
       </div>
 

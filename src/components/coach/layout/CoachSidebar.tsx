@@ -103,7 +103,7 @@ export function CoachSidebar() {
       try {
         const response = await fetch('/api/player/profile');
         setHasPlayerProfile(response.ok);
-      } catch (error) {
+      } catch {
         setHasPlayerProfile(false);
       }
     };

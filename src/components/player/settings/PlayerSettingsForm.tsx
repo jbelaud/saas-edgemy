@@ -194,7 +194,7 @@ export function PlayerSettingsForm() {
               </SelectContent>
             </Select>
             <p className="text-sm text-gray-500">
-              Langue de l'interface (à venir)
+              Langue de l&apos;interface (à venir)
             </p>
           </div>
 

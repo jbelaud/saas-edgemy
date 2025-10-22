@@ -12,26 +12,13 @@ export async function GET(request: NextRequest) {
     const maxPrice = searchParams.get('maxPrice');
     const language = searchParams.get('language');
 
-    // Construire les conditions de filtrage
-    const where: any = {
-      status: 'ACTIVE', // Seulement les coachs actifs
-    };
-
-    if (format) {
-      where.formats = {
-        has: format,
-      };
-    }
-
-    if (language) {
-      where.languages = {
-        has: language,
-      };
-    }
-
     // Récupérer les coachs actifs
     const coaches = await prisma.coach.findMany({
-      where,
+      where: {
+        status: 'ACTIVE',
+        ...(format && { formats: { has: format } }),
+        ...(language && { languages: { has: language } }),
+      },
       select: {
         id: true,
         slug: true,

@@ -9,9 +9,30 @@ import { Input } from '@/components/ui/input';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 import { PlayerExploreCoaches } from '@/components/player/coaches/PlayerExploreCoaches';
 
+interface Coach {
+  id: string;
+  slug: string;
+  firstName: string;
+  lastName: string;
+  bio?: string;
+  avatarUrl?: string;
+  formats: string[];
+  languages: string[];
+  experience?: number;
+  roi?: number;
+  stakes?: string;
+  badges: string[];
+  announcements: unknown[];
+  priceRange?: {
+    min: number;
+    max: number;
+  };
+  announcementTypes: string[];
+}
+
 export default function PlayerCoachesExplorePage() {
   const locale = useLocale();
-  const [coaches, setCoaches] = useState<any[]>([]);
+  const [coaches, setCoaches] = useState<Coach[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');

@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ExternalLink, Star, Languages, TrendingUp } from 'lucide-react';
+import { ExternalLink, Languages, TrendingUp } from 'lucide-react';
 
 interface Coach {
   id: string;
@@ -103,7 +103,7 @@ export function PlayerExploreCoaches({ coaches, searchQuery }: PlayerExploreCoac
                   {coach.experience && (
                     <p className="text-sm text-gray-600 flex items-center gap-1">
                       <TrendingUp className="h-3 w-3" />
-                      {coach.experience} ans d'expérience
+                      {coach.experience} ans d&apos;expérience
                     </p>
                   )}
                 </div>
