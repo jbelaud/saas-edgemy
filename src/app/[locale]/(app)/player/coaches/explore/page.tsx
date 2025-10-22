@@ -31,7 +31,6 @@ interface Coach {
 }
 
 export default function PlayerCoachesExplorePage() {
-  const locale = useLocale();
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

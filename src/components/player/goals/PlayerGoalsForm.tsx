@@ -131,7 +131,7 @@ export function PlayerGoalsForm() {
         <CardHeader>
           <CardTitle>Définis tes objectifs</CardTitle>
           <CardDescription>
-            Partage tes objectifs pour que tes coachs puissent mieux t'accompagner
+            Partage tes objectifs pour que tes coachs puissent mieux t&apos;accompagner
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

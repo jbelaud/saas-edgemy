@@ -22,7 +22,7 @@ interface Coach {
   roi?: number;
   stakes?: string;
   badges: string[];
-  announcements: any[];
+  announcements: unknown[];
   priceRange?: {
     min: number;
     max: number;
