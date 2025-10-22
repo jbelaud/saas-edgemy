@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
+import { randomBytes } from "crypto";
+
+// Fonction pour générer un ID unique
+function generateId() {
+  return randomBytes(16).toString('hex');
+}
 
 export async function GET() {
   try {
@@ -40,6 +46,7 @@ export async function GET() {
 
       player = await prisma.player.create({
         data: {
+          id: generateId(),
           userId: session.user.id,
           firstName,
           lastName,
