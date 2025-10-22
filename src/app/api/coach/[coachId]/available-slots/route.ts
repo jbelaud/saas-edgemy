@@ -72,7 +72,7 @@ export async function GET(
     });
 
     // 4. Générer les créneaux disponibles
-    const slots = generateAvailableSlots(
+    const slots = generateSlots(
       start,
       end,
       durationMin,
