@@ -11,11 +11,25 @@ import Link from 'next/link';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 import { PlayerCoachesList } from '@/components/player/coaches/PlayerCoachesList';
 
+interface Coach {
+  id: string;
+  slug: string;
+  firstName: string;
+  lastName: string;
+  bio?: string;
+  avatarUrl?: string;
+  formats: string[];
+  languages: string[];
+  status: string;
+  sessionsCount: number;
+  types: string[];
+}
+
 export default function PlayerCoachesPage() {
   const router = useRouter();
   const locale = useLocale();
   const { data: session, isPending } = useSession();
-  const [coaches, setCoaches] = useState<unknown[]>([]);
+  const [coaches, setCoaches] = useState<Coach[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
