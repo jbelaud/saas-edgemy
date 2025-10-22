@@ -12,7 +12,7 @@ interface Slot {
 
 interface CoachAvailabilityCalendarProps {
   coachId: string;
-  announcementId: string;
+  announcementId?: string;
   onSelectSlot?: (slot: Slot) => void;
   isInactive?: boolean;
 }
@@ -45,6 +45,12 @@ export function CoachAvailabilityCalendar({
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 7);
       endDate.setHours(23, 59, 59, 999);
+
+      // Si pas d'announcementId, ne pas charger les créneaux (affichage simple des disponibilités)
+      if (!announcementId) {
+        setSlots([]);
+        return;
+      }
 
       const response = await fetch(
         `/api/coach/${coachId}/available-slots?` +
