@@ -23,7 +23,7 @@ const toolSchema = z.object({
     }, 'Le prix doit être un nombre entier entre 0€ et 9999€'),
   description: z.string().min(20, 'La description doit contenir au moins 20 caractères'),
   prerequisites: z.string().optional(),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 type ToolFormValues = z.infer<typeof toolSchema>;
