@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 
 export function AuthButton() {
+  const locale = useLocale();
   const { data: session, isPending } = useSession();
 
   if (isPending) {
@@ -54,7 +56,7 @@ export function AuthButton() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/dashboard" className="flex items-center cursor-pointer">
+            <Link href={`/${locale}/dashboard`} className="flex items-center cursor-pointer">
               <LayoutDashboard className="mr-2 h-4 w-4" />
               <span>Dashboard</span>
             </Link>
@@ -77,7 +79,7 @@ export function AuthButton() {
       onClick={() =>
         signIn.social({
           provider: "google",
-          callbackURL: "/dashboard",
+          callbackURL: `/${locale}/dashboard`,
         })
       }
       className="bg-white text-gray-900 hover:bg-gray-100 border border-gray-300"

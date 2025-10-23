@@ -1,8 +1,12 @@
+'use client';
+
 import Link from "next/link";
 import { ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "next-intl";
 
 export default function UnauthorizedPage() {
+  const locale = useLocale();
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4">
       <div className="w-full max-w-md space-y-8 text-center">
@@ -28,13 +32,13 @@ export default function UnauthorizedPage() {
           
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button asChild>
-              <Link href="/dashboard">
+              <Link href={`/${locale}/dashboard`}>
                 Retour au tableau de bord
               </Link>
             </Button>
             
             <Button variant="outline" asChild>
-              <Link href="/">
+              <Link href={`/${locale}`}>
                 Retour à l&apos;accueil
               </Link>
             </Button>

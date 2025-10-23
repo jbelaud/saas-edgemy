@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 
 interface LoginModalProps {
   open: boolean;
@@ -22,10 +23,11 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToSignup }: LoginModalProps) {
+  const locale = useLocale();
   // En dev, pré-remplir avec le compte de test
   const isDev = process.env.NODE_ENV === 'development';
-  const [email, setEmail] = useState(isDev ? "coach-actif@edgemy.fr" : "");
-  const [password, setPassword] = useState(isDev ? "Password123!" : "");
+  const [email, setEmail] = useState(isDev ? "jeremy.belaud@gmail.com" : "");
+  const [password, setPassword] = useState(isDev ? "Jb@2024!" : "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +42,7 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
       const result = await signIn.email({
         email,
         password,
-        callbackURL: "/dashboard",
+        callbackURL: `/${locale}/dashboard`,
       });
       
       console.log('✅ Résultat complet:', JSON.stringify(result, null, 2));
@@ -62,7 +64,7 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
         console.log('✅ Connexion réussie, données:', result.data);
         onOpenChange(false);
         // Force reload pour s'assurer que la session est bien chargée
-        window.location.href = "/dashboard";
+        window.location.href = `/${locale}/dashboard`;
       } else {
         console.log('⚠️ Résultat inattendu:', result);
         setError("Résultat de connexion inattendu");
@@ -88,7 +90,7 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
       // Le rôle sera déjà défini si l'utilisateur existe
       await signIn.social({
         provider: "google",
-        callbackURL: "/dashboard",
+        callbackURL: `/${locale}/dashboard`,
       });
     } catch (error) {
       console.error("Erreur de connexion Google:", error);
