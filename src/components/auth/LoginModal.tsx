@@ -42,7 +42,7 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
       const result = await signIn.email({
         email,
         password,
-        callbackURL: `/${locale}/dashboard`,
+        callbackURL: `/${locale}/player/dashboard`,
       });
       
       console.log('✅ Résultat complet:', JSON.stringify(result, null, 2));
@@ -64,7 +64,7 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
         console.log('✅ Connexion réussie, données:', result.data);
         onOpenChange(false);
         // Force reload pour s'assurer que la session est bien chargée
-        window.location.href = `/${locale}/dashboard`;
+        window.location.href = `/${locale}/player/dashboard`;
       } else {
         console.log('⚠️ Résultat inattendu:', result);
         setError("Résultat de connexion inattendu");
@@ -90,7 +90,7 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
       // Le rôle sera déjà défini si l'utilisateur existe
       await signIn.social({
         provider: "google",
-        callbackURL: `/${locale}/dashboard`,
+        callbackURL: `/${locale}/player/dashboard`,
       });
     } catch (error) {
       console.error("Erreur de connexion Google:", error);
