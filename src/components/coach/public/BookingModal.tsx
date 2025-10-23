@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import {
@@ -13,7 +13,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, Euro, Loader2, AlertCircle, Package } from 'lucide-react';
+import { Calendar, Clock, Euro, Loader2, AlertCircle, Package, CheckCircle } from 'lucide-react';
+import { CoachAvailabilityCalendar } from './CoachAvailabilityCalendar';
 
 interface AnnouncementPack {
   id: string;
@@ -41,38 +42,13 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [message, setMessage] = useState('');
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [availabilities, setAvailabilities] = useState<{ date: string; slots: string[] }[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<{ start: string; end: string } | null>(null);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  // Charger les disponibilités depuis l'API
-  useEffect(() => {
-    if (isOpen && coachId && announcement.id) {
-      fetchAvailabilities();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, coachId, announcement.id]);
-
-  const fetchAvailabilities = async () => {
-    setIsLoadingSlots(true);
-    try {
-      const response = await fetch(
-        `/api/coach/${coachId}/available-slots?announcementId=${announcement.id}`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setAvailabilities(data.availableSlots || []);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des disponibilités:', error);
-    } finally {
-      setIsLoadingSlots(false);
-    }
+  const handleSlotSelect = (slot: { start: string; end: string }) => {
+    setSelectedSlot(slot);
   };
-
-  const selectedAvailability = availabilities.find((a) => a.date === selectedDate);
   
   // Trouver le pack sélectionné
   const selectedPack = selectedPackId 
@@ -93,35 +69,46 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
       return;
     }
 
-    setIsLoading(true);
-
-    if (!selectedDate || !selectedSlot) {
-      alert('Veuillez sélectionner une date et un créneau horaire');
-      setIsLoading(false);
+    if (!selectedSlot) {
+      alert('Veuillez sélectionner un créneau horaire');
       return;
     }
 
+    setIsLoading(true);
+
     try {
-      // TODO: Implémenter l'API de réservation
       const response = await fetch('/api/reservations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           announcementId: announcement.id,
           coachId,
-          message,
-          selectedDate,
-          selectedSlot,
+          startDate: selectedSlot.start,
+          endDate: selectedSlot.end,
+          packageId: selectedPackId || null,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la réservation');
+        const errorData = await response.json();
+        if (response.status === 409) {
+          alert('Ce créneau n\'est plus disponible. Veuillez en choisir un autre.');
+        } else {
+          throw new Error(errorData.error || 'Erreur lors de la réservation');
+        }
+        return;
       }
 
-      // Succès - rediriger vers la page de paiement ou confirmation
-      alert('Demande de réservation envoyée ! Le coach vous contactera bientôt.');
-      onClose();
+      // Succès
+      setBookingSuccess(true);
+      setTimeout(() => {
+        onClose();
+        setBookingSuccess(false);
+        setSelectedSlot(null);
+        setMessage('');
+        // Recharger la page pour voir la réservation
+        router.refresh();
+      }, 2000);
     } catch (error) {
       console.error('Erreur réservation:', error);
       alert('Une erreur est survenue. Veuillez réessayer.');
@@ -142,7 +129,24 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {bookingSuccess ? (
+          <div className="py-8 text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="rounded-full bg-green-100 p-3">
+                <CheckCircle className="h-12 w-12 text-green-600" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Réservation confirmée !
+              </h3>
+              <p className="text-gray-600">
+                Votre session a été réservée avec succès. Le coach vous contactera bientôt.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
           {/* Récapitulatif */}
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
             {isPack && (
@@ -196,99 +200,19 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
 
           {/* Sélection de créneaux disponibles */}
           <div className="space-y-4">
-            {/* Sélection de la date */}
-            <div>
-              <Label className="text-base font-semibold mb-3 block">
-                1. Choisissez une date disponible
-              </Label>
-              {isLoadingSlots ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                </div>
-              ) : availabilities.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-                  <p className="text-sm">Aucun créneau disponible pour le moment</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-                  {availabilities.map((availability) => {
-                  const date = new Date(availability.date);
-                  const isSelected = selectedDate === availability.date;
-                  
-                  return (
-                    <button
-                      key={availability.date}
-                      type="button"
-                      onClick={() => {
-                        setSelectedDate(availability.date);
-                        setSelectedSlot(null); // Reset slot when changing date
-                      }}
-                      className={`
-                        p-3 rounded-lg border-2 text-left transition-all
-                        ${isSelected 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                        }
-                      `}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {date.toLocaleDateString('fr-FR', { 
-                              weekday: 'long', 
-                              day: 'numeric', 
-                              month: 'long' 
-                            })}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {availability.slots.length} créneaux disponibles
-                          </p>
-                        </div>
-                        <Clock className="w-4 h-4 text-gray-400" />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-              )}
-            </div>
-
-            {/* Sélection du créneau horaire */}
-            {selectedDate && selectedAvailability && (
-              <div>
-                <Label className="text-base font-semibold mb-3 block">
-                  2. Choisissez un créneau horaire
-                </Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {selectedAvailability.slots.map((slot) => {
-                    const isSelected = selectedSlot === slot;
-                    
-                    return (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setSelectedSlot(slot)}
-                        className={`
-                          px-4 py-3 text-sm font-medium rounded-lg border-2 transition-all
-                          ${isSelected
-                            ? 'border-blue-500 bg-blue-500 text-white'
-                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                          }
-                        `}
-                      >
-                        {slot}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <Label className="text-base font-semibold mb-3 block">
+              Choisissez un créneau disponible
+            </Label>
+            <CoachAvailabilityCalendar
+              coachId={coachId}
+              announcementId={announcement.id}
+              onSelectSlot={handleSlotSelect}
+            />
 
             {/* Message optionnel */}
             {selectedSlot && (
-              <div>
-                <Label htmlFor="message">3. Message pour le coach (optionnel)</Label>
+              <div className="pt-4">
+                <Label htmlFor="message">Message pour le coach (optionnel)</Label>
                 <Textarea
                   id="message"
                   value={message}
@@ -314,18 +238,20 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
           {selectedSlot && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-sm text-green-900">
-                <strong>✓ Créneau sélectionné :</strong> {new Date(selectedDate!).toLocaleDateString('fr-FR', { 
+                <strong>✓ Créneau sélectionné :</strong> {new Date(selectedSlot.start).toLocaleDateString('fr-FR', { 
                   weekday: 'long', 
                   day: 'numeric', 
-                  month: 'long' 
-                })} à {selectedSlot}
+                  month: 'long',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
               </p>
             </div>
           )}
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-900">
-              <strong>ℹ️ Important :</strong> Le paiement sera effectué après confirmation du coach.
+              <strong>ℹ️ Important :</strong> Votre réservation sera confirmée immédiatement. {isPack ? 'Les autres sessions du pack seront planifiées avec le coach.' : 'Le paiement sera traité ultérieurement.'}
             </p>
           </div>
 
@@ -349,6 +275,7 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );

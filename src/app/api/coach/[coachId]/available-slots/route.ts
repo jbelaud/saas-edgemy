@@ -9,16 +9,21 @@ export async function GET(
     const { coachId } = await params;
     const { searchParams } = new URL(request.url);
     
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
     const announcementId = searchParams.get('announcementId');
 
-    if (!startDate || !endDate || !announcementId) {
+    if (!announcementId) {
       return NextResponse.json(
-        { error: 'startDate, endDate et announcementId requis' },
+        { error: 'announcementId requis' },
         { status: 400 }
       );
     }
+
+    // Dates par défaut : aujourd'hui + 30 jours
+    const startDateParam = searchParams.get('startDate');
+    const endDateParam = searchParams.get('endDate');
+    
+    const start = startDateParam ? new Date(startDateParam) : new Date();
+    const end = endDateParam ? new Date(endDateParam) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     // 1. Récupérer l'annonce pour connaître la durée
     const announcement = await prisma.announcement.findUnique({
@@ -31,8 +36,6 @@ export async function GET(
     }
 
     const durationMin = announcement.durationMin;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
 
     // 2. Récupérer les disponibilités
     const [recurringAvailabilities, specificAvailabilities, exceptions] = await Promise.all([

@@ -38,12 +38,12 @@ export function CoachAvailabilityCalendar({
   const fetchSlots = async (date: Date) => {
     setIsLoading(true);
     try {
-      // Récupérer les créneaux pour la semaine sélectionnée
-      const startDate = new Date(date);
+      // Récupérer les créneaux pour les 30 prochains jours
+      const startDate = new Date();
       startDate.setHours(0, 0, 0, 0);
       
-      const endDate = new Date(date);
-      endDate.setDate(endDate.getDate() + 7);
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 30);
       endDate.setHours(23, 59, 59, 999);
 
       // Si pas d'announcementId, ne pas charger les créneaux (affichage simple des disponibilités)

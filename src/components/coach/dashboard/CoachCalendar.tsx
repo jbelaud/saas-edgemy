@@ -66,6 +66,14 @@ export function CoachCalendar({ coachId }: CoachCalendarProps) {
     }
   };
 
+  // Recharger les données toutes les 30 secondes pour voir les nouvelles réservations
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchData();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [coachId]);
+
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Lundi
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
