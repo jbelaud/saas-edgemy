@@ -162,32 +162,14 @@ model Availability {
   coachId   String
   coach     coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
   
-  // Type de disponibilité
-  type      AvailabilityType @default(RECURRING)
-  
-  // Pour les créneaux récurrents (ex: tous les lundis 14h-18h)
-  dayOfWeek Int?     // 0=Dimanche, 1=Lundi, ..., 6=Samedi
-  startTime String?  // Format "HH:mm" (ex: "14:00")
-  endTime   String?  // Format "HH:mm" (ex: "18:00")
-  
-  // Pour les créneaux spécifiques (ex: 25 oct 2025 14h-18h)
-  specificDate DateTime?
-  
-  // Pour les exceptions (jours bloqués)
-  isBlocked Boolean  @default(false)
+  start     DateTime // Date et heure de début du créneau
+  end       DateTime // Date et heure de fin du créneau
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   @@index([coachId])
-  @@index([dayOfWeek])
-  @@index([specificDate])
-}
-
-enum AvailabilityType {
-  RECURRING  // Créneau récurrent (ex: tous les lundis)
-  SPECIFIC   // Créneau spécifique (ex: 25 oct 2025)
-  EXCEPTION  // Exception/blocage (ex: vacances)
+  @@index([start])
 }
 
 model Reservation {

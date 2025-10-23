@@ -22,6 +22,7 @@ import {
   Users,
   Target,
   Settings,
+  Calendar,
   PanelLeftClose,
   PanelLeft,
   LogOut,
@@ -45,6 +46,11 @@ const navItems: NavItem[] = [
     title: "Trouver un coach",
     href: "/player/coaches/explore",
     icon: Search,
+  },
+  {
+    title: "Mes sessions",
+    href: "/player/sessions",
+    icon: Calendar,
   },
   {
     title: "Mes coachs",

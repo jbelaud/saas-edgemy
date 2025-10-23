@@ -54,8 +54,8 @@ const navItems: NavItem[] = [
     icon: Package,
   },
   {
-    title: "Disponibilités",
-    href: "/coach/availability",
+    title: "Mon Agenda",
+    href: "/coach/agenda",
     icon: Calendar,
   },
   {

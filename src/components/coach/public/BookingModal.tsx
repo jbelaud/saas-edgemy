@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Calendar, Clock, Euro, Loader2, AlertCircle, Package, CheckCircle } from 'lucide-react';
-import { CoachAvailabilityCalendar } from './CoachAvailabilityCalendar';
+import CoachPublicCalendarSimple from '@/components/calendar/CoachPublicCalendarSimple';
 
 interface AnnouncementPack {
   id: string;
@@ -46,8 +46,11 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
   const [selectedSlot, setSelectedSlot] = useState<{ start: string; end: string } | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  const handleSlotSelect = (slot: { start: string; end: string }) => {
-    setSelectedSlot(slot);
+  const handleSlotSelect = (slot: { id: string; start: Date; end: Date }) => {
+    setSelectedSlot({
+      start: slot.start.toISOString(),
+      end: slot.end.toISOString(),
+    });
   };
   
   // Trouver le pack sélectionné
@@ -203,9 +206,8 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
             <Label className="text-base font-semibold mb-3 block">
               Choisissez un créneau disponible
             </Label>
-            <CoachAvailabilityCalendar
+            <CoachPublicCalendarSimple
               coachId={coachId}
-              announcementId={announcement.id}
               onSelectSlot={handleSlotSelect}
             />
 
