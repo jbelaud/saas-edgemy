@@ -54,7 +54,7 @@ const navItems: NavItem[] = [
     icon: Package,
   },
   {
-    title: "Mon Agenda",
+    title: "Agenda",
     href: "/coach/agenda",
     icon: Calendar,
   },
@@ -159,7 +159,7 @@ export function CoachSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-3">
         {navItems.map((item) => {
-          const isActive = pathname === `/${locale}${item.href}`;
+          const isActive = pathname.includes(item.href);
           const Icon = item.icon;
 
           return (

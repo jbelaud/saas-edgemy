@@ -144,7 +144,7 @@ export function PlayerSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-3">
         {navItems.map((item) => {
-          const isActive = pathname === `/${locale}${item.href}`;
+          const isActive = pathname.includes(item.href);
           const Icon = item.icon;
 
           return (
