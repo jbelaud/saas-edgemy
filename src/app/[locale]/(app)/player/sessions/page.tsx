@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar, Clock, User } from 'lucide-react';
+import Image from 'next/image';
 
 export default async function PlayerSessionsPage() {
   const session = await auth.api.getSession({
@@ -81,9 +82,11 @@ export default async function PlayerSessionsPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         {reservation.coach.avatarUrl && (
-                          <img
+                          <Image
                             src={reservation.coach.avatarUrl}
                             alt={`${reservation.coach.firstName} ${reservation.coach.lastName}`}
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-full"
                           />
                         )}
@@ -145,9 +148,11 @@ export default async function PlayerSessionsPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         {reservation.coach.avatarUrl && (
-                          <img
+                          <Image
                             src={reservation.coach.avatarUrl}
                             alt={`${reservation.coach.firstName} ${reservation.coach.lastName}`}
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-full grayscale"
                           />
                         )}

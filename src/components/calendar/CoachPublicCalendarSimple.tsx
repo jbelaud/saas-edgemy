@@ -40,7 +40,7 @@ export default function CoachPublicCalendarSimple({ coachId, onSelectSlot }: Coa
         
         const data = await res.json();
         setEvents(
-          data.map((slot: any) => ({
+          data.map((slot: { id: string; start: string; end: string }) => ({
             id: slot.id,
             title: "Disponible",
             start: new Date(slot.start),

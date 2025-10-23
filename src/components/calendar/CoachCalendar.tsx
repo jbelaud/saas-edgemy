@@ -3,7 +3,7 @@
 import { Calendar, SlotInfo } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar-custom.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { localizer } from "./localizer";
 
 interface CalendarEvent {
@@ -21,7 +21,7 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchAvailabilities = async () => {
+  const fetchAvailabilities = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(`/api/coach/${coachId}/availability`);
@@ -29,7 +29,7 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
       
       const data = await res.json();
       setEvents(
-        data.map((slot: any) => ({
+        data.map((slot: { id: string; start: string; end: string }) => ({
           id: slot.id,
           title: "Disponible",
           start: new Date(slot.start),
@@ -41,11 +41,11 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [coachId]);
 
   useEffect(() => {
     fetchAvailabilities();
-  }, [coachId]);
+  }, [fetchAvailabilities]);
 
   const handleSelectSlot = async ({ start, end }: SlotInfo) => {
     try {
