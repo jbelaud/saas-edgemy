@@ -27,6 +27,8 @@ import {
   PanelLeft,
   LogOut,
   ArrowRightLeft,
+  UsersRound,
+  Wallet,
 } from "lucide-react";
 
 interface NavItem {
@@ -63,6 +65,16 @@ const navItems: NavItem[] = [
     icon: Target,
   },
   {
+    title: "Groupe de travail",
+    href: "/player/workgroup",
+    icon: UsersRound,
+  },
+  {
+    title: "Bankroll",
+    href: "/player/bankroll",
+    icon: Wallet,
+  },
+  {
     title: "Paramètres",
     href: "/player/settings",
     icon: Settings,
@@ -72,7 +84,7 @@ const navItems: NavItem[] = [
 export function PlayerSidebar() {
   const pathname = usePathname();
   const locale = useLocale();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true); // Collapsed par défaut sur mobile
   const [hasCoachProfile, setHasCoachProfile] = useState(false);
   const { data: session } = useSession();
 
