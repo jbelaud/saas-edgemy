@@ -10,7 +10,7 @@ export default function PlayerBankrollPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Bankroll</h1>
           <p className="text-gray-600 mt-2">
-            Gérez et suivez l'évolution de votre bankroll
+            Gérez et suivez l&apos;évolution de votre bankroll
           </p>
         </div>
 
@@ -34,7 +34,7 @@ export default function PlayerBankrollPage() {
             </div>
             
             <p className="text-gray-700 mb-6 text-lg">
-              Le <span className="font-semibold text-blue-600">gestionnaire de bankroll</span> sera disponible dans la <span className="font-semibold">Phase 2</span> de l'application.
+              Le <span className="font-semibold text-blue-600">gestionnaire de bankroll</span> sera disponible dans la <span className="font-semibold">Phase 2</span> de l&apos;application.
             </p>
             
             <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -42,7 +42,7 @@ export default function PlayerBankrollPage() {
               <ul className="text-left space-y-2 text-gray-600">
                 <li className="flex items-start gap-2">
                   <span className="text-blue-600 mt-1">✓</span>
-                  <span>Suivez l'évolution de votre bankroll en temps réel</span>
+                  <span>Suivez l&apos;évolution de votre bankroll en temps réel</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-600 mt-1">✓</span>

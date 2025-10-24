@@ -10,7 +10,7 @@ export default function PlayerWorkgroupPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Groupe de travail</h1>
           <p className="text-gray-600 mt-2">
-            Collaborez avec d'autres joueurs pour progresser ensemble
+            Collaborez avec d&apos;autres joueurs pour progresser ensemble
           </p>
         </div>
 
@@ -34,7 +34,7 @@ export default function PlayerWorkgroupPage() {
             </div>
             
             <p className="text-gray-700 mb-6 text-lg">
-              Les <span className="font-semibold text-emerald-600">groupes de travail</span> seront disponibles dans la <span className="font-semibold">Phase 2</span> de l'application.
+              Les <span className="font-semibold text-emerald-600">groupes de travail</span> seront disponibles dans la <span className="font-semibold">Phase 2</span> de l&apos;application.
             </p>
             
             <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -50,7 +50,7 @@ export default function PlayerWorkgroupPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-emerald-600 mt-1">✓</span>
-                  <span>Organisez des sessions d'étude en groupe</span>
+                  <span>Organisez des sessions d&apos;étude en groupe</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-emerald-600 mt-1">✓</span>
