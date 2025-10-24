@@ -21,7 +21,7 @@ interface AvailabilitySlot {
 
 interface CoachPublicCalendarProps {
   coachId: string;
-  onSelectSlot: (slot: AvailabilitySlot) => void;
+  onSelectSlot?: (slot: AvailabilitySlot) => void;
 }
 
 export default function CoachPublicCalendar({ coachId, onSelectSlot }: CoachPublicCalendarProps) {
@@ -55,11 +55,13 @@ export default function CoachPublicCalendar({ coachId, onSelectSlot }: CoachPubl
   }, [coachId]);
 
   const handleSelectEvent = (event: CalendarEvent) => {
-    onSelectSlot({
-      id: event.id,
-      start: event.start,
-      end: event.end,
-    });
+    if (onSelectSlot) {
+      onSelectSlot({
+        id: event.id,
+        start: event.start,
+        end: event.end,
+      });
+    }
   };
 
   if (loading) {
