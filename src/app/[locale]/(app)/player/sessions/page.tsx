@@ -1,46 +1,76 @@
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from '@/lib/auth-client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Clock, User } from 'lucide-react';
+import { Calendar, Clock, User, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 
-export default async function PlayerSessionsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+interface Reservation {
+  id: string;
+  startDate: Date;
+  endDate: Date;
+  status: string;
+  coach: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    avatarUrl: string | null;
+    slug: string;
+  };
+  announcement: {
+    title: string;
+    durationMin: number;
+  };
+}
 
-  if (!session?.user) {
-    redirect('/sign-in');
+export default function PlayerSessionsPage() {
+  const router = useRouter();
+  const { data: session, isPending } = useSession();
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push('/sign-in');
+      return;
+    }
+
+    if (session) {
+      fetchReservations();
+    }
+  }, [session, isPending, router]);
+
+  const fetchReservations = async () => {
+    try {
+      const response = await fetch('/api/player/reservations');
+      if (response.ok) {
+        const data = await response.json();
+        setReservations(data);
+      }
+    } catch (error) {
+      console.error('Erreur chargement réservations:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isPending || isLoading) {
+    return (
+      <PlayerLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+        </div>
+      </PlayerLayout>
+    );
   }
 
-  // Récupérer les réservations du joueur
-  const reservations = await prisma.reservation.findMany({
-    where: { 
-      playerId: session.user.id,
-      status: { in: ['CONFIRMED', 'PENDING'] },
-    },
-    include: {
-      coach: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          avatarUrl: true,
-          slug: true,
-        },
-      },
-      announcement: {
-        select: {
-          title: true,
-          durationMin: true,
-        },
-      },
-    },
-    orderBy: { startDate: 'asc' },
-  });
+  if (!session) {
+    return null;
+  }
 
   // Séparer les sessions futures et passées
   const now = new Date();
@@ -48,6 +78,7 @@ export default async function PlayerSessionsPage() {
   const pastSessions = reservations.filter(r => new Date(r.startDate) < now);
 
   return (
+    <PlayerLayout>
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Mes Sessions</h1>
@@ -185,5 +216,6 @@ export default async function PlayerSessionsPage() {
         )}
       </div>
     </div>
+    </PlayerLayout>
   );
 }
