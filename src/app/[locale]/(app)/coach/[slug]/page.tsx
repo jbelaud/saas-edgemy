@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { CoachHeader } from '@/components/coach/public/CoachHeader';
 import { CoachAnnouncements } from '@/components/coach/public/CoachAnnouncements';
 import { CoachAbout } from '@/components/coach/public/CoachAbout';
-import { CoachAvailabilityCalendar } from '@/components/coach/public/CoachAvailabilityCalendar';
+import CoachPublicCalendar from '@/components/calendar/CoachPublicCalendar';
 
 interface PageProps {
   params: Promise<{
@@ -102,7 +102,12 @@ export default async function CoachPublicPage({ params }: PageProps) {
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-6">
               {/* Calendrier de disponibilités */}
-              <CoachAvailabilityCalendar coachId={coach.id} isInactive={isInactive} />
+              {!isInactive && (
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h3 className="text-lg font-semibold mb-4">Disponibilités</h3>
+                  <CoachPublicCalendar coachId={coach.id} />
+                </div>
+              )}
 
               {/* Stats rapides */}
               <div className="bg-white rounded-lg shadow-md p-6">
