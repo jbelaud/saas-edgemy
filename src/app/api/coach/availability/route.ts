@@ -25,7 +25,7 @@ export async function GET() {
 
     // Récupérer toutes les disponibilités futures
     const availabilities = await prisma.availability.findMany({
-      where: { 
+      where: {
         coachId: coach.id,
         start: {
           gte: new Date(), // Seulement les créneaux futurs
