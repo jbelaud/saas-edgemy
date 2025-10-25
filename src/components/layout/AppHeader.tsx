@@ -14,6 +14,7 @@ export function AppHeader() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCoachSignUpModal, setShowCoachSignUpModal] = useState(false);
   const [signupContext, setSignupContext] = useState<'coach' | 'player'>('player');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Listen for custom events from homepage CTAs
   useEffect(() => {
@@ -84,17 +85,15 @@ export function AppHeader() {
             </a>
           </nav>
 
-          {/* Auth Buttons & Language Switcher */}
-          <div className="flex items-center gap-3 relative">
+          {/* Desktop: Auth Buttons & Language Switcher */}
+          <div className="hidden lg:flex items-center gap-3 relative">
             <div className="w-10 flex-shrink-0 relative">
               <LanguageSwitcher />
             </div>
             {isPending ? (
-              // Skeleton pendant le chargement pour éviter le flash
               <div className="flex items-center gap-3">
                 <div className="h-9 w-32 bg-muted animate-pulse rounded-md" />
                 <div className="h-9 w-24 bg-muted animate-pulse rounded-md" />
-                <div className="h-9 w-28 bg-muted animate-pulse rounded-md" />
               </div>
             ) : session?.user ? (
               <AuthButton />
@@ -122,7 +121,97 @@ export function AppHeader() {
               </>
             )}
           </div>
+
+          {/* Mobile: Hamburger + Language */}
+          <div className="flex lg:hidden items-center gap-3">
+            <div className="w-10 flex-shrink-0 relative">
+              <LanguageSwitcher />
+            </div>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center transition-all border border-white/10"
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden absolute top-20 left-0 right-0 bg-slate-950/95 backdrop-blur-xl border-b border-white/5 py-6 px-6">
+            <nav className="flex flex-col gap-4 mb-6">
+              <Link
+                href="/coachs"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
+              >
+                Découvrir les coachs
+              </Link>
+              <a
+                href="#features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
+              >
+                Fonctionnalités
+              </a>
+              <a
+                href="#for-players"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
+              >
+                Pour les joueurs
+              </a>
+              <a
+                href="#for-coaches"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
+              >
+                Pour les coachs
+              </a>
+              <a
+                href="#about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
+              >
+                À propos
+              </a>
+            </nav>
+
+            {!session?.user && (
+              <div className="flex flex-col gap-3">
+                <Button 
+                  variant="ghost"
+                  onClick={() => {
+                    setSignupContext('player');
+                    setShowLoginModal(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-gray-300 hover:text-white hover:bg-white/5 justify-center"
+                >
+                  Se connecter
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setSignupContext('coach');
+                    setShowCoachSignUpModal(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl font-semibold transition-all shadow-lg shadow-amber-500/20"
+                >
+                  Devenir Coach
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
       <LoginModal 
