@@ -117,24 +117,26 @@ export function CoachSidebar() {
   return (
     <div
       className={cn(
-        "relative flex flex-col border-r bg-gray-50/40 transition-all duration-300",
+        "relative flex flex-col border-r border-white/10 bg-slate-950 transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}
     >
       {/* Header avec logo et toggle */}
-      <div className="flex h-16 items-center justify-between border-b px-3">
+      <div className="flex h-16 items-center justify-between border-b border-white/10 px-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {!collapsed && (
-            <Link href={`/${locale}`} className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+            <Link href={`/${locale}`} className="flex items-center gap-2 group">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 font-bold text-slate-950 transform group-hover:scale-105 transition-transform">
                 E
               </div>
-              <span className="text-xl font-bold">Edgemy</span>
+              <span className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Edgemy
+              </span>
             </Link>
           )}
           {collapsed && (
-            <Link href={`/${locale}`} className="flex items-center justify-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+            <Link href={`/${locale}`} className="flex items-center justify-center group">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 font-bold text-slate-950 transform group-hover:scale-105 transition-transform">
                 E
               </div>
             </Link>
@@ -146,7 +148,7 @@ export function CoachSidebar() {
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className="h-8 w-8 flex-shrink-0"
+          className="h-8 w-8 flex-shrink-0 text-gray-400 hover:text-white hover:bg-white/5"
         >
           {collapsed ? (
             <PanelLeft className="h-4 w-4" />
@@ -167,17 +169,17 @@ export function CoachSidebar() {
               key={item.href}
               href={`/${locale}${item.href}`}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-gray-700 hover:bg-gray-100",
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/20"
+                  : "text-gray-300 hover:bg-white/5 hover:text-white",
                 collapsed && "justify-center"
               )}
             >
               <Icon className={cn("h-5 w-5 flex-shrink-0")} />
               {!collapsed && <span>{item.title}</span>}
               {!collapsed && item.badge && (
-                <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                <span className="ml-auto rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-400">
                   {item.badge}
                 </span>
               )}
@@ -187,33 +189,35 @@ export function CoachSidebar() {
       </nav>
 
       {/* Profil utilisateur en bas */}
-      <div className="border-t p-3">
+      <div className="border-t border-white/10 p-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               className={cn(
-                "w-full justify-start gap-3 h-auto py-2",
+                "w-full justify-start gap-3 h-auto py-2 hover:bg-white/5 text-gray-300 hover:text-white",
                 collapsed && "justify-center px-0"
               )}
             >
-              <Avatar className="h-8 w-8 flex-shrink-0">
+              <Avatar className="h-8 w-8 flex-shrink-0 ring-2 ring-amber-500/20">
                 <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
-                <AvatarFallback>{initials}</AvatarFallback>
+                <AvatarFallback className="bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-bold">
+                  {initials}
+                </AvatarFallback>
               </Avatar>
               {!collapsed && (
                 <div className="flex flex-col items-start text-left overflow-hidden">
-                  <p className="text-sm font-medium truncate w-full">
+                  <p className="text-sm font-medium truncate w-full text-white">
                     {user?.name || "Utilisateur"}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate w-full">
+                  <p className="text-xs text-gray-400 truncate w-full">
                     {user?.email || ""}
                   </p>
                 </div>
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" side="top">
+          <DropdownMenuContent className="w-56 bg-slate-900/95 backdrop-blur-xl border-white/10" align="end" side="top">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{user?.name}</p>
@@ -251,7 +255,7 @@ export function CoachSidebar() {
             )}
             <DropdownMenuItem
               onClick={() => signOut()}
-              className="cursor-pointer text-red-600"
+              className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10"
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Déconnexion</span>
