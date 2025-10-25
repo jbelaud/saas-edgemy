@@ -2,16 +2,7 @@
 
 import { useState } from "react";
 import { signUp, signIn } from "@/lib/auth-client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Modal, GradientButton, GradientText, Input, Label } from "@/components/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
@@ -92,24 +83,30 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">
-            Devenir Coach Edgemy
-          </DialogTitle>
-          <DialogDescription className="text-center">
-            Rejoignez notre équipe de coachs professionnels
-          </DialogDescription>
-        </DialogHeader>
+    <Modal 
+      open={open} 
+      onClose={() => onOpenChange(false)}
+      maxWidth="lg"
+    >
+      {/* Title */}
+      <div className="text-center mb-6">
+        <h2 className="text-3xl font-bold mb-2">
+          <GradientText variant="white">Devenir Coach</GradientText>{" "}
+          <GradientText variant="amber">Edgemy</GradientText>
+        </h2>
+        <p className="text-gray-400 text-sm">
+          Rejoignez notre équipe de coachs professionnels
+        </p>
+      </div>
 
-        <div className="grid gap-6 py-4">
-          <Button
-            variant="outline"
-            onClick={handleGoogleSignUp}
-            disabled={isLoading}
-            className="w-full"
-          >
+      <div className="space-y-6">
+        {/* Google Sign Up */}
+        <GradientButton
+          variant="ghost"
+          onClick={handleGoogleSignUp}
+          disabled={isLoading}
+          fullWidth
+        >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
@@ -128,99 +125,118 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continuer avec Google
-          </Button>
+          Continuer avec Google
+        </GradientButton>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Ou continuer avec
-              </span>
-            </div>
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-white/10" />
           </div>
-
-          <form onSubmit={handleSubmit} className="grid gap-4">
-            {error && (
-              <div className="rounded-md bg-red-50 p-4">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="firstName">Prénom</Label>
-                <Input
-                  id="firstName"
-                  type="text"
-                  placeholder="Jean"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="lastName">Nom</Label>
-                <Input
-                  id="lastName"
-                  type="text"
-                  placeholder="Dupont"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="jean.dupont@exemple.fr"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Inscription..." : "Créer mon compte coach"}
-            </Button>
-          </form>
-
-          <div className="text-center text-sm">
-            Déjà inscrit ?{" "}
-            {onSwitchToLogin ? (
-              <button
-                type="button"
-                onClick={onSwitchToLogin}
-                className="text-primary hover:underline font-medium"
-              >
-                Se connecter
-              </button>
-            ) : (
-              <Link href="/app" className="text-primary hover:underline" onClick={() => onOpenChange(false)}>
-                Se connecter
-              </Link>
-            )}
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-slate-900 px-2 text-gray-500">
+              Ou continuer avec
+            </span>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Sign Up Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Name Fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName" className="text-gray-300">Prénom</Label>
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="Jean"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName" className="text-gray-300">Nom</Label>
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Dupont"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
+              />
+            </div>
+          </div>
+
+          {/* Email Field */}
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-gray-300">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="jean.dupont@exemple.fr"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
+            />
+          </div>
+
+          {/* Password Field */}
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-gray-300">Mot de passe</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <GradientButton 
+            type="submit" 
+            variant="amber"
+            fullWidth 
+            disabled={isLoading}
+          >
+            {isLoading ? "Inscription..." : "Créer mon compte coach"}
+          </GradientButton>
+        </form>
+
+        {/* Login Link */}
+        <div className="text-center text-sm text-gray-400">
+          Déjà inscrit ?{" "}
+          {onSwitchToLogin ? (
+            <button
+              type="button"
+              onClick={onSwitchToLogin}
+              className="text-amber-400 hover:text-amber-300 transition-colors font-medium"
+            >
+              Se connecter
+            </button>
+          ) : (
+            <Link 
+              href="/app" 
+              className="text-amber-400 hover:text-amber-300 transition-colors font-medium" 
+              onClick={() => onOpenChange(false)}
+            >
+              Se connecter
+            </Link>
+          )}
+        </div>
+      </div>
+    </Modal>
   );
 }
