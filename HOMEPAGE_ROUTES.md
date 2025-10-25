@@ -41,11 +41,10 @@ Ces liens utilisent des ancres en attendant les pages dédiées :
 - **Centre d'aide** : `#contact` (redirige vers contact)
 - **Cookies** : `#cookies` (à créer : `/${locale}/cookies`)
 
-### 🌐 Réseaux sociaux (à configurer)
+### 🌐 Réseaux sociaux
 
-- Discord : `https://discord.gg/edgemy`
-- Twitter : `https://twitter.com/edgemy`
-- LinkedIn : `https://linkedin.com/company/edgemy`
+- Discord : `https://discord.gg/dYDEzbVz` ✅
+- X (Twitter) : `https://x.com/edgemy_off` ✅
 
 ## 🎯 Flux utilisateur
 
