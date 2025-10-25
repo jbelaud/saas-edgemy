@@ -26,12 +26,12 @@ export function CTASection() {
             </span>
             <br />
             <span className="bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
-              dès aujourd'hui
+              dès aujourd&apos;hui
             </span>
           </h2>
 
           <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
-            Que tu sois joueur ou coach, commence ton parcours vers l'excellence. 
+            Que tu sois joueur ou coach, commence ton parcours vers l&apos;excellence. 
             Rejoins des centaines de membres qui progressent déjà avec Edgemy.
           </p>
 

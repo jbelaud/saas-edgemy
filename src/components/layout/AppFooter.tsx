@@ -1,7 +1,6 @@
 'use client';
 
 import { MessageCircle, Twitter } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { routing } from '@/i18n/routing';
@@ -32,7 +31,7 @@ export function AppFooter() {
               </span>
             </Link>
             <p className="text-gray-400 text-sm font-medium mb-2">
-              Coaching poker. Simplifié.
+              Coaching poker. Simplifi&eacute;.
             </p>
             <p className="text-gray-500 text-xs">
               La plateforme qui connecte joueurs ambitieux et coachs d'excellence.

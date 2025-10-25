@@ -74,7 +74,6 @@ export function LanguageSwitcher() {
     setLanguage(langCode);
   };
 
-  const currentLanguage = languages.find(lang => lang.code === language);
   const CurrentFlag = flagComponents[language];
 
   return (

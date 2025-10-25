@@ -43,7 +43,7 @@ export function HowItWorksSection() {
             Comment ça marche ?
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Commence ton parcours vers l'excellence en 3 étapes simples
+            Commence ton parcours vers l&apos;excellence en 3 étapes simples
           </p>
         </div>
 

@@ -28,8 +28,8 @@ export function MissionSection() {
 
           {/* Subtitle */}
           <p className="text-xl md:text-2xl text-gray-400 mb-12 leading-relaxed max-w-3xl mx-auto">
-            Nous croyons qu'un bon accompagnement fait toute la différence. 
-            Edgemy connecte joueurs ambitieux et coachs d'excellence pour créer 
+            Nous croyons qu&apos;un bon accompagnement fait toute la différence. 
+            Edgemy connecte joueurs ambitieux et coachs d&apos;excellence pour créer 
             des parcours de progression sur mesure.
           </p>
 

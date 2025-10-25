@@ -12,7 +12,7 @@ export function DualSection() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-            Edgemy s'adapte à ton profil
+            Edgemy s&apos;adapte à ton profil
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
             Que tu sois joueur ou coach, trouve ta place dans la communauté
