@@ -86,7 +86,9 @@ export function AppHeader() {
 
           {/* Auth Buttons & Language Switcher */}
           <div className="flex items-center gap-3">
-            <LanguageSwitcher />
+            <div className="w-10 flex-shrink-0">
+              <LanguageSwitcher />
+            </div>
             {isPending ? (
               // Skeleton pendant le chargement pour éviter le flash
               <div className="flex items-center gap-3">
