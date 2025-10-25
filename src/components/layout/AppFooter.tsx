@@ -17,74 +17,113 @@ export function AppFooter() {
   const localizedPath = (path: string) => `/${locale}/pages${path}`;
 
   return (
-    <footer className="bg-white border-t border-gray-200 mt-auto">
-      <div className="container mx-auto max-w-7xl px-6 py-12">
-        <div className="grid md:grid-cols-3 gap-8 items-center">
+    <footer className="relative bg-slate-950 border-t border-white/5 mt-auto">
+      <div className="container mx-auto px-6 py-16">
+        <div className="grid md:grid-cols-4 gap-12 mb-12">
           
-          {/* Logo + Baseline */}
-          <div className="text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start mb-3">
-              <Image
-                src="/logos/logo-blanc-edgemy.png"
-                alt="Edgemy Logo"
-                width={360}
-                height={128}
-                className="h-20 w-auto"
-              />
-            </div>
-            <p className="text-gray-600 text-sm">
-              Coaching poker personnalisé pour joueurs francophones
+          {/* Branding Column */}
+          <div className="md:col-span-1">
+            <Link href="/" className="flex items-center gap-2 mb-4 group">
+              <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform">
+                <span className="text-slate-950 font-bold text-xl">E</span>
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Edgemy
+              </span>
+            </Link>
+            <p className="text-gray-500 text-xs">
+              La plateforme qui connecte joueurs ambitieux et coachs d'excellence.
             </p>
           </div>
 
-          {/* Navigation + Legal */}
-          <div className="text-center">
-            <div className="flex flex-wrap justify-center space-x-6 text-sm mb-4">
-              <Link href={localizedPath('/a-propos')} className="text-gray-600 hover:text-gray-900 transition-colors">
-                À propos
-              </Link>
-              <Link 
-                href={localizedPath('/contact')} 
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Contact
-              </Link>
-              <Link href={localizedPath('/blog')} className="text-gray-600 hover:text-gray-900 transition-colors">
-                Blog
-              </Link>
-            </div>
-            <div className="flex flex-wrap justify-center space-x-4 text-xs text-gray-500">
-              <Link href={localizedPath('/mentions-legales')} className="hover:text-gray-700 transition-colors">
-                Mentions légales
-              </Link>
-              <Link href={localizedPath('/politique-de-confidentialite')} className="hover:text-gray-700 transition-colors">
-                Confidentialité
-              </Link>
-            </div>
+          {/* Navigation Column */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">Navigation</h3>
+            <ul className="space-y-3">
+              <li>
+                <Link href="/coachs" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Découvrir les coachs
+                </Link>
+              </li>
+              <li>
+                <a href="#features" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Fonctionnalités
+                </a>
+              </li>
+              <li>
+                <a href="#about" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  À propos
+                </a>
+              </li>
+            </ul>
           </div>
 
-          {/* Social + Copyright */}
-          <div className="text-center md:text-right">
-            <div className="flex justify-center md:justify-end space-x-3 mb-4">
-              <a 
-                href="https://x.com/edgemy_off" 
-                className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 cursor-pointer"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-4 h-4" />
-              </a>
+          {/* Resources Column */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">Ressources</h3>
+            <ul className="space-y-3">
+              <li>
+                <Link href={localizedPath('/contact')} className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link href={localizedPath('/blog')} className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Blog
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal Column */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">Légal</h3>
+            <ul className="space-y-3 mb-6">
+              <li>
+                <Link href={localizedPath('/mentions-legales')} className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Mentions légales
+                </Link>
+              </li>
+              <li>
+                <Link href={localizedPath('/politique-de-confidentialite')} className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Politique de confidentialité
+                </Link>
+              </li>
+            </ul>
+
+            {/* Social Links */}
+            <h3 className="text-white font-semibold mb-4">Suivez-nous</h3>
+            <div className="flex gap-3">
               <a 
                 href="https://discord.gg/dYDEzbVz" 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 cursor-pointer"
+                className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white transition-all"
                 aria-label="Discord"
               >
-                <MessageCircle className="w-4 h-4" />
+                <MessageCircle className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://x.com/edgemy_off" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                aria-label="X (Twitter)"
+              >
+                <Twitter className="w-5 h-5" />
               </a>
             </div>
-            <p className="text-xs text-gray-500">
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/5">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-gray-500 text-sm">
               © {currentYear} Edgemy. Tous droits réservés.
+            </p>
+            <p className="text-gray-600 text-xs">
+              Fait avec ❤️ pour la communauté poker
             </p>
           </div>
         </div>

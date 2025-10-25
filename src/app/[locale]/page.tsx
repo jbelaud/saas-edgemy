@@ -1,5 +1,6 @@
 import {setRequestLocale} from 'next-intl/server'
 import {routing} from '@/i18n/routing'
+import { HeroSection } from '@/components/home/HeroSection'
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({locale}))
@@ -14,11 +15,11 @@ export default async function Home({
   setRequestLocale(locale)
   
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-4xl font-bold mb-8">Bienvenue sur Edgemy</h1>
-      <p className="text-muted-foreground">
-        Votre plateforme de coaching poker
-      </p>
+    <div className="min-h-screen bg-slate-950">
+      <main>
+        <HeroSection />
+        {/* Autres sections à venir */}
+      </main>
     </div>
   )
 }

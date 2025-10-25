@@ -17,23 +17,38 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto max-w-7xl px-6 flex h-16 items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
+        <div className="container mx-auto px-6 flex h-20 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform">
+              <span className="text-slate-950 font-bold text-xl">E</span>
+            </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
               Edgemy
             </span>
           </Link>
 
           {/* Navigation centrale */}
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+          <nav className="hidden lg:flex items-center gap-8">
             <Link
               href="/coachs"
-              className="transition-colors hover:text-primary text-foreground/60"
+              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
-              Trouver un coach
+              Découvrir les coachs
             </Link>
+            <a
+              href="#features"
+              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+            >
+              Fonctionnalités
+            </a>
+            <a
+              href="#about"
+              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+            >
+              À propos
+            </a>
           </nav>
 
           {/* Auth Buttons & Language Switcher */}
@@ -51,22 +66,23 @@ export function AppHeader() {
             ) : (
               <>
                 <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setSignupContext('coach');
-                    setShowCoachSignUpModal(true);
-                  }}
-                  className="border-orange-500 text-orange-600 hover:bg-orange-50"
-                >
-                  Devenir Coach
-                </Button>
-                <Button 
+                  variant="ghost"
                   onClick={() => {
                     setSignupContext('player');
                     setShowLoginModal(true);
                   }}
+                  className="text-gray-300 hover:text-white hover:bg-white/5"
                 >
                   Se connecter
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setSignupContext('coach');
+                    setShowCoachSignUpModal(true);
+                  }}
+                  className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
+                >
+                  Devenir Coach
                 </Button>
               </>
             )}
