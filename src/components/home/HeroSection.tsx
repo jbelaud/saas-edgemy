@@ -46,6 +46,16 @@ export function HeroSection() {
               <span className="relative z-10">Trouver un coach</span>
               <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity"></div>
             </Link>
+            <button
+              onClick={() => {
+                // Trigger CoachSignUpModal from parent
+                const event = new CustomEvent('openCoachModal');
+                window.dispatchEvent(event);
+              }}
+              className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-bold text-lg rounded-2xl transition-all border border-white/10 hover:border-white/20 w-full sm:w-auto backdrop-blur-sm"
+            >
+              Devenir coach sur Edgemy
+            </button>
           </div>
 
           {/* Social Proof */}

@@ -44,6 +44,18 @@ export function AppHeader() {
               Fonctionnalités
             </a>
             <a
+              href="#for-players"
+              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+            >
+              Pour les joueurs
+            </a>
+            <a
+              href="#for-coaches"
+              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+            >
+              Pour les coachs
+            </a>
+            <a
               href="#about"
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >

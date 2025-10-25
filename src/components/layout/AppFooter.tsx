@@ -31,6 +31,9 @@ export function AppFooter() {
                 Edgemy
               </span>
             </Link>
+            <p className="text-gray-400 text-sm font-medium mb-2">
+              Coaching poker. Simplifié.
+            </p>
             <p className="text-gray-500 text-xs">
               La plateforme qui connecte joueurs ambitieux et coachs d'excellence.
             </p>
@@ -41,9 +44,9 @@ export function AppFooter() {
             <h3 className="text-white font-semibold mb-4">Navigation</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/coachs" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Découvrir les coachs
-                </Link>
+                <a href="#about" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  À propos
+                </a>
               </li>
               <li>
                 <a href="#features" className="text-gray-400 hover:text-white transition-colors text-sm">
@@ -51,26 +54,14 @@ export function AppFooter() {
                 </a>
               </li>
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  À propos
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Resources Column */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Ressources</h3>
-            <ul className="space-y-3">
-              <li>
                 <Link href={localizedPath('/contact')} className="text-gray-400 hover:text-white transition-colors text-sm">
                   Contact
                 </Link>
               </li>
               <li>
-                <Link href={localizedPath('/blog')} className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Blog
-                </Link>
+                <a href="#faq" className="text-gray-400 hover:text-white transition-colors text-sm">
+                  FAQ
+                </a>
               </li>
             </ul>
           </div>
@@ -78,10 +69,10 @@ export function AppFooter() {
           {/* Legal Column */}
           <div>
             <h3 className="text-white font-semibold mb-4">Légal</h3>
-            <ul className="space-y-3 mb-6">
+            <ul className="space-y-3">
               <li>
                 <Link href={localizedPath('/mentions-legales')} className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Mentions légales
+                  CGU
                 </Link>
               </li>
               <li>
@@ -90,8 +81,10 @@ export function AppFooter() {
                 </Link>
               </li>
             </ul>
+          </div>
 
-            {/* Social Links */}
+          {/* Socials Column */}
+          <div>
             <h3 className="text-white font-semibold mb-4">Suivez-nous</h3>
             <div className="flex gap-3">
               <a 
