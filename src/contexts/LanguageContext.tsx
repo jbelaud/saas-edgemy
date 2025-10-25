@@ -4,7 +4,7 @@ import React, { createContext, useContext, useTransition } from 'react';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { useLocale } from 'next-intl';
 
-type Language = 'fr' | 'en';
+type Language = 'fr' | 'en' | 'de' | 'it' | 'es';
 
 interface LanguageContextType {
   language: Language;
