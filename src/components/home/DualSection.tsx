@@ -7,6 +7,7 @@ export function DualSection() {
 
   return (
     <section id="for-players" className="relative py-24 bg-slate-950">
+      <div id="for-coaches" className="absolute -top-20"></div>
       <div className="container mx-auto px-6">
         {/* Section Header */}
         <div className="text-center mb-16">
