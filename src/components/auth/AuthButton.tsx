@@ -79,7 +79,7 @@ export function AuthButton() {
       onClick={() =>
         signIn.social({
           provider: "google",
-          callbackURL: `/${locale}/player/dashboard`,
+          callbackURL: `/${locale}/auth/callback`,
         })
       }
       className="bg-white text-gray-900 hover:bg-gray-100 border border-gray-300"

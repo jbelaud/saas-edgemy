@@ -42,7 +42,6 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
       const result = await signIn.email({
         email,
         password,
-        callbackURL: `/${locale}/player/dashboard`,
       });
       
       console.log('✅ Résultat complet:', JSON.stringify(result, null, 2));
@@ -63,8 +62,16 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
       } else if (result?.data) {
         console.log('✅ Connexion réussie, données:', result.data);
         onOpenChange(false);
-        // Force reload pour s'assurer que la session est bien chargée
-        window.location.href = `/${locale}/player/dashboard`;
+        
+        // Déterminer le dashboard approprié selon les rôles
+        const dashboardResponse = await fetch('/api/user/redirect-dashboard');
+        if (dashboardResponse.ok) {
+          const { redirectTo } = await dashboardResponse.json();
+          window.location.href = `/${locale}${redirectTo}`;
+        } else {
+          // Fallback vers player dashboard
+          window.location.href = `/${locale}/player/dashboard`;
+        }
       } else {
         console.log('⚠️ Résultat inattendu:', result);
         setError("Résultat de connexion inattendu");
@@ -88,9 +95,10 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
     try {
       // Pour la connexion, on ne définit pas de rôle spécifique
       // Le rôle sera déjà défini si l'utilisateur existe
+      // La redirection sera gérée par le callback
       await signIn.social({
         provider: "google",
-        callbackURL: `/${locale}/player/dashboard`,
+        callbackURL: `/${locale}/auth/callback`,
       });
     } catch (error) {
       console.error("Erreur de connexion Google:", error);
