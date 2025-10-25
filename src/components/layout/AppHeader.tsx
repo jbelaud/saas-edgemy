@@ -85,8 +85,8 @@ export function AppHeader() {
           </nav>
 
           {/* Auth Buttons & Language Switcher */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 flex-shrink-0">
+          <div className="flex items-center gap-3 relative">
+            <div className="w-10 flex-shrink-0 relative">
               <LanguageSwitcher />
             </div>
             {isPending ? (

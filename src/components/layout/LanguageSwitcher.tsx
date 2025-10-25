@@ -78,16 +78,16 @@ export function LanguageSwitcher() {
   const CurrentFlag = flagComponents[language];
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <button className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center transition-all border border-white/10 hover:border-white/20 backdrop-blur-sm p-1.5 overflow-hidden">
           {CurrentFlag && <CurrentFlag />}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
-        align="end"
+        align="start"
         sideOffset={5}
-        className="w-16 bg-slate-900/95 backdrop-blur-xl border border-white/10 p-1.5"
+        className="w-14 bg-slate-900/95 backdrop-blur-xl border border-white/10 p-1.5 absolute flex flex-col items-center"
       >
         {languages.map((lang) => {
           const Flag = flagComponents[lang.code];
@@ -95,7 +95,7 @@ export function LanguageSwitcher() {
             <DropdownMenuItem
               key={lang.code}
               onClick={() => handleLanguageChange(lang.code as 'fr' | 'en' | 'de' | 'it' | 'es')}
-              className={`flex items-center justify-center cursor-pointer rounded-lg p-2 transition-all overflow-hidden ${
+              className={`w-10 h-8 flex items-center justify-center cursor-pointer rounded-lg p-1.5 transition-all overflow-hidden ${
                 language === lang.code 
                   ? 'bg-amber-500/20 border border-amber-500/30' 
                   : 'hover:bg-white/5 border border-transparent'
