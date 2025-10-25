@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from '@/lib/auth-client';
 import { AuthButton } from '@/components/auth/AuthButton';
@@ -14,6 +14,27 @@ export function AppHeader() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCoachSignUpModal, setShowCoachSignUpModal] = useState(false);
   const [signupContext, setSignupContext] = useState<'coach' | 'player'>('player');
+
+  // Listen for custom events from homepage CTAs
+  useEffect(() => {
+    const handleOpenLoginModal = () => {
+      setSignupContext('player');
+      setShowLoginModal(true);
+    };
+
+    const handleOpenCoachModal = () => {
+      setSignupContext('coach');
+      setShowCoachSignUpModal(true);
+    };
+
+    window.addEventListener('openLoginModal', handleOpenLoginModal);
+    window.addEventListener('openCoachModal', handleOpenCoachModal);
+
+    return () => {
+      window.removeEventListener('openLoginModal', handleOpenLoginModal);
+      window.removeEventListener('openCoachModal', handleOpenCoachModal);
+    };
+  }, []);
 
   return (
     <>

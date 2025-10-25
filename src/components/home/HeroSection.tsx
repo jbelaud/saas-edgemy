@@ -48,13 +48,12 @@ export function HeroSection() {
             </Link>
             <button
               onClick={() => {
-                // Trigger CoachSignUpModal from parent
-                const event = new CustomEvent('openCoachModal');
+                const event = new CustomEvent('openLoginModal');
                 window.dispatchEvent(event);
               }}
-              className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-bold text-lg rounded-2xl transition-all border border-white/10 hover:border-white/20 w-full sm:w-auto backdrop-blur-sm"
+              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-lg rounded-2xl transition-all transform hover:scale-105 shadow-2xl shadow-emerald-500/25 w-full sm:w-auto"
             >
-              Devenir coach sur Edgemy
+              Créer un compte joueur
             </button>
           </div>
 

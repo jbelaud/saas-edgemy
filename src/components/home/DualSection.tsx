@@ -72,7 +72,13 @@ export function DualSection() {
               </ul>
 
               {/* CTA Button */}
-              <button className="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/20">
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('openLoginModal');
+                  window.dispatchEvent(event);
+                }}
+                className="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/20"
+              >
                 Créer un compte joueur
               </button>
             </div>
@@ -129,7 +135,13 @@ export function DualSection() {
               </ul>
 
               {/* CTA Button */}
-              <button className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20">
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('openCoachModal');
+                  window.dispatchEvent(event);
+                }}
+                className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
+              >
                 Devenir coach sur Edgemy
               </button>
             </div>
