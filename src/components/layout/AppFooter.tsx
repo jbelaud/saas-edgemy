@@ -34,7 +34,7 @@ export function AppFooter() {
               Coaching poker. Simplifi&eacute;.
             </p>
             <p className="text-gray-500 text-xs">
-              La plateforme qui connecte joueurs ambitieux et coachs d'excellence.
+              La plateforme qui connecte joueurs ambitieux et coachs d&apos;excellence.
             </p>
           </div>
 

@@ -114,7 +114,7 @@ export function DualSection() {
               {/* Description */}
               <p className="text-gray-400 mb-8 leading-relaxed">
                 Gère ton activité, tes paiements et ta visibilité. Concentre-toi sur le coaching, 
-                on s'occupe du reste avec des outils professionnels.
+                on s&apos;occupe du reste avec des outils professionnels.
               </p>
 
               {/* Features List */}

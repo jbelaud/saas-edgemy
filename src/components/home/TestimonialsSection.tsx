@@ -43,7 +43,7 @@ export function TestimonialsSection() {
             Ils nous font confiance
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Découvre ce que nos utilisateurs pensent d'Edgemy
+            Découvre ce que nos utilisateurs pensent d&apos;Edgemy
           </p>
         </div>
 
