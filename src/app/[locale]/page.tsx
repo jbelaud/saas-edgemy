@@ -1,14 +1,5 @@
 import {setRequestLocale} from 'next-intl/server'
 import {routing} from '@/i18n/routing'
-import { LandingHeader } from '@/components/landing/LandingHeader'
-import { HeroSection } from '@/components/landing/HeroSection'
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection'
-import { WhyEdgemySection } from '@/components/landing/WhyEdgemySection'
-import { DualSection } from '@/components/landing/DualSection'
-import { TestimonialsSection } from '@/components/landing/TestimonialsSection'
-import { MissionSection } from '@/components/landing/MissionSection'
-import { FinalCTASection } from '@/components/landing/FinalCTASection'
-import { LandingFooter } from '@/components/landing/LandingFooter'
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({locale}))
@@ -23,18 +14,11 @@ export default async function Home({
   setRequestLocale(locale)
   
   return (
-    <div className="min-h-screen bg-slate-950">
-      <LandingHeader />
-      <main>
-        <HeroSection />
-        <HowItWorksSection />
-        <WhyEdgemySection />
-        <DualSection />
-        <TestimonialsSection />
-        <MissionSection />
-        <FinalCTASection />
-      </main>
-      <LandingFooter />
+    <div className="container mx-auto py-8">
+      <h1 className="text-4xl font-bold mb-8">Bienvenue sur Edgemy</h1>
+      <p className="text-muted-foreground">
+        Votre plateforme de coaching poker
+      </p>
     </div>
   )
 }
