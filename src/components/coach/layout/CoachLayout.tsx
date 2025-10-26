@@ -14,7 +14,7 @@ export function CoachLayout({ children }: CoachLayoutProps) {
 
       {/* Main content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-6 max-w-7xl">
+        <div className="container mx-auto p-6 pt-8 max-w-7xl">
           {children}
         </div>
       </div>
