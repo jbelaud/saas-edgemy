@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { GlassCard, GradientButton } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock, Megaphone, Zap, CheckCircle2 } from 'lucide-react';
+import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock, Megaphone, Zap, CheckCircle2, Plus } from 'lucide-react';
 import { AnnouncementPacksSection } from '@/components/coach/announcements/AnnouncementPacksSection';
 
 interface Announcement {
@@ -136,86 +135,85 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
 
   if (isInactive) {
     return (
-      <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
-        <CardContent className="py-12">
+      <GlassCard className="border-amber-500/20 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
+        <div className="py-6">
           <div className="text-center mb-6">
-            <Megaphone className="h-12 w-12 text-orange-600 mx-auto mb-4" />
-            <p className="text-orange-900 font-semibold mb-2 text-xl">
+            <Megaphone className="h-12 w-12 text-amber-400 mx-auto mb-4" />
+            <p className="text-white font-semibold mb-2 text-xl">
               Activez votre abonnement pour créer des annonces
             </p>
-            <p className="text-orange-700 text-sm">
+            <p className="text-gray-300 text-sm">
               Débloquez toutes les fonctionnalités de la plateforme
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 max-w-2xl mx-auto">
             <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
               <div className="text-left">
-                <p className="font-semibold text-gray-900 text-sm">Annonces illimitées</p>
-                <p className="text-xs text-gray-600">Créez autant d&apos;annonces que vous le souhaitez</p>
+                <p className="font-semibold text-white text-sm">Annonces illimitées</p>
+                <p className="text-xs text-gray-400">Créez autant d&apos;annonces que vous le souhaitez</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
               <div className="text-left">
-                <p className="font-semibold text-gray-900 text-sm">Profil public visible</p>
-                <p className="text-xs text-gray-600">Apparaissez dans les résultats de recherche</p>
+                <p className="font-semibold text-white text-sm">Profil public visible</p>
+                <p className="text-xs text-gray-400">Apparaissez dans les résultats de recherche</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
               <div className="text-left">
-                <p className="font-semibold text-gray-900 text-sm">Réservations illimitées</p>
-                <p className="text-xs text-gray-600">Recevez autant de réservations que vous voulez</p>
+                <p className="font-semibold text-white text-sm">Réservations illimitées</p>
+                <p className="text-xs text-gray-400">Recevez autant de réservations que vous voulez</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
               <div className="text-left">
-                <p className="font-semibold text-gray-900 text-sm">Paiements sécurisés</p>
-                <p className="text-xs text-gray-600">Recevez vos paiements directement</p>
+                <p className="font-semibold text-white text-sm">Paiements sécurisés</p>
+                <p className="text-xs text-gray-400">Recevez vos paiements directement</p>
               </div>
             </div>
           </div>
           <div className="text-center">
-            <Button 
+            <GradientButton 
               size="lg" 
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
+              variant="amber"
               onClick={() => router.push(`/${locale}/coach/onboarding`)}
             >
               <Zap className="mr-2 h-5 w-5" />
               Activer mon abonnement maintenant
-            </Button>
+            </GradientButton>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </GlassCard>
     );
   }
 
   if (announcements.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground mb-4">
+      <GlassCard>
+        <div className="py-12 text-center">
+          <p className="text-gray-400 mb-4">
             Vous n&apos;avez pas encore créé d&apos;annonce
           </p>
           <p className="text-sm text-gray-500">
             Cliquez sur &quot;Créer une annonce&quot; pour commencer
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </GlassCard>
     );
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {announcements.map((announcement) => (
-        <Card key={announcement.id} className={!announcement.isActive ? 'opacity-60' : ''}>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              {/* Header avec titre et statut */}
-              <div className="flex justify-between items-start gap-3">
-                <h3 className="font-semibold text-lg flex-1">{announcement.title}</h3>
+        <GlassCard key={announcement.id} className={!announcement.isActive ? 'opacity-60' : ''}>
+          <div className="space-y-4">
+            {/* Header avec titre et statut */}
+            <div className="flex justify-between items-start gap-3">
+              <h3 className="font-semibold text-lg flex-1 text-white">{announcement.title}</h3>
                 <Badge variant={announcement.isActive ? 'default' : 'secondary'}>
                   {announcement.isActive ? 'Active' : 'Inactive'}
                 </Badge>
@@ -313,68 +311,67 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
                 </div>
               )}
 
-              {/* Description */}
-              <p className="text-sm text-gray-600 line-clamp-2">
-                {announcement.description}
-              </p>
+            {/* Description */}
+            <p className="text-sm text-gray-400 line-clamp-2">
+              {announcement.description}
+            </p>
 
-              {/* Prix et durée */}
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1">
-                  <Euro className="h-4 w-4 text-gray-500" />
-                  <span className="font-semibold">{(announcement.priceCents / 100).toFixed(0)}€</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <span>{announcement.durationMin} minutes</span>
-                </div>
+            {/* Prix et durée */}
+            <div className="flex items-center gap-4 text-sm text-gray-300">
+              <div className="flex items-center gap-1">
+                <Euro className="h-4 w-4 text-amber-400" />
+                <span className="font-semibold">{(announcement.priceCents / 100).toFixed(0)}€</span>
               </div>
-
-              {/* Actions */}
-              <div className="flex gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => alert('Fonctionnalité de modification en cours de développement')}
-                >
-                  <Edit className="mr-2 h-4 w-4" />
-                  Modifier
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleToggleActive(announcement)}
-                >
-                  {announcement.isActive ? (
-                    <>
-                      <EyeOff className="mr-2 h-4 w-4" />
-                      Désactiver
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Activer
-                    </>
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDelete(announcement.id)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Supprimer
-                </Button>
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4 text-gray-400" />
+                <span>{announcement.durationMin} minutes</span>
               </div>
-
-              {/* Section Packs d'heures */}
-              <AnnouncementPacksSection 
-                announcementId={announcement.id}
-                hourlyRate={announcement.priceCents}
-              />
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Actions */}
+            <div className="flex gap-2 pt-2">
+              <GradientButton
+                variant="ghost"
+                size="sm"
+                onClick={() => alert('Fonctionnalité de modification en cours de développement')}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Modifier
+              </GradientButton>
+              <GradientButton
+                variant="ghost"
+                size="sm"
+                onClick={() => handleToggleActive(announcement)}
+              >
+                {announcement.isActive ? (
+                  <>
+                    <EyeOff className="mr-2 h-4 w-4" />
+                    Désactiver
+                  </>
+                ) : (
+                  <>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Activer
+                  </>
+                )}
+              </GradientButton>
+              <GradientButton
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDelete(announcement.id)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Supprimer
+              </GradientButton>
+            </div>
+
+            {/* Section Packs d'heures */}
+            <AnnouncementPacksSection 
+              announcementId={announcement.id}
+              hourlyRate={announcement.priceCents}
+            />
+          </div>
+        </GlassCard>
       ))}
     </div>
   );

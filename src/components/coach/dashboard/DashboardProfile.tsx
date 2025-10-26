@@ -4,13 +4,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { GlassCard, GradientButton, Input, Label, Checkbox } from '@/components/ui';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, User } from 'lucide-react';
+import { Loader2, Save, User, Target, Globe } from 'lucide-react';
 import { POKER_FORMATS, LANGUAGES } from '@/types/coach';
 
 const profileSchema = z.object({
@@ -96,71 +92,79 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Message */}
       {message && (
-        <Card className={message.type === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
-          <CardContent className="pt-6">
-            <p className={message.type === 'success' ? 'text-green-900' : 'text-red-900'}>
-              {message.text}
-            </p>
-          </CardContent>
-        </Card>
+        <div className={`p-4 rounded-xl border ${
+          message.type === 'success' 
+            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+            : 'bg-red-500/10 border-red-500/20 text-red-400'
+        }`}>
+          {message.text}
+        </div>
       )}
 
       {/* Informations personnelles */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Informations personnelles
-          </CardTitle>
-          <CardDescription>
-            Vos informations de base visibles sur votre profil public
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <GlassCard>
+        <div className="flex items-center gap-2 mb-4">
+          <User className="h-5 w-5 text-amber-400" />
+          <h3 className="text-xl font-bold text-white">Informations personnelles</h3>
+        </div>
+        <p className="text-sm text-gray-400 mb-6">
+          Vos informations de base visibles sur votre profil public
+        </p>
+        <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="firstName">Prénom *</Label>
-              <Input id="firstName" {...register('firstName')} />
+              <Label htmlFor="firstName" className="text-gray-300">Prénom *</Label>
+              <Input 
+                id="firstName" 
+                {...register('firstName')} 
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
+              />
               {errors.firstName && (
-                <p className="text-sm text-red-600 mt-1">{errors.firstName.message}</p>
+                <p className="text-sm text-red-400 mt-1">{errors.firstName.message}</p>
               )}
             </div>
             <div>
-              <Label htmlFor="lastName">Nom *</Label>
-              <Input id="lastName" {...register('lastName')} />
+              <Label htmlFor="lastName" className="text-gray-300">Nom *</Label>
+              <Input 
+                id="lastName" 
+                {...register('lastName')} 
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
+              />
               {errors.lastName && (
-                <p className="text-sm text-red-600 mt-1">{errors.lastName.message}</p>
+                <p className="text-sm text-red-400 mt-1">{errors.lastName.message}</p>
               )}
             </div>
           </div>
 
           <div>
-            <Label htmlFor="bio">Biographie *</Label>
+            <Label htmlFor="bio" className="text-gray-300">Biographie *</Label>
             <Textarea
               id="bio"
               {...register('bio')}
               rows={6}
               placeholder="Parlez de votre parcours, votre style de jeu, vos résultats..."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
             />
             {errors.bio && (
-              <p className="text-sm text-red-600 mt-1">{errors.bio.message}</p>
+              <p className="text-sm text-red-400 mt-1">{errors.bio.message}</p>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </GlassCard>
 
       {/* Expertise Poker */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Expertise Poker</CardTitle>
-          <CardDescription>
-            Vos spécialités et compétences
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <GlassCard>
+        <div className="flex items-center gap-2 mb-4">
+          <Target className="h-5 w-5 text-amber-400" />
+          <h3 className="text-xl font-bold text-white">Expertise Poker</h3>
+        </div>
+        <p className="text-sm text-gray-400 mb-6">
+          Vos spécialités et compétences
+        </p>
+        <div className="space-y-4">
           {/* Formats */}
           <div>
-            <Label>Formats de poker *</Label>
+            <Label className="text-gray-300">Formats de poker *</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
               {POKER_FORMATS.map((format) => (
                 <div key={format.value} className="flex items-center space-x-2">
@@ -174,51 +178,54 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
                       setValue('pokerFormats', newFormats);
                     }}
                   />
-                  <label htmlFor={`format-${format.value}`} className="text-sm cursor-pointer">
+                  <label htmlFor={`format-${format.value}`} className="text-sm cursor-pointer text-gray-300">
                     {format.label}
                   </label>
                 </div>
               ))}
             </div>
             {errors.pokerFormats && (
-              <p className="text-sm text-red-600 mt-1">{errors.pokerFormats.message}</p>
+              <p className="text-sm text-red-400 mt-1">{errors.pokerFormats.message}</p>
             )}
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="stakes">Limites jouées</Label>
+              <Label htmlFor="stakes" className="text-gray-300">Limites jouées</Label>
               <Input
                 id="stakes"
                 {...register('stakes')}
                 placeholder="ex: NL50-NL200"
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
               />
             </div>
             <div>
-              <Label htmlFor="roi">ROI (%)</Label>
+              <Label htmlFor="roi" className="text-gray-300">ROI (%)</Label>
               <Input
                 id="roi"
                 type="number"
                 step="0.1"
                 {...register('roi', { valueAsNumber: true })}
                 placeholder="15.5"
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
               />
             </div>
             <div>
-              <Label htmlFor="experience">Années d&apos;expérience</Label>
+              <Label htmlFor="experience" className="text-gray-300">Années d&apos;expérience</Label>
               <Input
                 id="experience"
                 type="number"
                 {...register('experience', { valueAsNumber: true })}
                 placeholder="5"
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
               />
             </div>
           </div>
 
           {/* Langues */}
           <div>
-            <Label>Langues parlées *</Label>
+            <Label className="text-gray-300">Langues parlées *</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
               {LANGUAGES.map((lang) => (
                 <div key={lang.value} className="flex items-center space-x-2">
@@ -232,66 +239,76 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
                       setValue('languages', newLangs);
                     }}
                   />
-                  <label htmlFor={`lang-${lang.value}`} className="text-sm cursor-pointer">
+                  <label htmlFor={`lang-${lang.value}`} className="text-sm cursor-pointer text-gray-300">
                     {lang.label}
                   </label>
                 </div>
               ))}
             </div>
             {errors.languages && (
-              <p className="text-sm text-red-600 mt-1">{errors.languages.message}</p>
+              <p className="text-sm text-red-400 mt-1">{errors.languages.message}</p>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </GlassCard>
 
       {/* Réseaux sociaux */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Réseaux sociaux</CardTitle>
-          <CardDescription>
-            Liens vers vos profils (optionnel)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <GlassCard>
+        <div className="flex items-center gap-2 mb-4">
+          <Globe className="h-5 w-5 text-amber-400" />
+          <h3 className="text-xl font-bold text-white">Réseaux sociaux</h3>
+        </div>
+        <p className="text-sm text-gray-400 mb-6">
+          Liens vers vos profils (optionnel)
+        </p>
+        <div className="space-y-4">
           <div>
-            <Label htmlFor="twitchUrl">Twitch</Label>
+            <Label htmlFor="twitchUrl" className="text-gray-300">Twitch</Label>
             <Input
               id="twitchUrl"
               {...register('twitchUrl')}
               placeholder="https://twitch.tv/votre-chaine"
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
             />
           </div>
           <div>
-            <Label htmlFor="youtubeUrl">YouTube</Label>
+            <Label htmlFor="youtubeUrl" className="text-gray-300">YouTube</Label>
             <Input
               id="youtubeUrl"
               {...register('youtubeUrl')}
               placeholder="https://youtube.com/@votre-chaine"
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
             />
           </div>
           <div>
-            <Label htmlFor="twitterUrl">Twitter/X</Label>
+            <Label htmlFor="twitterUrl" className="text-gray-300">Twitter/X</Label>
             <Input
               id="twitterUrl"
               {...register('twitterUrl')}
               placeholder="https://twitter.com/votre-compte"
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
             />
           </div>
           <div>
-            <Label htmlFor="discordUrl">Discord</Label>
+            <Label htmlFor="discordUrl" className="text-gray-300">Discord</Label>
             <Input
               id="discordUrl"
               {...register('discordUrl')}
               placeholder="votre-serveur-discord ou lien d&apos;invitation"
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </GlassCard>
 
       {/* Actions */}
       <div className="flex justify-end gap-4">
-        <Button type="submit" size="lg" disabled={isLoading}>
+        <GradientButton 
+          type="submit" 
+          variant="amber"
+          size="lg" 
+          disabled={isLoading}
+        >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -303,7 +320,7 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
               Enregistrer les modifications
             </>
           )}
-        </Button>
+        </GradientButton>
       </div>
     </form>
   );
