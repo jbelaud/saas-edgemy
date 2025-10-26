@@ -14,6 +14,9 @@ interface CalendarEvent {
   title: string;
   start: Date;
   end: Date;
+  type: 'availability' | 'session';
+  playerName?: string;
+  sessionId?: string;
 }
 
 interface CoachCalendarProps {
@@ -30,18 +33,36 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   const fetchAvailabilities = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/coach/${coachId}/availability`);
-      if (!res.ok) throw new Error("Erreur lors du chargement");
       
-      const data = await res.json();
-      setEvents(
-        data.map((slot: { id: string; start: string; end: string }) => ({
-          id: slot.id,
+      // Récupérer les disponibilités
+      const availRes = await fetch(`/api/coach/${coachId}/availability`);
+      const availabilities = availRes.ok ? await availRes.json() : [];
+      
+      // Récupérer les sessions
+      const sessRes = await fetch(`/api/coach/sessions`);
+      const sessions = sessRes.ok ? await sessRes.json() : [];
+      
+      // Combiner les deux types d'événements
+      const allEvents: CalendarEvent[] = [
+        ...availabilities.map((slot: { id: string; start: string; end: string }) => ({
+          id: `avail-${slot.id}`,
           title: "Disponible",
           start: new Date(slot.start),
           end: new Date(slot.end),
-        }))
-      );
+          type: 'availability' as const,
+        })),
+        ...sessions.map((session: any) => ({
+          id: `session-${session.id}`,
+          sessionId: session.id,
+          title: `Session - ${session.package.player.name || session.package.player.email}`,
+          start: new Date(session.startDate),
+          end: new Date(session.endDate),
+          type: 'session' as const,
+          playerName: session.package.player.name || session.package.player.email,
+        })),
+      ];
+      
+      setEvents(allEvents);
     } catch (error) {
       console.error("Erreur:", error);
     } finally {
@@ -99,15 +120,26 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   };
 
   const handleSelectEvent = (event: CalendarEvent) => {
-    setSelectedEvent(event);
-    setIsDeleteModalOpen(true);
+    if (event.type === 'availability') {
+      // Pour les disponibilités, ouvrir le modal de suppression
+      setSelectedEvent(event);
+      setIsDeleteModalOpen(true);
+    } else {
+      // Pour les sessions, ouvrir un modal de gestion de session (à implémenter)
+      setSelectedEvent(event);
+      // TODO: Ouvrir modal de gestion de session
+      alert(`Session avec ${event.playerName}\n\nModification/Annulation à venir...`);
+    }
   };
 
   const handleDeleteFull = async () => {
-    if (!selectedEvent) return;
+    if (!selectedEvent || selectedEvent.type !== 'availability') return;
+
+    // Extraire le vrai ID (enlever le préfixe "avail-")
+    const realId = selectedEvent.id.replace('avail-', '');
 
     try {
-      const res = await fetch(`/api/coach/${coachId}/availability/${selectedEvent.id}`, {
+      const res = await fetch(`/api/coach/${coachId}/availability/${realId}`, {
         method: "DELETE",
       });
       
@@ -126,14 +158,17 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   };
 
   const handleDeletePartial = async (deleteStart: Date, deleteEnd: Date) => {
-    if (!selectedEvent) return;
+    if (!selectedEvent || selectedEvent.type !== 'availability') return;
 
     const originalStart = new Date(selectedEvent.start);
     const originalEnd = new Date(selectedEvent.end);
+    
+    // Extraire le vrai ID (enlever le préfixe "avail-")
+    const realId = selectedEvent.id.replace('avail-', '');
 
     try {
       // 1. Supprimer le créneau original
-      await fetch(`/api/coach/${coachId}/availability/${selectedEvent.id}`, {
+      await fetch(`/api/coach/${coachId}/availability/${realId}`, {
         method: "DELETE",
       });
 
@@ -217,6 +252,19 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
               </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Légende */}
+      <div className="flex items-center gap-4 mb-4 px-2">
+        <p className="text-sm text-gray-400">Légende:</p>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-green-500 rounded"></div>
+          <span className="text-sm text-gray-300">Disponibilités</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-purple-500 rounded border-l-2 border-purple-700"></div>
+          <span className="text-sm text-gray-300">Sessions planifiées</span>
         </div>
       </div>
 
