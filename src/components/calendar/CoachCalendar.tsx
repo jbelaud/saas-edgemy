@@ -8,6 +8,7 @@ import { localizer } from "./localizer";
 import { GlassCard } from "@/components/ui";
 import { CalendarDays, Info } from "lucide-react";
 import DeleteAvailabilityModal from "./DeleteAvailabilityModal";
+import ManageSessionModal from "./ManageSessionModal";
 
 interface CalendarEvent {
   id: string;
@@ -29,6 +30,7 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   const calendarRef = useRef<HTMLDivElement>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isManageSessionModalOpen, setIsManageSessionModalOpen] = useState(false);
 
   const fetchAvailabilities = useCallback(async () => {
     try {
@@ -125,10 +127,9 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
       setSelectedEvent(event);
       setIsDeleteModalOpen(true);
     } else {
-      // Pour les sessions, ouvrir un modal de gestion de session (à implémenter)
+      // Pour les sessions, ouvrir le modal de gestion
       setSelectedEvent(event);
-      // TODO: Ouvrir modal de gestion de session
-      alert(`Session avec ${event.playerName}\n\nModification/Annulation à venir...`);
+      setIsManageSessionModalOpen(true);
     }
   };
 
@@ -302,7 +303,7 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
       </div>
 
       {/* Modal de suppression */}
-      {selectedEvent && (
+      {selectedEvent && selectedEvent.type === 'availability' && (
         <DeleteAvailabilityModal
           isOpen={isDeleteModalOpen}
           onClose={() => {
@@ -316,6 +317,26 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
           }}
           onDeleteFull={handleDeleteFull}
           onDeletePartial={handleDeletePartial}
+        />
+      )}
+
+      {/* Modal de gestion de session */}
+      {selectedEvent && selectedEvent.type === 'session' && selectedEvent.sessionId && (
+        <ManageSessionModal
+          isOpen={isManageSessionModalOpen}
+          onClose={() => {
+            setIsManageSessionModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          session={{
+            id: selectedEvent.id,
+            sessionId: selectedEvent.sessionId,
+            title: selectedEvent.title,
+            start: selectedEvent.start,
+            end: selectedEvent.end,
+            playerName: selectedEvent.playerName || 'Joueur inconnu',
+          }}
+          onSuccess={fetchAvailabilities}
         />
       )}
     </GlassCard>
