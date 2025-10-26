@@ -50,6 +50,12 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   }, [fetchAvailabilities]);
 
   const handleSelectSlot = async ({ start, end }: SlotInfo) => {
+    // Vérifier que c'est dans le futur
+    if (start < new Date()) {
+      alert("❌ Vous ne pouvez pas ajouter de disponibilité dans le passé");
+      return;
+    }
+
     try {
       const res = await fetch(`/api/coach/${coachId}/availability`, {
         method: "POST",
@@ -59,17 +65,25 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
       
       if (res.ok) {
         await fetchAvailabilities();
+        // Feedback visuel positif
+        const duration = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+        alert(`✅ Disponibilité ajoutée avec succès !\n📅 ${start.toLocaleDateString("fr-FR")} de ${start.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} à ${end.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}\n⏱️ Durée: ${duration} minutes`);
       } else {
-        alert("Erreur lors de l'ajout de la disponibilité");
+        const error = await res.json();
+        alert(`❌ ${error.error || "Erreur lors de l'ajout de la disponibilité"}`);
       }
     } catch (error) {
       console.error("Erreur:", error);
-      alert("Erreur lors de l'ajout de la disponibilité");
+      alert("❌ Erreur lors de l'ajout de la disponibilité");
     }
   };
 
   const handleSelectEvent = async (event: CalendarEvent) => {
-    if (confirm("Supprimer cette disponibilité ?")) {
+    const startDate = new Date(event.start);
+    const endDate = new Date(event.end);
+    const duration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+    
+    if (confirm(`🗑️ Supprimer cette disponibilité ?\n\n📅 ${startDate.toLocaleDateString("fr-FR")}\n⏰ ${startDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} - ${endDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}\n⏱️ Durée: ${duration} minutes`)) {
       try {
         const res = await fetch(`/api/coach/${coachId}/availability/${event.id}`, {
           method: "DELETE",
@@ -77,12 +91,13 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
         
         if (res.ok) {
           await fetchAvailabilities();
+          alert("✅ Disponibilité supprimée avec succès");
         } else {
-          alert("Erreur lors de la suppression");
+          alert("❌ Erreur lors de la suppression");
         }
       } catch (error) {
         console.error("Erreur:", error);
-        alert("Erreur lors de la suppression");
+        alert("❌ Erreur lors de la suppression");
       }
     }
   };
@@ -108,12 +123,20 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
           <CalendarDays className="w-6 h-6 text-amber-400" />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-semibold text-white mb-2">Mes disponibilités</h2>
-          <div className="flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-            <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-gray-300">
-              <span className="font-medium text-blue-400">Astuce :</span> Cliquez et glissez sur le calendrier pour ajouter un créneau. Cliquez sur un créneau existant pour le supprimer.
-            </p>
+          <h2 className="text-xl font-semibold text-white mb-2">Calendrier interactif</h2>
+          <div className="space-y-2">
+            <div className="flex items-start gap-2 bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+              <Info className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-gray-300">
+                <span className="font-medium text-green-400">➕ Ajouter :</span> Cliquez et glissez sur le calendrier pour créer un créneau
+              </p>
+            </div>
+            <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+              <Info className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-gray-300">
+                <span className="font-medium text-red-400">🗑️ Supprimer :</span> Cliquez sur un créneau existant pour le supprimer
+              </p>
+            </div>
           </div>
         </div>
       </div>

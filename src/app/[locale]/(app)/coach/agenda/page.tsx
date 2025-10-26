@@ -1,18 +1,40 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import CoachCalendar from '@/components/calendar/CoachCalendar';
+import QuickAddAvailability from '@/components/calendar/QuickAddAvailability';
+import AvailabilityList from '@/components/calendar/AvailabilityList';
 import { GradientText, GlassCard } from '@/components/ui';
 import { Clock, Loader2 } from 'lucide-react';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
+
+interface Availability {
+  id: string;
+  start: string;
+  end: string;
+}
 
 export default function CoachAgendaPage() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
   const [coachId, setCoachId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [availabilities, setAvailabilities] = useState<Availability[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const fetchAvailabilities = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/coach/${id}/availability`);
+      if (res.ok) {
+        const data = await res.json();
+        setAvailabilities(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des disponibilités:', error);
+    }
+  }, []);
 
   useEffect(() => {
     if (isPending) return;
@@ -28,13 +50,21 @@ export default function CoachAgendaPage() {
       .then(data => {
         if (data.coach?.id) {
           setCoachId(data.coach.id);
+          fetchAvailabilities(data.coach.id);
         } else {
           router.push('/dashboard');
         }
       })
       .catch(() => router.push('/dashboard'))
       .finally(() => setIsLoading(false));
-  }, [session, isPending, router]);
+  }, [session, isPending, router, fetchAvailabilities]);
+
+  const handleRefresh = useCallback(() => {
+    if (coachId) {
+      fetchAvailabilities(coachId);
+      setRefreshKey(prev => prev + 1);
+    }
+  }, [coachId, fetchAvailabilities]);
 
   if (isPending || isLoading) {
     return (
@@ -52,7 +82,7 @@ export default function CoachAgendaPage() {
 
   return (
     <CoachLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Header */}
         <div>
           <GradientText variant="amber" className="text-4xl font-bold mb-2">
@@ -63,23 +93,42 @@ export default function CoachAgendaPage() {
           </p>
         </div>
 
-        <div className="grid gap-6">
-          {/* Calendrier de gestion des disponibilités */}
-          <CoachCalendar coachId={coachId} />
+        {/* Ajout rapide */}
+        <QuickAddAvailability coachId={coachId} onSuccess={handleRefresh} />
 
-          {/* Prochaines sessions - À implémenter */}
-          <GlassCard className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-amber-400" />
-              </div>
-              <h2 className="text-xl font-semibold text-white">Prochaines sessions</h2>
-            </div>
-            <p className="text-gray-400 text-sm">
-              La liste de vos prochaines sessions sera affichée ici.
-            </p>
-          </GlassCard>
+        {/* Layout principal: Calendrier + Liste */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Calendrier (2/3 de l'espace) */}
+          <div className="xl:col-span-2">
+            <CoachCalendar key={refreshKey} coachId={coachId} />
+          </div>
+
+          {/* Liste des disponibilités (1/3 de l'espace) */}
+          <div className="xl:col-span-1">
+            <AvailabilityList
+              availabilities={availabilities.map(av => ({
+                ...av,
+                start: new Date(av.start),
+                end: new Date(av.end),
+              }))}
+              coachId={coachId}
+              onUpdate={handleRefresh}
+            />
+          </div>
         </div>
+
+        {/* Prochaines sessions - À implémenter */}
+        <GlassCard className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-amber-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-white">Prochaines sessions</h2>
+          </div>
+          <p className="text-gray-400 text-sm">
+            La liste de vos prochaines sessions sera affichée ici.
+          </p>
+        </GlassCard>
       </div>
     </CoachLayout>
   );
