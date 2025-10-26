@@ -1,5 +1,6 @@
 import {setRequestLocale} from 'next-intl/server'
 import {routing} from '@/i18n/routing'
+import { PublicLayout } from '@/components/layout'
 import { HeroSection } from '@/components/home/HeroSection'
 import { HowItWorksSection } from '@/components/home/HowItWorksSection'
 import { FeaturesSection } from '@/components/home/FeaturesSection'
@@ -21,16 +22,14 @@ export default async function Home({
   setRequestLocale(locale)
   
   return (
-    <div className="min-h-screen bg-slate-950">
-      <main>
-        <HeroSection />
-        <HowItWorksSection />
-        <FeaturesSection />
-        <DualSection />
-        <TestimonialsSection />
-        <MissionSection />
-        <CTASection />
-      </main>
-    </div>
+    <PublicLayout>
+      <HeroSection />
+      <HowItWorksSection />
+      <FeaturesSection />
+      <DualSection />
+      <TestimonialsSection />
+      <MissionSection />
+      <CTASection />
+    </PublicLayout>
   )
 }

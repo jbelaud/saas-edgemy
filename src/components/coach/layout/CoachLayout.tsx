@@ -8,7 +8,7 @@ interface CoachLayoutProps {
 
 export function CoachLayout({ children }: CoachLayoutProps) {
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-900 pt-20">
+    <div className="flex h-screen overflow-hidden bg-slate-900">
       {/* Sidebar */}
       <CoachSidebar />
 
