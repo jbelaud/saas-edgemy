@@ -156,6 +156,8 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
           defaultView="week"
           step={30}
           timeslots={2}
+          min={new Date(0, 0, 0, 7, 0, 0)}
+          max={new Date(0, 0, 0, 22, 0, 0)}
           messages={{
             next: "Suivant",
             previous: "Précédent",
