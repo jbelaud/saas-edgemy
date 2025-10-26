@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { X, Users, Package, Clock, Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
 
 interface Player {
   id: string;
@@ -29,14 +28,12 @@ interface SchedulePackSessionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  coachId: string;
 }
 
 export default function SchedulePackSessionModal({
   isOpen,
   onClose,
   onSuccess,
-  coachId,
 }: SchedulePackSessionModalProps) {
   const [loading, setLoading] = useState(true);
   const [players, setPlayers] = useState<PlayerWithPackages[]>([]);

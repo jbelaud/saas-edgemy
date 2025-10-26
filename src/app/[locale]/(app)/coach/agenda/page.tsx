@@ -160,7 +160,6 @@ export default function CoachAgendaPage() {
         isOpen={isPackModalOpen}
         onClose={() => setIsPackModalOpen(false)}
         onSuccess={handleRefresh}
-        coachId={coachId}
       />
     </CoachLayout>
   );

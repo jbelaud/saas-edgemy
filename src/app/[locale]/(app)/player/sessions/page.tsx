@@ -61,11 +61,26 @@ export default function PlayerSessionsPage() {
 
       // Combiner et formater les deux types
       const allSessions: Reservation[] = [
-        ...reservationsData.map((r: any) => ({
+        ...reservationsData.map((r: Reservation) => ({
           ...r,
           type: 'reservation' as const,
         })),
-        ...sessionsData.map((s: any) => ({
+        ...sessionsData.map((s: {
+          id: string;
+          startDate: string;
+          endDate: string;
+          status: string;
+          package: {
+            coach: {
+              id: string;
+              user: { name: string | null; image: string | null };
+              slug: string;
+            };
+            announcement: { title: string };
+            totalHours: number;
+            remainingHours: number;
+          };
+        }) => ({
           id: s.id,
           startDate: s.startDate,
           endDate: s.endDate,

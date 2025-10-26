@@ -53,7 +53,17 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
           end: new Date(slot.end),
           type: 'availability' as const,
         })),
-        ...sessions.map((session: any) => ({
+        ...sessions.map((session: {
+          id: string;
+          startDate: string;
+          endDate: string;
+          package: {
+            player: {
+              name: string | null;
+              email: string;
+            };
+          };
+        }) => ({
           id: `session-${session.id}`,
           sessionId: session.id,
           title: `Session - ${session.package.player.name || session.package.player.email}`,

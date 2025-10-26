@@ -58,6 +58,23 @@ export async function GET() {
     });
 
     // Grouper par joueur
+    interface PlayerPackageGroup {
+      player: {
+        id: string;
+        name: string | null;
+        email: string | null;
+        image: string | null;
+      };
+      packages: Array<{
+        id: string;
+        totalHours: number;
+        remainingHours: number;
+        usedHours: number;
+        sessionsCount: number;
+        createdAt: Date;
+      }>;
+    }
+
     const playerPackages = packages.reduce((acc, pkg) => {
       const playerId = pkg.playerId;
       if (!acc[playerId]) {
@@ -75,7 +92,7 @@ export async function GET() {
         createdAt: pkg.createdAt,
       });
       return acc;
-    }, {} as Record<string, { player: any; packages: any[] }>);
+    }, {} as Record<string, PlayerPackageGroup>);
 
     return NextResponse.json(Object.values(playerPackages));
   } catch (error) {
