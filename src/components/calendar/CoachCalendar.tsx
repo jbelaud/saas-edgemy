@@ -5,6 +5,8 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar-custom.css";
 import { useEffect, useState, useCallback } from "react";
 import { localizer } from "./localizer";
+import { GlassCard } from "@/components/ui";
+import { CalendarDays, Info } from "lucide-react";
 
 interface CalendarEvent {
   id: string;
@@ -87,51 +89,67 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
 
   if (loading) {
     return (
-      <div className="p-4 bg-white shadow rounded-2xl">
+      <GlassCard className="p-6">
         <div className="flex items-center justify-center h-96">
-          <p className="text-gray-500">Chargement du calendrier...</p>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
+            <p className="text-gray-400">Chargement du calendrier...</p>
+          </div>
         </div>
-      </div>
+      </GlassCard>
     );
   }
 
   return (
-    <div className="p-4 bg-white shadow rounded-2xl">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold">Mes disponibilités</h2>
-        <p className="text-sm text-gray-600 mt-1">
-          Cliquez et glissez sur le calendrier pour ajouter un créneau. Cliquez sur un créneau existant pour le supprimer.
-        </p>
+    <GlassCard className="p-6">
+      {/* Header */}
+      <div className="flex items-start gap-4 mb-6">
+        <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+          <CalendarDays className="w-6 h-6 text-amber-400" />
+        </div>
+        <div className="flex-1">
+          <h2 className="text-xl font-semibold text-white mb-2">Mes disponibilités</h2>
+          <div className="flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+            <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-gray-300">
+              <span className="font-medium text-blue-400">Astuce :</span> Cliquez et glissez sur le calendrier pour ajouter un créneau. Cliquez sur un créneau existant pour le supprimer.
+            </p>
+          </div>
+        </div>
       </div>
-      <Calendar
-        localizer={localizer}
-        events={events}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: 600 }}
-        selectable
-        onSelectSlot={handleSelectSlot}
-        onSelectEvent={handleSelectEvent}
-        views={["month", "week", "day"]}
-        defaultView="week"
-        step={30}
-        timeslots={2}
-        messages={{
-          next: "Suivant",
-          previous: "Précédent",
-          today: "Aujourd'hui",
-          month: "Mois",
-          week: "Semaine",
-          day: "Jour",
-          agenda: "Agenda",
-          date: "Date",
-          time: "Heure",
-          event: "Événement",
-          noEventsInRange: "Aucune disponibilité dans cette période",
-          showMore: (total) => `+ ${total} de plus`,
-        }}
-        culture="fr"
-      />
-    </div>
+
+      {/* Calendrier */}
+      <div className="bg-slate-800/50 rounded-xl p-4 border border-white/10">
+        <Calendar
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          style={{ height: 600 }}
+          selectable
+          onSelectSlot={handleSelectSlot}
+          onSelectEvent={handleSelectEvent}
+          views={["month", "week", "day"]}
+          defaultView="week"
+          step={30}
+          timeslots={2}
+          messages={{
+            next: "Suivant",
+            previous: "Précédent",
+            today: "Aujourd'hui",
+            month: "Mois",
+            week: "Semaine",
+            day: "Jour",
+            agenda: "Agenda",
+            date: "Date",
+            time: "Heure",
+            event: "Événement",
+            noEventsInRange: "Aucune disponibilité dans cette période",
+            showMore: (total) => `+ ${total} de plus`,
+          }}
+          culture="fr"
+        />
+      </div>
+    </GlassCard>
   );
 }
