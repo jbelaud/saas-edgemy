@@ -267,15 +267,15 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
       </div>
 
       {/* Légende */}
-      <div className="flex items-center gap-4 mb-4 px-2">
-        <p className="text-sm text-gray-400">Légende:</p>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-green-500 rounded"></div>
-          <span className="text-sm text-gray-300">Disponibilités</span>
+      <div className="flex items-center gap-3 mb-6 p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-xl border border-white/10">
+        <p className="text-sm font-semibold text-gray-300 mr-2">Légende:</p>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-lg">
+          <div className="w-3 h-3 bg-gradient-to-br from-green-500 to-green-600 rounded shadow-sm"></div>
+          <span className="text-sm font-medium text-green-400">Disponibilités</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-purple-500 rounded border-l-2 border-purple-700"></div>
-          <span className="text-sm text-gray-300">Sessions planifiées</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+          <div className="w-3 h-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded shadow-sm border-l-2 border-purple-700"></div>
+          <span className="text-sm font-medium text-purple-400">Sessions planifiées</span>
         </div>
       </div>
 
