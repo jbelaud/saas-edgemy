@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { localizer } from "./localizer";
 import { GlassCard } from "@/components/ui";
 import { CalendarDays, Info } from "lucide-react";
+import DeleteAvailabilityModal from "./DeleteAvailabilityModal";
 
 interface CalendarEvent {
   id: string;
@@ -23,6 +24,8 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const fetchAvailabilities = useCallback(async () => {
     try {
@@ -95,27 +98,86 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
     }
   };
 
-  const handleSelectEvent = async (event: CalendarEvent) => {
-    const startDate = new Date(event.start);
-    const endDate = new Date(event.end);
-    const duration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
-    
-    if (confirm(`🗑️ Supprimer cette disponibilité ?\n\n📅 ${startDate.toLocaleDateString("fr-FR")}\n⏰ ${startDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} - ${endDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}\n⏱️ Durée: ${duration} minutes`)) {
-      try {
-        const res = await fetch(`/api/coach/${coachId}/availability/${event.id}`, {
-          method: "DELETE",
-        });
-        
-        if (res.ok) {
-          await fetchAvailabilities();
-          alert("✅ Disponibilité supprimée avec succès");
-        } else {
-          alert("❌ Erreur lors de la suppression");
-        }
-      } catch (error) {
-        console.error("Erreur:", error);
+  const handleSelectEvent = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteFull = async () => {
+    if (!selectedEvent) return;
+
+    try {
+      const res = await fetch(`/api/coach/${coachId}/availability/${selectedEvent.id}`, {
+        method: "DELETE",
+      });
+      
+      if (res.ok) {
+        await fetchAvailabilities();
+        setIsDeleteModalOpen(false);
+        setSelectedEvent(null);
+        alert("✅ Disponibilité supprimée avec succès");
+      } else {
         alert("❌ Erreur lors de la suppression");
       }
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("❌ Erreur lors de la suppression");
+    }
+  };
+
+  const handleDeletePartial = async (deleteStart: Date, deleteEnd: Date) => {
+    if (!selectedEvent) return;
+
+    const originalStart = new Date(selectedEvent.start);
+    const originalEnd = new Date(selectedEvent.end);
+
+    try {
+      // 1. Supprimer le créneau original
+      await fetch(`/api/coach/${coachId}/availability/${selectedEvent.id}`, {
+        method: "DELETE",
+      });
+
+      // 2. Recréer les parties restantes
+      const promises = [];
+
+      // Partie avant (si elle existe)
+      if (deleteStart > originalStart) {
+        promises.push(
+          fetch(`/api/coach/${coachId}/availability`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              start: originalStart,
+              end: deleteStart,
+            }),
+          })
+        );
+      }
+
+      // Partie après (si elle existe)
+      if (deleteEnd < originalEnd) {
+        promises.push(
+          fetch(`/api/coach/${coachId}/availability`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              start: deleteEnd,
+              end: originalEnd,
+            }),
+          })
+        );
+      }
+
+      await Promise.all(promises);
+      await fetchAvailabilities();
+      setIsDeleteModalOpen(false);
+      setSelectedEvent(null);
+      alert("✅ Disponibilité modifiée avec succès");
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("❌ Erreur lors de la modification");
+      // En cas d'erreur, recharger pour revenir à l'état cohérent
+      await fetchAvailabilities();
     }
   };
 
@@ -190,6 +252,24 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
           culture="fr"
         />
       </div>
+
+      {/* Modal de suppression */}
+      {selectedEvent && (
+        <DeleteAvailabilityModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          availability={{
+            id: selectedEvent.id,
+            start: selectedEvent.start,
+            end: selectedEvent.end,
+          }}
+          onDeleteFull={handleDeleteFull}
+          onDeletePartial={handleDeletePartial}
+        />
+      )}
     </GlassCard>
   );
 }
