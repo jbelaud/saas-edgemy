@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import CoachCalendar from '@/components/calendar/CoachCalendar';
 import QuickAddAvailability from '@/components/calendar/QuickAddAvailability';
 import AvailabilityList from '@/components/calendar/AvailabilityList';
+import SchedulePackSessionModal from '@/components/calendar/SchedulePackSessionModal';
 import { GradientText, GlassCard } from '@/components/ui';
-import { Clock, Loader2 } from 'lucide-react';
+import { Clock, Loader2, Package } from 'lucide-react';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 
 interface Availability {
@@ -23,6 +24,7 @@ export default function CoachAgendaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isPackModalOpen, setIsPackModalOpen] = useState(false);
 
   const fetchAvailabilities = useCallback(async (id: string) => {
     try {
@@ -93,8 +95,30 @@ export default function CoachAgendaPage() {
           </p>
         </div>
 
-        {/* Ajout rapide */}
-        <QuickAddAvailability coachId={coachId} onSuccess={handleRefresh} />
+        {/* Actions rapides */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <QuickAddAvailability coachId={coachId} onSuccess={handleRefresh} />
+          
+          {/* Bouton planifier session de pack */}
+          <GlassCard className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                <Package className="w-5 h-5 text-purple-400" />
+              </div>
+              <h2 className="text-xl font-semibold text-white">Sessions de pack</h2>
+            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              Planifiez une session pour un joueur ayant acheté un pack
+            </p>
+            <button
+              onClick={() => setIsPackModalOpen(true)}
+              className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+            >
+              <Package className="w-5 h-5" />
+              Planifier une session
+            </button>
+          </GlassCard>
+        </div>
 
         {/* Layout principal: Calendrier + Liste */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -130,6 +154,14 @@ export default function CoachAgendaPage() {
           </p>
         </GlassCard>
       </div>
+
+      {/* Modal de planification de pack */}
+      <SchedulePackSessionModal
+        isOpen={isPackModalOpen}
+        onClose={() => setIsPackModalOpen(false)}
+        onSuccess={handleRefresh}
+        coachId={coachId}
+      />
     </CoachLayout>
   );
 }
