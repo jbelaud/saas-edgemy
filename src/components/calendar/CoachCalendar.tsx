@@ -3,7 +3,7 @@
 import { Calendar, SlotInfo } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar-custom.css";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { localizer } from "./localizer";
 import { GlassCard } from "@/components/ui";
 import { CalendarDays, Info } from "lucide-react";
@@ -22,6 +22,7 @@ interface CoachCalendarProps {
 export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   const fetchAvailabilities = useCallback(async () => {
     try {
@@ -48,6 +49,22 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   useEffect(() => {
     fetchAvailabilities();
   }, [fetchAvailabilities]);
+
+  // Scroller automatiquement à 7h00 au chargement
+  useEffect(() => {
+    if (!loading && calendarRef.current) {
+      const timer = setTimeout(() => {
+        const timeGutter = calendarRef.current?.querySelector('.rbc-time-content');
+        if (timeGutter) {
+          // Chaque heure fait environ 60px de hauteur (step=30, timeslots=2)
+          // 7 heures * 60px = 420px
+          timeGutter.scrollTop = 420;
+        }
+      }, 100); // Petit délai pour s'assurer que le DOM est prêt
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   const handleSelectSlot = async ({ start, end }: SlotInfo) => {
     // Vérifier que c'est dans le futur
@@ -142,7 +159,7 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
       </div>
 
       {/* Calendrier */}
-      <div className="bg-slate-800/50 rounded-xl p-4 border border-white/10">
+      <div ref={calendarRef} className="bg-slate-800/50 rounded-xl p-4 border border-white/10">
         <Calendar
           localizer={localizer}
           events={events}
@@ -156,8 +173,6 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
           defaultView="week"
           step={30}
           timeslots={2}
-          min={new Date(0, 0, 0, 7, 0, 0)}
-          max={new Date(0, 0, 0, 22, 0, 0)}
           messages={{
             next: "Suivant",
             previous: "Précédent",
