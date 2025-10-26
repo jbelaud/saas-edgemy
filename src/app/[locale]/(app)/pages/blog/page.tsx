@@ -1,4 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
+import { PublicLayout } from '@/components/layout';
 import Link from 'next/link';
 
 interface PageProps {
@@ -10,7 +11,8 @@ export default async function BlogIntroPage({ params }: PageProps) {
   setRequestLocale(locale);
 
   return (
-    <main className="bg-white">
+    <PublicLayout>
+      <div className="bg-white pt-20">
       <section className="border-b border-gray-200 bg-gradient-to-br from-white via-blue-50 to-purple-100">
         <div className="container mx-auto max-w-5xl px-6 py-24 text-center">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-purple-600">
@@ -91,6 +93,7 @@ export default async function BlogIntroPage({ params }: PageProps) {
           </Link>
         </div>
       </section>
-    </main>
+      </div>
+    </PublicLayout>
   );
 }

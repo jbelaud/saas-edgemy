@@ -43,24 +43,19 @@ export function AppFooter() {
             <h3 className="text-white font-semibold mb-4">Navigation</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors text-sm">
+                <Link href={localizedPath('/a-propos')} className="text-gray-400 hover:text-white transition-colors text-sm">
                   À propos
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#features" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Fonctionnalités
-                </a>
+                <Link href={localizedPath('/blog')} className="text-gray-400 hover:text-white transition-colors text-sm">
+                  Blog
+                </Link>
               </li>
               <li>
                 <Link href={localizedPath('/contact')} className="text-gray-400 hover:text-white transition-colors text-sm">
                   Contact
                 </Link>
-              </li>
-              <li>
-                <a href="#faq" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  FAQ
-                </a>
               </li>
             </ul>
           </div>
