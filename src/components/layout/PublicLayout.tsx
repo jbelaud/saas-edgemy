@@ -1,7 +1,7 @@
 "use client";
 
 import { AppHeader } from "./AppHeader";
-import { Footer } from "./footer";
+import { AppFooter } from "./AppFooter";
 
 interface PublicLayoutProps {
   children: React.ReactNode;
@@ -14,7 +14,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       <main className="flex-1">
         {children}
       </main>
-      <Footer />
+      <AppFooter />
     </div>
   );
 }

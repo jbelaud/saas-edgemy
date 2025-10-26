@@ -28,6 +28,7 @@ import {
   LogOut,
   ExternalLink,
   ArrowRightLeft,
+  User,
 } from "lucide-react";
 
 interface NavItem {
@@ -220,42 +221,30 @@ export function CoachSidebar() {
           <DropdownMenuContent className="w-56 bg-slate-900/95 backdrop-blur-xl border-white/10" align="end" side="top">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user?.name}</p>
-                <p className="text-xs leading-none text-muted-foreground">
+                <p className="text-sm font-medium leading-none text-white">{user?.name}</p>
+                <p className="text-xs leading-none text-gray-400">
                   {user?.email}
                 </p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem asChild>
-              <Link href={`/${locale}/coach/dashboard`} className="flex items-center cursor-pointer">
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                <span>Dashboard</span>
-              </Link>
-            </DropdownMenuItem>
-            {coachSlug && (
-              <DropdownMenuItem asChild>
-                <Link href={`/${locale}/coach/${coachSlug}`} className="flex items-center cursor-pointer">
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  <span>Voir mon profil</span>
+              {hasPlayerProfile ? (
+                <Link href={`/${locale}/player/dashboard`} className="flex items-center cursor-pointer text-gray-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white">
+                  <ArrowRightLeft className="mr-2 h-4 w-4" />
+                  <span>Basculer en mode Joueur</span>
                 </Link>
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuSeparator />
-            {hasPlayerProfile && (
-              <>
-                <DropdownMenuItem asChild>
-                  <Link href={`/${locale}/player/dashboard`} className="flex items-center cursor-pointer">
-                    <ArrowRightLeft className="mr-2 h-4 w-4" />
-                    <span>Basculer en mode Joueur</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            )}
+              ) : (
+                <Link href={`/${locale}/coach/${coachSlug}`} className="flex items-center cursor-pointer text-gray-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Voir mon profil public</span>
+                </Link>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem
               onClick={() => signOut()}
-              className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-300"
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Déconnexion</span>

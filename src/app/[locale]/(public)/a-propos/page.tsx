@@ -1,4 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
+import { PublicLayout } from '@/components/layout';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -9,7 +10,8 @@ export default async function AboutPage({ params }: PageProps) {
   setRequestLocale(locale);
 
   return (
-    <main className="bg-white">
+    <PublicLayout>
+      <div className="bg-white pt-20">
       <section className="border-b border-gray-200 bg-gradient-to-br from-white via-blue-50 to-purple-50">
         <div className="container mx-auto max-w-5xl px-6 py-24 text-center">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-blue-600">
@@ -90,6 +92,7 @@ export default async function AboutPage({ params }: PageProps) {
           </p>
         </div>
       </section>
-    </main>
+      </div>
+    </PublicLayout>
   );
 }
