@@ -7,12 +7,13 @@
 .rbc-header {
   padding: 12px 6px;
   font-weight: 600;
-  color: #374151;
-  border-bottom: 2px solid #e5e7eb;
+  color: #e5e7eb;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(51, 65, 85, 0.3);
 }
 
 .rbc-today {
-  background-color: #fef3c7;
+  background-color: rgba(251, 191, 36, 0.1);
 }
 
 .rbc-event {
@@ -42,11 +43,12 @@
 
 .rbc-timeslot-group {
   min-height: 80px;
-  border-left: 1px solid #e5e7eb;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .rbc-day-slot .rbc-time-slot {
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  color: #9ca3af;
 }
 
 .rbc-current-time-indicator {
@@ -66,19 +68,19 @@
 
 .rbc-toolbar button {
   padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  background-color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(51, 65, 85, 0.5);
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: #e5e7eb;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .rbc-toolbar button:hover {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
+  background-color: rgba(51, 65, 85, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .rbc-toolbar button.rbc-active {
@@ -95,25 +97,28 @@
 .rbc-toolbar-label {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: #f9fafb;
 }
 
 .rbc-month-view {
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   overflow: hidden;
+  background-color: rgba(30, 41, 59, 0.5);
 }
 
 .rbc-time-view {
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   overflow: hidden;
+  background-color: rgba(30, 41, 59, 0.5);
 }
 
 .rbc-agenda-view {
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   overflow: hidden;
+  background-color: rgba(30, 41, 59, 0.5);
 }
 
 .rbc-agenda-table {
@@ -122,18 +127,49 @@
 
 .rbc-agenda-table tbody > tr > td {
   padding: 8px 12px;
+  color: #e5e7eb;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .rbc-agenda-date-cell,
 .rbc-agenda-time-cell {
   white-space: nowrap;
   font-weight: 500;
+  color: #d1d5db;
 }
 
 .rbc-off-range {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 .rbc-off-range-bg {
-  background-color: #f9fafb;
+  background-color: rgba(15, 23, 42, 0.5);
+}
+
+/* Amélioration des cellules de la vue mois */
+.rbc-month-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rbc-day-bg {
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rbc-date-cell {
+  padding: 4px;
+  color: #d1d5db;
+}
+
+/* Labels des heures dans la vue semaine/jour */
+.rbc-time-header-content {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-time-content {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-label {
+  color: #9ca3af;
+  font-size: 0.75rem;
 }
