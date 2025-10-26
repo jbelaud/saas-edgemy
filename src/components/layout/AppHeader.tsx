@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from '@/lib/auth-client';
+import { useLocale } from 'next-intl';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { CoachSignUpModal } from '@/components/auth/CoachSignUpModal';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 
 export function AppHeader() {
   const { data: session, isPending } = useSession();
+  const locale = useLocale();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCoachSignUpModal, setShowCoachSignUpModal] = useState(false);
   const [signupContext, setSignupContext] = useState<'coach' | 'player'>('player');
@@ -54,35 +56,29 @@ export function AppHeader() {
           {/* Navigation centrale */}
           <nav className="hidden lg:flex items-center gap-8">
             <Link
-              href="/coachs"
+              href={`/${locale}/coachs`}
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
               Découvrir les coachs
             </Link>
-            <a
-              href="#features"
+            <Link
+              href={`/${locale}/pages/blog`}
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
-              Fonctionnalités
-            </a>
-            <a
-              href="#for-players"
-              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
-            >
-              Pour les joueurs
-            </a>
-            <a
-              href="#for-coaches"
-              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
-            >
-              Pour les coachs
-            </a>
-            <a
-              href="#about"
+              Blog
+            </Link>
+            <Link
+              href={`/${locale}/pages/a-propos`}
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
               À propos
-            </a>
+            </Link>
+            <Link
+              href={`/${locale}/pages/contact`}
+              className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+            >
+              Contact
+            </Link>
           </nav>
 
           {/* Desktop: Auth Buttons & Language Switcher */}
@@ -149,40 +145,33 @@ export function AppHeader() {
           <div className="lg:hidden absolute top-20 left-0 right-0 bg-slate-950/95 backdrop-blur-xl border-b border-white/5 py-6 px-6">
             <nav className="flex flex-col gap-4 mb-6">
               <Link
-                href="/coachs"
+                href={`/${locale}/coachs`}
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
               >
                 Découvrir les coachs
               </Link>
-              <a
-                href="#features"
+              <Link
+                href={`/${locale}/pages/blog`}
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
               >
-                Fonctionnalités
-              </a>
-              <a
-                href="#for-players"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
-              >
-                Pour les joueurs
-              </a>
-              <a
-                href="#for-coaches"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
-              >
-                Pour les coachs
-              </a>
-              <a
-                href="#about"
+                Blog
+              </Link>
+              <Link
+                href={`/${locale}/pages/a-propos`}
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
               >
                 À propos
-              </a>
+              </Link>
+              <Link
+                href={`/${locale}/pages/contact`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
+              >
+                Contact
+              </Link>
             </nav>
 
             {!session?.user && (
