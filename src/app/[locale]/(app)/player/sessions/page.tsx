@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Clock, User, Loader2 } from 'lucide-react';
+import { Calendar, Clock, User, Loader2, Package } from 'lucide-react';
 import Image from 'next/image';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 
@@ -14,6 +14,7 @@ interface Reservation {
   startDate: Date;
   endDate: Date;
   status: string;
+  type: 'reservation' | 'pack-session';
   coach: {
     id: string;
     firstName: string | null;
@@ -23,7 +24,11 @@ interface Reservation {
   };
   announcement: {
     title: string;
-    durationMin: number;
+    durationMin?: number;
+  };
+  packageInfo?: {
+    totalHours: number;
+    remainingHours: number;
   };
 }
 
@@ -46,13 +51,49 @@ export default function PlayerSessionsPage() {
 
   const fetchReservations = async () => {
     try {
-      const response = await fetch('/api/player/reservations');
-      if (response.ok) {
-        const data = await response.json();
-        setReservations(data);
-      }
+      // Récupérer les réservations classiques
+      const reservationsRes = await fetch('/api/player/reservations');
+      const reservationsData = reservationsRes.ok ? await reservationsRes.json() : [];
+
+      // Récupérer les sessions de pack
+      const sessionsRes = await fetch('/api/player/sessions');
+      const sessionsData = sessionsRes.ok ? await sessionsRes.json() : [];
+
+      // Combiner et formater les deux types
+      const allSessions: Reservation[] = [
+        ...reservationsData.map((r: any) => ({
+          ...r,
+          type: 'reservation' as const,
+        })),
+        ...sessionsData.map((s: any) => ({
+          id: s.id,
+          startDate: s.startDate,
+          endDate: s.endDate,
+          status: s.status,
+          type: 'pack-session' as const,
+          coach: {
+            id: s.package.coach.id,
+            firstName: s.package.coach.user.name?.split(' ')[0] || null,
+            lastName: s.package.coach.user.name?.split(' ').slice(1).join(' ') || null,
+            avatarUrl: s.package.coach.user.image || null,
+            slug: s.package.coach.slug || '',
+          },
+          announcement: {
+            title: s.package.announcement.title,
+          },
+          packageInfo: {
+            totalHours: s.package.totalHours,
+            remainingHours: s.package.remainingHours,
+          },
+        })),
+      ];
+
+      // Trier par date
+      allSessions.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+      setReservations(allSessions);
     } catch (error) {
-      console.error('Erreur chargement réservations:', error);
+      console.error('Erreur chargement sessions:', error);
     } finally {
       setIsLoading(false);
     }
@@ -122,13 +163,26 @@ export default function PlayerSessionsPage() {
                           />
                         )}
                         <div>
-                          <h3 className="font-semibold text-lg">
-                            {reservation.announcement.title}
-                          </h3>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-lg">
+                              {reservation.announcement.title}
+                            </h3>
+                            {reservation.type === 'pack-session' && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+                                <Package className="h-3 w-3" />
+                                Pack
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-gray-600 flex items-center gap-1">
                             <User className="h-4 w-4" />
                             avec {reservation.coach.firstName} {reservation.coach.lastName}
                           </p>
+                          {reservation.packageInfo && (
+                            <p className="text-xs text-purple-600 mt-1">
+                              Heures restantes: {reservation.packageInfo.remainingHours}h / {reservation.packageInfo.totalHours}h
+                            </p>
+                          )}
                         </div>
                       </div>
                       
