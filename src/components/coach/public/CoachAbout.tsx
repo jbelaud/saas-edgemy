@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Target, TrendingUp, Brain, LineChart, Users, Video, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { Target, Brain, LineChart, Video, MessageSquare, Trophy, TrendingUp, Users, CheckCircle2 } from 'lucide-react';
 
 interface CoachAboutProps {
   coach: {

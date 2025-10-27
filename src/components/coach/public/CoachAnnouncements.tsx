@@ -117,8 +117,7 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
 
   return (
     <>
-      <div id="coaching-offers" className="scroll-mt-6">
-        <Card className="border-0 shadow-lg">
+      <Card className="border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="text-3xl font-bold">Offres de coaching</CardTitle>
             <CardDescription className="text-base">
@@ -386,7 +385,6 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
             </div>
           </CardContent>
         </Card>
-      </div>
 
       {/* Modal de détail de l'annonce */}
       {selectedAnnouncement && (
