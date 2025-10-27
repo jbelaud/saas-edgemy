@@ -4,7 +4,8 @@ import { PublicLayout } from '@/components/layout/PublicLayout';
 import { CoachHeader } from '@/components/coach/public/CoachHeader';
 import { CoachAnnouncements } from '@/components/coach/public/CoachAnnouncements';
 import { CoachAbout } from '@/components/coach/public/CoachAbout';
-import { CoachWhyMe } from '@/components/coach/public/CoachWhyMe';
+import { CoachReviews } from '@/components/coach/public/CoachReviews';
+// import { CoachWhyMe } from '@/components/coach/public/CoachWhyMe'; // Désactivé pour MVP - à réactiver plus tard
 import { TrustBadges } from '@/components/coach/public/TrustBadges';
 
 interface PageProps {
@@ -106,8 +107,12 @@ export default async function CoachPublicPage({ params }: PageProps) {
               />
             </div>
 
-            {/* Pourquoi réserver avec moi */}
-            <CoachWhyMe />
+            {/* Avis des élèves */}
+            <CoachReviews 
+              coachId={coach.id}
+              averageRating={4.9}
+              totalReviews={127}
+            />
           </div>
         </div>
       </div>

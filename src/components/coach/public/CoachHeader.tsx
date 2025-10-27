@@ -179,7 +179,7 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
                   size="lg"
                   variant="outline"
                   onClick={handleDiscordContact}
-                  className="border-2 border-white/30 text-white hover:bg-white/10 px-8 py-6 text-lg backdrop-blur-sm w-full sm:w-auto"
+                  className="border-2 border-white bg-white/90 text-blue-600 hover:bg-white hover:text-blue-700 px-8 py-6 text-lg font-semibold w-full sm:w-auto"
                 >
                   <MessageCircle className="mr-2 h-5 w-5" />
                   Message Discord

@@ -16,8 +16,8 @@ export function TrustBadges() {
     },
     {
       icon: CheckCircle,
-      title: 'Satisfaction garantie',
-      description: 'Remboursement possible'
+      title: 'Support réactif',
+      description: 'Réponse sous 24h'
     }
   ];
 
