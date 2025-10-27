@@ -6,8 +6,8 @@ import { CreateAnnouncementModalV2 } from '@/components/coach/announcements/Crea
 import { useSession } from '@/lib/auth-client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Loader2, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Loader2, Plus, Eye, Megaphone } from 'lucide-react';
+import { GradientText } from '@/components/ui';
 
 export default function CoachAnnouncementsPage() {
   const { data: session, isPending } = useSession();
@@ -57,32 +57,35 @@ export default function CoachAnnouncementsPage() {
   return (
     <CoachLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            <GradientText variant="purple" className="text-4xl font-bold mb-2 flex items-center gap-3">
+              <Megaphone className="w-10 h-10" />
               Mes Annonces
-            </h1>
-            <p className="text-gray-600">
-              Gérez vos annonces de coaching
+            </GradientText>
+            <p className="text-gray-400 text-lg">
+              Créez et gérez vos offres de coaching
             </p>
           </div>
-          <div className="flex gap-3">
-            {!isInactive && (
-              <>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => window.open(`/${locale}/coach/${coach.slug}`, '_blank')}
-                >
-                  Voir mon profil en ligne
-                </Button>
-                <Button onClick={() => setIsCreateModalOpen(true)} size="lg">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Créer une annonce
-                </Button>
-              </>
-            )}
-          </div>
+          {!isInactive && (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => window.open(`/${locale}/coach/${coach.slug}`, '_blank')}
+                className="px-6 py-3 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+              >
+                <Eye className="w-5 h-5" />
+                Voir mon profil public
+              </button>
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Créer une annonce
+              </button>
+            </div>
+          )}
         </div>
 
         <DashboardAnnouncements coach={coach} key={refreshKey} />
