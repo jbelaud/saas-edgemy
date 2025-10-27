@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Calendar, Clock } from "lucide-react";
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface MobileAddAvailabilityModalProps {
   isOpen: boolean;
@@ -108,7 +109,7 @@ export default function MobileAddAvailabilityModal({
           <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
             <p className="text-sm text-gray-400 mb-1">Résumé</p>
             <p className="text-white font-semibold">
-              {format(new Date(date), "EEEE d MMMM yyyy", { locale: require("date-fns/locale/fr") })}
+              {format(new Date(date), "EEEE d MMMM yyyy", { locale: fr })}
             </p>
             <p className="text-green-400 font-semibold mt-1">
               {startTime} - {endTime}

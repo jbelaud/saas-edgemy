@@ -6,7 +6,7 @@ import "./calendar-custom.css";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { localizer } from "./localizer";
 import { GlassCard } from "@/components/ui";
-import { CalendarDays, Info, Monitor, Smartphone } from "lucide-react";
+import { Info, Monitor, Smartphone } from "lucide-react";
 import DeleteAvailabilityModal from "./DeleteAvailabilityModal";
 import ManageSessionModal from "./ManageSessionModal";
 import MobileAgendaView from "./MobileAgendaView";
