@@ -13,6 +13,7 @@ const profileSchema = z.object({
   firstName: z.string().min(2, 'Minimum 2 caractères'),
   lastName: z.string().min(2, 'Minimum 2 caractères'),
   bio: z.string().min(50, 'Minimum 50 caractères').max(1000),
+  methodology: z.string().min(50, 'Minimum 50 caractères').max(1000).optional().or(z.literal('')),
   pokerFormats: z.array(z.string()).min(1, 'Sélectionnez au moins un format'),
   stakes: z.string().optional(),
   roi: z.number().optional(),
@@ -42,6 +43,7 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
       firstName: coach.firstName || '',
       lastName: coach.lastName || '',
       bio: coach.bio || '',
+      methodology: coach.methodology || '',
       pokerFormats: coach.pokerFormats || [],
       stakes: coach.stakes || '',
       roi: coach.roi || undefined,
@@ -148,6 +150,23 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
             {errors.bio && (
               <p className="text-sm text-red-400 mt-1">{errors.bio.message}</p>
             )}
+          </div>
+
+          <div>
+            <Label htmlFor="methodology" className="text-gray-300">Méthodologie de coaching</Label>
+            <Textarea
+              id="methodology"
+              {...register('methodology')}
+              rows={6}
+              placeholder="Décrivez votre approche pédagogique, vos méthodes d'enseignement, comment vous structurez vos sessions..."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
+            />
+            {errors.methodology && (
+              <p className="text-sm text-red-400 mt-1">{errors.methodology.message}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Optionnel - Sera affiché dans une section dédiée sur votre profil public
+            </p>
           </div>
         </div>
       </GlassCard>
