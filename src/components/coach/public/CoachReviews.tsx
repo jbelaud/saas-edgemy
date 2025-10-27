@@ -69,7 +69,7 @@ export function CoachReviews({ averageRating, totalReviews }: CoachReviewsProps)
         <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
           <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-800">
-            <strong>Note :</strong> Les avis ci-dessous sont fictifs pour la démonstration. Le système d'avis réels sera disponible prochainement.
+            <strong>Note :</strong> Les avis ci-dessous sont fictifs pour la démonstration. Le système d&apos;avis réels sera disponible prochainement.
           </p>
         </div>
       </CardHeader>
