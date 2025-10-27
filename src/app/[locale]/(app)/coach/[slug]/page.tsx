@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { PublicLayout } from '@/components/layout/PublicLayout';
 import { CoachHeader } from '@/components/coach/public/CoachHeader';
 import { CoachAnnouncements } from '@/components/coach/public/CoachAnnouncements';
 import { CoachAbout } from '@/components/coach/public/CoachAbout';
@@ -79,94 +80,96 @@ export default async function CoachPublicPage({ params }: PageProps) {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header avec bannière et infos coach */}
-      <CoachHeader coach={coach} />
+    <PublicLayout>
+      <div className="min-h-screen bg-slate-950">
+        {/* Header avec bannière et infos coach */}
+        <CoachHeader coach={coach} />
 
-      <div className="container mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Colonne principale */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* À propos */}
-            <CoachAbout coach={coach} />
+        <div className="container mx-auto px-6 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Colonne principale */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* À propos */}
+              <CoachAbout coach={coach} />
 
-            {/* Annonces */}
-            <CoachAnnouncements 
-              announcements={transformedAnnouncements} 
-              coachId={coach.id}
-              isInactive={isInactive}
-            />
-          </div>
+              {/* Annonces */}
+              <CoachAnnouncements 
+                announcements={transformedAnnouncements} 
+                coachId={coach.id}
+                isInactive={isInactive}
+              />
+            </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6 space-y-6">
-              {/* Calendrier de disponibilités */}
-              {!isInactive && (
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h3 className="text-lg font-semibold mb-4">Disponibilités</h3>
-                  <CoachPublicCalendar coachId={coach.id} />
-                </div>
-              )}
-
-              {/* Stats rapides */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold mb-4">Statistiques</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Expérience</span>
-                    <span className="font-semibold">{coach.experience || 0} ans</span>
+            {/* Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-6 space-y-6">
+                {/* Calendrier de disponibilités */}
+                {!isInactive && (
+                  <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Disponibilités</h3>
+                    <CoachPublicCalendar coachId={coach.id} />
                   </div>
-                  {coach.roi && (
+                )}
+
+                {/* Stats rapides */}
+                <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Statistiques</h3>
+                  <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">ROI</span>
-                      <span className="font-semibold text-green-600">{coach.roi}%</span>
+                      <span className="text-gray-400">Expérience</span>
+                      <span className="font-semibold text-white">{coach.experience || 0} ans</span>
                     </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Annonces actives</span>
-                    <span className="font-semibold">{coach.announcements.length}</span>
+                    {coach.roi && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">ROI</span>
+                        <span className="font-semibold text-emerald-400">{coach.roi}%</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Annonces actives</span>
+                      <span className="font-semibold text-white">{coach.announcements.length}</span>
+                    </div>
                   </div>
                 </div>
+
+                {/* Formats */}
+                {coach.formats && coach.formats.length > 0 && (
+                  <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Spécialités</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {coach.formats.map((format: string) => (
+                        <span
+                          key={format}
+                          className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-sm font-medium"
+                        >
+                          {format}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Langues */}
+                {coach.languages && coach.languages.length > 0 && (
+                  <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Langues parlées</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {coach.languages.map((lang: string) => (
+                        <span
+                          key={lang}
+                          className="px-3 py-1 bg-slate-800/50 text-gray-300 border border-white/5 rounded-lg text-sm"
+                        >
+                          {lang}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-
-              {/* Formats */}
-              {coach.formats && coach.formats.length > 0 && (
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h3 className="text-lg font-semibold mb-4">Spécialités</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {coach.formats.map((format: string) => (
-                      <span
-                        key={format}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-                      >
-                        {format}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Langues */}
-              {coach.languages && coach.languages.length > 0 && (
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h3 className="text-lg font-semibold mb-4">Langues parlées</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {coach.languages.map((lang: string) => (
-                      <span
-                        key={lang}
-                        className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm"
-                      >
-                        {lang}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </PublicLayout>
   );
 }
