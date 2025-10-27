@@ -38,46 +38,41 @@ model account {
 }
 
 model coach {
-  id              String         @id @default(cuid())
-  userId          String         @unique
-  user            user           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slug            String         @unique
-  firstName       String
-  lastName        String
-  bio             String?
-  methodology     String?        // Méthodologie de coaching (texte libre)
-  bannerUrl       String?
-  avatarUrl       String?
-  status          CoachStatus    @default(INACTIVE)
-  stripeAccountId String?
-  subscriptionId  String?
-  badges          String[]
-  timezone        String?        // ex: "Europe/Paris", "America/Montreal"
-  // Compétences et expérience
-  formats         String[]       // MTT, Cash Game, SNG, Spin & Go
-  stakes          String?        // Limites jouées
-  roi             Float?
-  experience      Int?           // Années d'expérience
-  languages       String[]       // fr, en, de, it, es
-  // Liens sociaux
-  twitchUrl       String?
-  youtubeUrl      String?
-  twitterUrl      String?
-  discordUrl      String?
-  // Relations
-  announcements   Announcement[]
-  availabilities  Availability[]
-  reservations    Reservation[]
+  id               String            @id @default(cuid())
+  userId           String            @unique
+  slug             String            @unique
+  firstName        String
+  lastName         String
+  bio              String?
+  bannerUrl        String?
+  avatarUrl        String?
+  status           CoachStatus       @default(INACTIVE)
+  stripeAccountId  String?
+  subscriptionId   String?
+  badges           String[]
+  formats          String[]
+  stakes           String?
+  roi              Float?
+  experience       Int?
+  languages        String[]
+  twitchUrl        String?
+  youtubeUrl       String?
+  twitterUrl       String?
+  discordUrl       String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  timezone         String?
+  methodology      String?
+  announcements    Announcement[]
+  availabilities   Availability[]
   coachingPackages CoachingPackage[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  reservations     Reservation[]
+  user             user              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CoachDraft {
   id              String   @id @default(cuid())
   userId          String   @unique
-  user            user     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // Étape 1
   firstName       String?
   lastName        String?
   bio             String?
@@ -86,169 +81,149 @@ model CoachDraft {
   roi             Float?
   experience      Int?
   languages       String[]
-  // Étape 2
   twitchUrl       String?
   youtubeUrl      String?
   twitterUrl      String?
   discordUrl      String?
-  // Étape 3
   avatarUrl       String?
   bannerUrl       String?
-  // Étape 4
   stripeAccountId String?
-  // Étape 5
   subscriptionId  String?
   currentStep     Int      @default(1)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  user            user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Announcement {
-  id           String        @id @default(cuid())
-  coachId      String
-  coach        coach         @relation(fields: [coachId], references: [id], onDelete: Cascade)
-  type         String        @default("STRATEGY") // STRATEGY, REVIEW, TOOL
-  title        String
-  slug         String        @unique
-  description  String
-  priceCents   Int
-  durationMin  Int
-  
-  // Champs spécifiques selon le type (JSON)
-  variant      String?       // Pour STRATEGY: MTT, Cash Game, etc.
-  format       String?       // NLHE, PLO, PLO5, etc.
-  abiRange     String?       // Pour STRATEGY: "20-25€"
-  tags         String[]      // Tags facultatifs
-  
-  // Pour REVIEW
-  reviewType   String?       // "Session MTT", "Session Cash Game", etc.
-  reviewSupport String?      // "Replay vidéo", "Partage d'écran", etc.
-  
-  // Pour TOOL
-  toolName     String?       // GTO Wizard, Hold'em Manager, etc.
-  toolObjective String?      // "Prise en main", "Optimisation avancée", etc.
-  prerequisites String?      // Prérequis optionnels
-  
-  // Pour MENTAL
-  mentalFocus  String?       // "Gestion du tilt", "Confiance", etc.
-  
-  isActive     Boolean       @default(true)
-  reservations Reservation[]
-  packs        AnnouncementPack[]
+  id               String             @id @default(cuid())
+  coachId          String
+  type             String             @default("STRATEGY")
+  title            String
+  slug             String             @unique
+  description      String
+  priceCents       Int
+  durationMin      Int
+  variant          String?
+  format           String?
+  abiRange         String?
+  tags             String[]
+  reviewType       String?
+  reviewSupport    String?
+  toolName         String?
+  toolObjective    String?
+  prerequisites    String?
+  mentalFocus      String?
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  coach            coach              @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  packs            AnnouncementPack[]
   coachingPackages CoachingPackage[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  reservations     Reservation[]
 }
 
 model AnnouncementPack {
-  id             String   @id @default(cuid())
-  announcementId String
-  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
-  
-  hours          Int      // Nombre d'heures (5, 10, etc.)
-  totalPrice     Int      // Prix total en centimes
-  discountPercent Int?    // Pourcentage de réduction optionnel
-  
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  
-  reservations   Reservation[]
-  
+  id              String        @id @default(cuid())
+  announcementId  String
+  hours           Int
+  totalPrice      Int
+  discountPercent Int?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  announcement    Announcement  @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  reservations    Reservation[]
+
   @@index([announcementId])
 }
 
 model Availability {
   id        String   @id @default(cuid())
   coachId   String
-  coach     coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
-  
-  start     DateTime // Date et heure de début du créneau
-  end       DateTime // Date et heure de fin du créneau
-  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+  start     DateTime
+  end       DateTime
+  coach     coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+
   @@index([coachId])
   @@index([start])
 }
 
 model Reservation {
-  id              String       @id @default(cuid())
+  id              String            @id @default(cuid())
   announcementId  String
-  announcement    Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   coachId         String
-  coach           coach        @relation(fields: [coachId], references: [id], onDelete: Cascade)
   playerId        String
-  player          user         @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  
-  // Pack d'heures
   packId          String?
-  pack            AnnouncementPack? @relation(fields: [packId], references: [id], onDelete: SetNull)
-  sessionNumber   Int?         // Numéro de session dans le pack (1, 2, 3...)
-  
+  sessionNumber   Int?
   startDate       DateTime
   endDate         DateTime
   status          ReservationStatus @default(PENDING)
   priceCents      Int
   stripePaymentId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
   packageSession  PackageSession?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  
+  announcement    Announcement      @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  coach           coach             @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  pack            AnnouncementPack? @relation(fields: [packId], references: [id])
+  player          user              @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
   @@index([packId])
 }
 
 model CoachingPackage {
-  id             String       @id @default(cuid())
-  playerId       String
-  player         user         @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  coachId        String
-  coach          coach        @relation(fields: [coachId], references: [id], onDelete: Cascade)
-  announcementId String
-  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
-  totalHours     Int
-  remainingHours Int
-  priceCents     Int
+  id              String           @id @default(cuid())
+  playerId        String
+  coachId         String
+  announcementId  String
+  totalHours      Int
+  remainingHours  Int
+  priceCents      Int
   stripePaymentId String?
-  status         PackageStatus @default(ACTIVE)
-  sessions       PackageSession[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  
+  status          PackageStatus    @default(ACTIVE)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  announcement    Announcement     @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  coach           coach            @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  player          user             @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  sessions        PackageSession[]
+
   @@index([playerId])
   @@index([coachId])
 }
 
 model PackageSession {
-  id               String       @id @default(cuid())
-  packageId        String
-  package          CoachingPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  reservationId    String?      @unique
-  reservation      Reservation? @relation(fields: [reservationId], references: [id])
-  startDate        DateTime
-  endDate          DateTime
-  durationMinutes  Int
-  status           PackageSessionStatus @default(SCHEDULED)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  
+  id              String               @id @default(cuid())
+  packageId       String
+  reservationId   String?              @unique
+  startDate       DateTime
+  endDate         DateTime
+  durationMinutes Int
+  status          PackageSessionStatus @default(SCHEDULED)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  package         CoachingPackage      @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  reservation     Reservation?         @relation(fields: [reservationId], references: [id])
+
   @@index([packageId])
 }
 
 model player {
   id        String   @id @default(cuid())
   userId    String   @unique
-  firstName String?
-  lastName  String?
   abi       Float?
   formats   String[]
   goals     String?
   winnings  Float?
-  timezone  String?  // ex: "Europe/Paris", "America/Montreal"
-  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  firstName String?
+  lastName  String?
+  timezone  String?
   updatedAt DateTime @updatedAt
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model session {
@@ -264,21 +239,21 @@ model session {
 }
 
 model user {
-  id            String        @id
-  email         String?       @unique
-  emailVerified Boolean       @default(false)
-  name          String?
-  image         String?
-  role          Role          @default(USER)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime
-  account       account[]
-  coach         coach?
-  coachDraft    CoachDraft?
-  player        player?
-  session       session[]
-  reservations  Reservation[]
+  id               String            @id
+  email            String?           @unique
+  emailVerified    Boolean           @default(false)
+  name             String?
+  image            String?
+  role             Role              @default(USER)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime
+  coachDraft       CoachDraft?
   coachingPackages CoachingPackage[]
+  reservations     Reservation[]
+  account          account[]
+  coach            coach?
+  player           player?
+  session          session[]
 }
 
 model verification {

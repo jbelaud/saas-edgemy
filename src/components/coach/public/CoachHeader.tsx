@@ -27,7 +27,7 @@ interface CoachHeaderProps {
 }
 
 export function CoachHeader({ coach }: CoachHeaderProps) {
-  const avatarUrl = coach.avatarUrl || coach.user?.image || '/default-avatar.png';
+  const avatarUrl = coach.avatarUrl || coach.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(coach.firstName + ' ' + coach.lastName)}&size=200&background=f97316&color=fff&bold=true`;
   const isTopCoach = coach.badges?.includes('TOP_COACH');
   
   const [notifyEmail, setNotifyEmail] = useState('');
