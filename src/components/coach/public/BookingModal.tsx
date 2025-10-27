@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import {
@@ -13,8 +13,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, Euro, Loader2, AlertCircle, Package, CheckCircle } from 'lucide-react';
-import CoachPublicCalendarSimple from '@/components/calendar/CoachPublicCalendarSimple';
+import { Calendar, Clock, Euro, Loader2, AlertCircle, Package, CheckCircle, ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface AnnouncementPack {
   id: string;
@@ -38,20 +40,72 @@ interface BookingModalProps {
   selectedPackId?: string | null;
 }
 
+interface TimeSlot {
+  id: string;
+  start: Date;
+  end: Date;
+  date: string;
+  time: string;
+}
+
 export function BookingModal({ isOpen, onClose, announcement, coachId, selectedPackId }: BookingModalProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [selectedSlot, setSelectedSlot] = useState<{ start: string; end: string } | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(true);
+  const [bookingType, setBookingType] = useState<'single' | 'pack'>(selectedPackId ? 'pack' : 'single');
 
-  const handleSlotSelect = (slot: { id: string; start: Date; end: Date }) => {
-    setSelectedSlot({
-      start: slot.start.toISOString(),
-      end: slot.end.toISOString(),
-    });
-  };
+  // Charger les créneaux disponibles
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const fetchSlots = async () => {
+      setLoadingSlots(true);
+      try {
+        const response = await fetch(`/api/coach/${coachId}/availability`);
+        if (response.ok) {
+          const availabilities = await response.json();
+          // Transformer les disponibilités en créneaux de 30min
+          const slots: TimeSlot[] = (availabilities || [])
+            .flatMap((avail: { start: string; end: string }) => {
+              const start = new Date(avail.start);
+              const end = new Date(avail.end);
+              const slots: TimeSlot[] = [];
+              
+              let current = new Date(start);
+              while (current < end) {
+                const slotEnd = new Date(current.getTime() + announcement.duration * 60000);
+                if (slotEnd <= end) {
+                  slots.push({
+                    id: current.toISOString(),
+                    start: new Date(current),
+                    end: slotEnd,
+                    date: current.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }),
+                    time: current.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                  });
+                }
+                current = new Date(current.getTime() + 30 * 60000); // Incrément de 30min
+              }
+              return slots;
+            })
+            .filter((slot: TimeSlot) => slot.start > new Date()) // Seulement les créneaux futurs
+            .slice(0, 20); // Limiter à 20 créneaux
+          
+          setAvailableSlots(slots);
+        }
+      } catch (error) {
+        console.error('Erreur chargement créneaux:', error);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+    
+    fetchSlots();
+  }, [isOpen, coachId, announcement.duration]);
   
   // Trouver le pack sélectionné
   const selectedPack = selectedPackId 
@@ -63,11 +117,8 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
   const displayDuration = announcement.duration;
   const isPack = !!selectedPack;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     if (!session?.user) {
-      // Rediriger vers la page de connexion
       router.push('/sign-in');
       return;
     }
@@ -80,37 +131,15 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/reservations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          announcementId: announcement.id,
-          coachId,
-          startDate: selectedSlot.start,
-          endDate: selectedSlot.end,
-          packageId: selectedPackId || null,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (response.status === 409) {
-          alert('Ce créneau n\'est plus disponible. Veuillez en choisir un autre.');
-        } else {
-          throw new Error(errorData.error || 'Erreur lors de la réservation');
-        }
-        return;
-      }
-
-      // Succès
+      // Mock success pour l'instant (pas de Stripe)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       setBookingSuccess(true);
       setTimeout(() => {
         onClose();
         setBookingSuccess(false);
         setSelectedSlot(null);
         setMessage('');
-        // Recharger la page pour voir la réservation
-        router.refresh();
       }, 2000);
     } catch (error) {
       console.error('Erreur réservation:', error);
@@ -120,163 +149,164 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
     }
   };
 
+  // Grouper les créneaux par date
+  const slotsByDate = availableSlots.reduce((acc, slot) => {
+    if (!acc[slot.date]) {
+      acc[slot.date] = [];
+    }
+    acc[slot.date].push(slot);
+    return acc;
+  }, {} as Record<string, TimeSlot[]>);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">
-            {isPack ? `Réserver un pack de ${selectedPack?.hours}h` : 'Réserver une session'}
-          </DialogTitle>
-          <DialogDescription>
-            {announcement.title}
-          </DialogDescription>
-        </DialogHeader>
-
+      <DialogContent className="max-w-lg max-h-[90vh] p-0">
         {bookingSuccess ? (
-          <div className="py-8 text-center space-y-4">
+          <div className="p-8 text-center space-y-4">
             <div className="flex justify-center">
-              <div className="rounded-full bg-green-100 p-3">
-                <CheckCircle className="h-12 w-12 text-green-600" />
+              <div className="rounded-full bg-green-100 p-4">
+                <CheckCircle className="h-16 w-16 text-green-600" />
               </div>
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 Réservation confirmée !
               </h3>
               <p className="text-gray-600">
-                Votre session a été réservée avec succès. Le coach vous contactera bientôt.
+                Votre session a été réservée avec succès.
               </p>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Récapitulatif */}
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            {isPack && (
-              <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Package className="h-4 w-4" />
-                  <span className="text-sm">Type</span>
+          <>
+            {/* Header */}
+            <div className="p-6 pb-4 border-b">
+              <DialogTitle className="text-2xl font-bold mb-1">
+                {announcement.title}
+              </DialogTitle>
+              <DialogDescription className="text-sm">
+                Sélectionnez un créneau et confirmez votre réservation
+              </DialogDescription>
+            </div>
+
+            {/* Tabs: Session unique vs Pack */}
+            {announcement.packs && announcement.packs.length > 0 && (
+              <div className="px-6 pt-4">
+                <Tabs value={bookingType} onValueChange={(v) => setBookingType(v as 'single' | 'pack')}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="single">Session unique</TabsTrigger>
+                    <TabsTrigger value="pack">Pack</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            )}
+
+            {/* Prix et durée */}
+            <div className="px-6 py-4 bg-gradient-to-r from-orange-50 to-amber-50 border-y">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white rounded-lg shadow-sm">
+                    <Clock className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Durée</p>
+                    <p className="font-bold text-gray-900">{displayDuration} min</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">Pack {selectedPack?.hours}h</span>
-                  {selectedPack?.discountPercent && selectedPack.discountPercent > 0 && (
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">
-                      -{selectedPack.discountPercent}%
-                    </span>
-                  )}
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">Prix</p>
+                  <p className="text-2xl font-bold text-orange-600">{displayPrice}€</p>
                 </div>
               </div>
-            )}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Clock className="h-4 w-4" />
-                <span className="text-sm">Durée {isPack ? 'par session' : ''}</span>
-              </div>
-              <span className="font-semibold">{displayDuration} minutes</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Euro className="h-4 w-4" />
-                <span className="text-sm">Prix {isPack ? 'total' : ''}</span>
-              </div>
-              <span className="font-semibold text-lg">{displayPrice}€</span>
-            </div>
-            {isPack && selectedPack && (
-              <div className="pt-2 border-t border-gray-200">
-                <p className="text-xs text-gray-600">
-                  Soit {(displayPrice / selectedPack.hours).toFixed(0)}€ par heure
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Message info pour les packs */}
-          {isPack && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-900">
-                <strong>📦 Pack de {selectedPack?.hours}h :</strong> Vous réservez la première session maintenant. 
-                Les {(selectedPack?.hours || 1) - 1} autres sessions seront planifiées avec votre coach après le paiement.
-              </p>
-            </div>
-          )}
-
-          {/* Sélection de créneaux disponibles */}
-          <div className="space-y-4">
-            <Label className="text-base font-semibold mb-3 block">
-              Choisissez un créneau disponible
-            </Label>
-            <CoachPublicCalendarSimple
-              coachId={coachId}
-              onSelectSlot={handleSlotSelect}
-            />
-
-            {/* Message optionnel */}
-            {selectedSlot && (
-              <div className="pt-4">
-                <Label htmlFor="message">Message pour le coach (optionnel)</Label>
-                <Textarea
-                  id="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Décrivez vos objectifs, votre niveau, ou toute information utile..."
-                  rows={4}
-                  className="mt-2"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Informations importantes */}
-          {!selectedSlot && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-900">
-                Veuillez sélectionner une date et un créneau horaire parmi les disponibilités du coach.
-              </p>
-            </div>
-          )}
-
-          {selectedSlot && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-sm text-green-900">
-                <strong>✓ Créneau sélectionné :</strong> {new Date(selectedSlot.start).toLocaleDateString('fr-FR', { 
-                  weekday: 'long', 
-                  day: 'numeric', 
-                  month: 'long',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
-            </div>
-          )}
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-900">
-              <strong>ℹ️ Important :</strong> Votre réservation sera confirmée immédiatement. {isPack ? 'Les autres sessions du pack seront planifiées avec le coach.' : 'Le paiement sera traité ultérieurement.'}
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Annuler
-            </Button>
-            <Button type="submit" disabled={isLoading || !selectedSlot}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Envoi en cours...
-                </>
-              ) : (
-                <>
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Confirmer la réservation
-                </>
+              {bookingType === 'pack' && selectedPack && (
+                <div className="mt-3 flex items-center gap-2">
+                  <Badge className="bg-green-100 text-green-700 border-green-300">
+                    Pack {selectedPack.hours}h - Économisez {selectedPack.discountPercent}%
+                  </Badge>
+                </div>
               )}
-            </Button>
-          </div>
-        </form>
+            </div>
+
+            {/* Liste des créneaux */}
+            <div className="px-6 py-4">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-orange-600" />
+                Créneaux disponibles
+              </h3>
+              
+              {loadingSlots ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+                </div>
+              ) : availableSlots.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <AlertCircle className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                  <p>Aucun créneau disponible pour le moment</p>
+                </div>
+              ) : (
+                <ScrollArea className="h-[280px] pr-4">
+                  <div className="space-y-4">
+                    {Object.entries(slotsByDate).map(([date, slots]) => (
+                      <div key={date}>
+                        <p className="text-sm font-semibold text-gray-700 mb-2 uppercase">{date}</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {slots.map((slot) => (
+                            <button
+                              key={slot.id}
+                              onClick={() => setSelectedSlot(slot)}
+                              className={`p-3 rounded-lg border-2 transition-all text-center ${
+                                selectedSlot?.id === slot.id
+                                  ? 'border-orange-500 bg-orange-50 shadow-md'
+                                  : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50/50'
+                              }`}
+                            >
+                              <p className="font-bold text-sm">{slot.time}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </div>
+
+            {/* Créneau sélectionné */}
+            {selectedSlot && (
+              <div className="px-6 py-3 bg-green-50 border-y border-green-200">
+                <div className="flex items-center gap-2 text-green-800">
+                  <CheckCircle className="h-5 w-5" />
+                  <p className="font-semibold">
+                    {selectedSlot.date} à {selectedSlot.time}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="p-6 pt-4 flex gap-3">
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                Annuler
+              </Button>
+              <Button 
+                onClick={handleSubmit} 
+                disabled={isLoading || !selectedSlot}
+                className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Confirmation...
+                  </>
+                ) : (
+                  <>
+                    Réserver
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
         )}
       </DialogContent>
     </Dialog>
