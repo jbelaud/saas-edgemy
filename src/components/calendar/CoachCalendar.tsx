@@ -6,11 +6,9 @@ import "./calendar-custom.css";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { localizer } from "./localizer";
 import { GlassCard } from "@/components/ui";
-import { Info, Monitor, Smartphone } from "lucide-react";
+import { Info } from "lucide-react";
 import DeleteAvailabilityModal from "./DeleteAvailabilityModal";
 import ManageSessionModal from "./ManageSessionModal";
-import MobileAgendaView from "./MobileAgendaView";
-import MobileAddAvailabilityModal from "./MobileAddAvailabilityModal";
 
 interface CalendarEvent {
   id: string;
@@ -33,20 +31,6 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isManageSessionModalOpen, setIsManageSessionModalOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isMobileAddModalOpen, setIsMobileAddModalOpen] = useState(false);
-
-  // Détecter la taille d'écran
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const fetchAvailabilities = useCallback(async () => {
     try {
@@ -243,73 +227,6 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
     }
   };
 
-  // Handlers pour la vue mobile
-  const handleMobileAddAvailability = async (start: Date, end: Date) => {
-    try {
-      const res = await fetch(`/api/coach/${coachId}/availability`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ start, end }),
-      });
-
-      if (res.ok) {
-        await fetchAvailabilities();
-        alert("✅ Disponibilité ajoutée avec succès");
-      } else {
-        const error = await res.json();
-        alert(`❌ ${error.error || "Erreur lors de l'ajout"}`);
-      }
-    } catch (error) {
-      console.error("Erreur:", error);
-      alert("❌ Erreur lors de l'ajout");
-    }
-  };
-
-  const handleMobileDeleteAvailability = async (id: string) => {
-    if (!confirm("🗑️ Supprimer cette disponibilité ?")) return;
-
-    // Extraire le vrai ID (enlever le préfixe "avail-")
-    const realId = id.replace('avail-', '');
-
-    try {
-      const res = await fetch(`/api/coach/${coachId}/availability/${realId}`, {
-        method: "DELETE",
-      });
-
-      if (res.ok) {
-        await fetchAvailabilities();
-        alert("✅ Disponibilité supprimée avec succès");
-      } else {
-        alert("❌ Erreur lors de la suppression");
-      }
-    } catch (error) {
-      console.error("Erreur:", error);
-      alert("❌ Erreur lors de la suppression");
-    }
-  };
-
-  const handleMobileSelectSession = (session: { 
-    id: string; 
-    sessionId: string; 
-    title: string; 
-    start: Date; 
-    end: Date; 
-    playerName: string;
-  }) => {
-    // Convertir en CalendarEvent pour le modal
-    const calendarEvent: CalendarEvent = {
-      id: session.id,
-      sessionId: session.sessionId,
-      title: session.title,
-      start: session.start,
-      end: session.end,
-      type: 'session',
-      playerName: session.playerName,
-    };
-    setSelectedEvent(calendarEvent);
-    setIsManageSessionModalOpen(true);
-  };
-
   if (loading) {
     return (
       <GlassCard className="p-6">
@@ -323,67 +240,28 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
     );
   }
 
-  // Séparer les disponibilités et sessions pour la vue mobile
-  const availabilities = events
-    .filter(e => e.type === 'availability')
-    .map(e => ({ id: e.id, start: e.start, end: e.end }));
-  
-  const sessions = events
-    .filter(e => e.type === 'session')
-    .map(e => ({ 
-      id: e.id, 
-      sessionId: e.sessionId || '', 
-      title: e.title, 
-      start: e.start, 
-      end: e.end, 
-      playerName: e.playerName || '' 
-    }));
-
   return (
     <GlassCard className="p-6">
-      {/* Header avec indicateur de vue */}
+      {/* Header */}
       <div className="flex items-start gap-4 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-          {isMobile ? (
-            <Smartphone className="w-6 h-6 text-amber-400" />
-          ) : (
-            <Monitor className="w-6 h-6 text-amber-400" />
-          )}
-        </div>
         <div className="flex-1">
-          <h2 className="text-xl font-semibold text-white mb-2">
-            {isMobile ? "Mon Agenda" : "Calendrier interactif"}
-          </h2>
-          {!isMobile && (
-            <div className="space-y-2">
-              <div className="flex items-start gap-2 bg-green-500/10 border border-green-500/20 rounded-lg p-3">
-                <Info className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-300">
-                  <span className="font-medium text-green-400">➕ Ajouter :</span> Cliquez et glissez sur le calendrier pour créer un créneau
-                </p>
-              </div>
-              <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                <Info className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-300">
-                  <span className="font-medium text-red-400">🗑️ Supprimer :</span> Cliquez sur un créneau existant pour le supprimer
-                </p>
-              </div>
+          <h2 className="text-xl font-semibold text-white mb-2">Calendrier interactif</h2>
+          <div className="space-y-2">
+            <div className="flex items-start gap-2 bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+              <Info className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-gray-300">
+                <span className="font-medium text-green-400">➕ Ajouter :</span> Cliquez et glissez sur le calendrier pour créer un créneau
+              </p>
             </div>
-          )}
+            <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+              <Info className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-gray-300">
+                <span className="font-medium text-red-400">🗑️ Supprimer :</span> Cliquez sur un créneau existant pour le supprimer
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Vue Mobile ou Desktop */}
-      {isMobile ? (
-        <MobileAgendaView
-          availabilities={availabilities}
-          sessions={sessions}
-          onAddAvailability={() => setIsMobileAddModalOpen(true)}
-          onDeleteAvailability={handleMobileDeleteAvailability}
-          onSelectSession={handleMobileSelectSession}
-        />
-      ) : (
-        <>
 
       {/* Légende */}
       <div className="flex items-center gap-3 mb-6 p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-xl border border-white/10">
@@ -405,7 +283,7 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
           events={events}
           startAccessor="start"
           endAccessor="end"
-          style={{ height: 600 }}
+          style={{ height: 700 }}
           selectable
           onSelectSlot={handleSelectSlot}
           onSelectEvent={handleSelectEvent}
@@ -430,8 +308,6 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
           culture="fr"
         />
       </div>
-        </>
-      )}
 
       {/* Modal de suppression */}
       {selectedEvent && selectedEvent.type === 'availability' && (
@@ -470,13 +346,6 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
           onSuccess={fetchAvailabilities}
         />
       )}
-
-      {/* Modal mobile d'ajout */}
-      <MobileAddAvailabilityModal
-        isOpen={isMobileAddModalOpen}
-        onClose={() => setIsMobileAddModalOpen(false)}
-        onAdd={handleMobileAddAvailability}
-      />
     </GlassCard>
   );
 }

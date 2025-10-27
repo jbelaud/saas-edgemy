@@ -122,12 +122,12 @@ export default function CoachAgendaPage() {
 
         {/* Layout principal: Calendrier + Liste */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Calendrier (2/3 de l'espace) */}
-          <div className="xl:col-span-2">
+          {/* Calendrier (2/3 de l'espace) - Masqué sur mobile */}
+          <div className="hidden xl:block xl:col-span-2">
             <CoachCalendar key={refreshKey} coachId={coachId} />
           </div>
 
-          {/* Liste des disponibilités (1/3 de l'espace) */}
+          {/* Liste des disponibilités (1/3 de l'espace sur desktop, pleine largeur sur mobile) */}
           <div className="xl:col-span-1">
             <AvailabilityList
               availabilities={availabilities.map(av => ({

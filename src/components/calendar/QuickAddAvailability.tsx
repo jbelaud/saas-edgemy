@@ -68,8 +68,8 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <CalendarIcon className="w-4 h-4 inline mr-1" />
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
+              <CalendarIcon className="w-4 h-4 text-green-400" />
               Date
             </label>
             <input
@@ -83,8 +83,8 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
 
           {/* Heure début */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <Clock className="w-4 h-4 inline mr-1" />
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
+              <Clock className="w-4 h-4 text-green-400" />
               Début
             </label>
             <input
@@ -99,8 +99,8 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
 
           {/* Heure fin */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <Clock className="w-4 h-4 inline mr-1" />
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
+              <Clock className="w-4 h-4 text-green-400" />
               Fin
             </label>
             <input

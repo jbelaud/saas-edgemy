@@ -34,12 +34,24 @@
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   border-radius: 6px;
   padding: 4px 8px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   border: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
   transition: all 0.2s ease;
   cursor: pointer;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: keep-all;
+  hyphens: none;
+}
+
+.rbc-event-content {
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: normal;
 }
 
 .rbc-event:hover {
@@ -91,17 +103,33 @@
 }
 
 .rbc-toolbar {
-  padding: 16px 0;
+  padding: 16px;
   margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
+  flex-wrap: nowrap;
+  gap: 12px;
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.4) 100%);
   border-radius: 10px;
-  padding: 16px;
   border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.rbc-toolbar-label {
+  flex: 1;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.rbc-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .rbc-toolbar button {
@@ -135,14 +163,6 @@
 .rbc-toolbar button:focus {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
-}
-
-.rbc-toolbar-label {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  letter-spacing: 0.02em;
 }
 
 .rbc-month-view {

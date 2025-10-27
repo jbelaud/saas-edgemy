@@ -184,10 +184,10 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <button
                       onClick={() => startEdit(availability)}
-                      className="flex-1 px-3 py-2 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-white rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
+                      className="w-full sm:flex-1 px-3 py-2.5 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-white rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
                     >
                       <Edit2 className="w-4 h-4" />
                       Modifier
@@ -195,7 +195,7 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
                     <button
                       onClick={() => handleDelete(availability.id)}
                       disabled={deletingId === availability.id}
-                      className="flex-1 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full sm:flex-1 px-3 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {deletingId === availability.id ? (
                         <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
