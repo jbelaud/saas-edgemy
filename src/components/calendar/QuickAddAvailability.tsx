@@ -76,7 +76,7 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all"
+              className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all [color-scheme:dark]"
               required
             />
           </div>
@@ -92,7 +92,7 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
               step="1800"
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all"
+              className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all [color-scheme:dark]"
               required
             />
           </div>
@@ -108,7 +108,7 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
               step="1800"
-              className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all"
+              className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all [color-scheme:dark]"
               required
             />
           </div>
