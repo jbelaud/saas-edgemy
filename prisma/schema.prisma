@@ -45,6 +45,7 @@ model coach {
   firstName       String
   lastName        String
   bio             String?
+  methodology     String?        // Méthodologie de coaching (texte libre)
   bannerUrl       String?
   avatarUrl       String?
   status          CoachStatus    @default(INACTIVE)
