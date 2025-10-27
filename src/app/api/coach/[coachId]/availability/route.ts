@@ -4,12 +4,16 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
 // GET - Récupérer les disponibilités publiques d'un coach (accessible sans auth)
+// Accepte un paramètre ?duration=60 pour découper en créneaux
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ coachId: string }> }
 ) {
   try {
     const { coachId } = await params;
+    const { searchParams } = new URL(request.url);
+    const durationParam = searchParams.get('duration');
+    const duration = durationParam ? parseInt(durationParam, 10) : null;
 
     // Vérifier que le coach existe
     const coach = await prisma.coach.findUnique({
@@ -33,6 +37,39 @@ export async function GET(
       },
     });
 
+    // Si duration est fourni, découper les disponibilités en créneaux
+    if (duration && duration > 0) {
+      const slots = [];
+      
+      for (const availability of availabilities) {
+        const start = new Date(availability.start);
+        const end = new Date(availability.end);
+        const durationMs = duration * 60 * 1000; // Convertir minutes en ms
+        
+        let currentSlotStart = start;
+        
+        // Générer des créneaux de la durée spécifiée
+        while (currentSlotStart < end) {
+          const currentSlotEnd = new Date(currentSlotStart.getTime() + durationMs);
+          
+          // Ne pas dépasser la fin de la disponibilité
+          if (currentSlotEnd <= end) {
+            slots.push({
+              id: `${availability.id}-${currentSlotStart.getTime()}`,
+              start: currentSlotStart.toISOString(),
+              end: currentSlotEnd.toISOString(),
+            });
+          }
+          
+          // Passer au créneau suivant
+          currentSlotStart = currentSlotEnd;
+        }
+      }
+      
+      return NextResponse.json(slots);
+    }
+
+    // Sinon, retourner les disponibilités brutes
     return NextResponse.json(availabilities);
   } catch (error) {
     console.error('Erreur lors de la récupération des disponibilités:', error);
