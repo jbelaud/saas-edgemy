@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Euro, Calendar, Bell, Eye, Package, Check } from 'lucide-react';
+import { Clock, Euro, Calendar, Bell, Package, Check, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { BookingModal } from './BookingModal';
@@ -105,7 +105,7 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
 
   if (announcements.length === 0) {
     return (
-      <Card>
+      <Card className="border-0 shadow-lg">
         <CardContent className="py-12 text-center">
           <p className="text-gray-500">
             Ce coach n&apos;a pas encore d&apos;offres disponibles.
@@ -117,38 +117,42 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Offres de coaching</CardTitle>
-          <CardDescription>
-            Choisissez la formule qui vous convient
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4">
-            {announcements.map((announcement) => (
-              <div
-                key={announcement.id}
-                className="border rounded-lg p-6 hover:border-blue-500 hover:shadow-md transition"
-              >
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
+      <div id="coaching-offers" className="scroll-mt-6">
+        <Card className="border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-3xl font-bold">Offres de coaching</CardTitle>
+            <CardDescription className="text-base">
+              Choisissez la formule qui correspond à vos besoins
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {announcements.map((announcement) => (
+                <div
+                  key={announcement.id}
+                  className="group relative bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-orange-500 hover:shadow-2xl transition-all duration-300"
+                >
+                  {/* Badge type en haut à droite */}
+                  <div className="absolute top-4 right-4 z-10">
+                    <Badge 
+                      className={`font-semibold text-sm px-3 py-1 ${
+                        announcement.type === 'STRATEGY' ? 'bg-blue-600 hover:bg-blue-700' :
+                        announcement.type === 'REVIEW' ? 'bg-green-600 hover:bg-green-700' :
+                        announcement.type === 'MENTAL' ? 'bg-pink-600 hover:bg-pink-700' :
+                        'bg-purple-600 hover:bg-purple-700'
+                      }`}
+                    >
+                      {TYPE_LABELS[announcement.type] || announcement.type}
+                    </Badge>
+                  </div>
+
+                  <div className="p-6">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3 pr-24">
                       {announcement.title}
                     </h3>
                     
-                    {/* Badges colorés */}
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <Badge 
-                        className={`font-normal ${
-                          announcement.type === 'STRATEGY' ? 'bg-blue-600 hover:bg-blue-700' :
-                          announcement.type === 'REVIEW' ? 'bg-green-600 hover:bg-green-700' :
-                          announcement.type === 'MENTAL' ? 'bg-pink-600 hover:bg-pink-700' :
-                          'bg-purple-600 hover:bg-purple-700'
-                        }`}
-                      >
-                        {TYPE_LABELS[announcement.type] || announcement.type}
-                      </Badge>
+                    {/* Badges spécifiques */}
+                    <div className="flex flex-wrap gap-2 mb-4">
                       
                       {announcement.type === 'STRATEGY' && (
                         <>
@@ -223,50 +227,63 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                       </div>
                     )}
                     
-                    <p className="text-gray-600 mb-4 line-clamp-2">
+                    <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
                       {announcement.description}
                     </p>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        <span>{announcement.duration} minutes</span>
+                    
+                    {/* Prix et durée mis en avant */}
+                    <div className="flex items-center gap-6 mb-6 pb-6 border-b border-gray-200">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-orange-100 rounded-lg">
+                          <Euro className="h-5 w-5 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-gray-900">{announcement.price}€</p>
+                          <p className="text-xs text-gray-500">par session</p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        <span>Session individuelle</span>
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Clock className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-gray-900">{announcement.duration}</p>
+                          <p className="text-xs text-gray-500">minutes</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col items-start md:items-end gap-1.5 w-full md:w-[400px]">
                     {/* Sélection du type de réservation */}
                     {!isInactive && (
-                      <div className="w-full space-y-1">
-                        <p className="text-xs font-medium text-gray-700">Choisissez votre formule :</p>
+                      <div className="space-y-3">
+                        <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-orange-500" />
+                          Choisissez votre formule
+                        </p>
                         
                         {/* Session unitaire */}
                         <button
                           onClick={() => setSelectedPacks({ ...selectedPacks, [announcement.id]: null })}
-                          className={`w-full p-1.5 border-2 rounded text-left transition-all min-h-[52px] ${
+                          className={`w-full p-3 border-2 rounded-xl text-left transition-all ${
                             !selectedPacks[announcement.id]
-                              ? 'border-primary bg-primary/5'
-                              : 'border-gray-200 hover:border-gray-300'
+                              ? 'border-orange-500 bg-orange-50 shadow-md'
+                              : 'border-gray-200 hover:border-gray-300 bg-white'
                           }`}
                         >
-                          <div className="flex items-center justify-between h-full">
-                            <div className="flex items-center gap-1.5">
-                              <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                                !selectedPacks[announcement.id] ? 'border-primary bg-primary' : 'border-gray-300'
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                !selectedPacks[announcement.id] ? 'border-orange-500 bg-orange-500' : 'border-gray-300'
                               }`}>
-                                {!selectedPacks[announcement.id] && <Check className="h-2 w-2 text-white" />}
+                                {!selectedPacks[announcement.id] && <Check className="h-3 w-3 text-white" />}
                               </div>
                               <div>
-                                <p className="text-sm font-medium leading-tight">Session</p>
-                                <p className="text-xs text-gray-500 leading-tight">{announcement.duration} min</p>
+                                <p className="font-bold text-gray-900">Session unique</p>
+                                <p className="text-sm text-gray-600">{announcement.duration} min</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-bold text-gray-900">{announcement.price}€</p>
+                              <p className="text-xl font-bold text-gray-900">{announcement.price}€</p>
                             </div>
                           </div>
                         </button>
@@ -281,35 +298,38 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                                 <button
                                   key={pack.id}
                                   onClick={() => setSelectedPacks({ ...selectedPacks, [announcement.id]: pack.id })}
-                                  className={`w-full p-1.5 border-2 rounded text-left transition-all min-h-[52px] ${
+                                  className={`w-full p-3 border-2 rounded-xl text-left transition-all relative overflow-hidden ${
                                     isSelected
-                                      ? 'border-primary bg-primary/5'
-                                      : 'border-gray-200 hover:border-gray-300'
+                                      ? 'border-orange-500 bg-orange-50 shadow-md'
+                                      : 'border-gray-200 hover:border-gray-300 bg-white'
                                   }`}
                                 >
-                                  <div className="flex items-center justify-between h-full">
-                                    <div className="flex items-center gap-1.5">
-                                      <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                                        isSelected ? 'border-primary bg-primary' : 'border-gray-300'
+                                  {discount > 0 && (
+                                    <div className="absolute top-2 right-2">
+                                      <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                        -{discount}%
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                        isSelected ? 'border-orange-500 bg-orange-500' : 'border-gray-300'
                                       }`}>
-                                        {isSelected && <Check className="h-2 w-2 text-white" />}
+                                        {isSelected && <Check className="h-3 w-3 text-white" />}
                                       </div>
-                                      <div className="flex items-center gap-1">
-                                        <Package className="h-3 w-3 text-gray-500 flex-shrink-0" />
+                                      <div className="flex items-center gap-2">
+                                        <Package className="h-5 w-5 text-orange-500 flex-shrink-0" />
                                         <div>
-                                          <p className="text-sm font-medium leading-tight">Pack {pack.hours}h</p>
-                                          {discount > 0 && (
-                                            <span className="text-xs text-green-600 font-medium leading-tight">
-                                              -{discount}%
-                                            </span>
-                                          )}
+                                          <p className="font-bold text-gray-900">Pack {pack.hours}h</p>
+                                          <p className="text-sm text-gray-600">{pack.hours * 60} min total</p>
                                         </div>
                                       </div>
                                     </div>
                                     <div className="text-right flex-shrink-0">
-                                      <p className="text-sm font-bold text-gray-900">{(pack.totalPrice / 100).toFixed(0)}€</p>
+                                      <p className="text-xl font-bold text-gray-900">{(pack.totalPrice / 100).toFixed(0)}€</p>
                                       {discount > 0 && (
-                                        <p className="text-xs text-gray-500 line-through leading-tight">
+                                        <p className="text-sm text-gray-500 line-through">
                                           {(announcement.price * pack.hours).toFixed(0)}€
                                         </p>
                                       )}
@@ -324,14 +344,14 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                     )}
                     
                     {isInactive ? (
-                      <div className="w-full md:w-auto space-y-2">
+                      <div className="space-y-2 pt-4 border-t border-gray-200">
                         <div className="flex gap-2">
                           <input
                             type="email"
                             placeholder="Votre email"
                             value={notifyEmail}
                             onChange={(e) => setNotifyEmail(e.target.value)}
-                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                           />
                           <Button
                             size="sm"
@@ -344,35 +364,29 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                             {isNotifying ? 'Envoi...' : 'M\'alerter'}
                           </Button>
                         </div>
-                        <p className="text-xs text-gray-500 text-right">
+                        <p className="text-xs text-gray-500">
                           Soyez notifié quand ce coach sera disponible
                         </p>
                       </div>
                     ) : (
-                      <div className="flex gap-2">
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          onClick={() => handleViewDetails(announcement)}
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          Voir l&apos;annonce
-                        </Button>
+                      <div className="pt-4 border-t border-gray-200">
                         <Button
                           size="lg"
                           onClick={() => handleBooking(announcement)}
+                          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold text-lg py-6 shadow-lg hover:shadow-xl transition-all"
                         >
-                          Réserver
+                          <Calendar className="mr-2 h-5 w-5" />
+                          Réserver maintenant
                         </Button>
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Modal de détail de l'annonce */}
       {selectedAnnouncement && (

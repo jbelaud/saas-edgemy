@@ -4,7 +4,8 @@ import { PublicLayout } from '@/components/layout/PublicLayout';
 import { CoachHeader } from '@/components/coach/public/CoachHeader';
 import { CoachAnnouncements } from '@/components/coach/public/CoachAnnouncements';
 import { CoachAbout } from '@/components/coach/public/CoachAbout';
-import CoachPublicCalendar from '@/components/calendar/CoachPublicCalendar';
+import { CoachReviews } from '@/components/coach/public/CoachReviews';
+import { TrustBadges } from '@/components/coach/public/TrustBadges';
 
 interface PageProps {
   params: Promise<{
@@ -79,92 +80,89 @@ export default async function CoachPublicPage({ params }: PageProps) {
     mentalFocus: announcement.mentalFocus,
   }));
 
+  // Mock data pour les reviews - à remplacer par de vraies données
+  const averageRating = 4.9;
+  const totalReviews = 127;
+
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-slate-950">
-        {/* Header avec bannière et infos coach */}
+      <div className="min-h-screen bg-gray-50">
+        {/* Hero Section */}
         <CoachHeader coach={coach} />
 
+        {/* Trust Badges */}
+        <div className="container mx-auto px-6 -mt-6 relative z-10">
+          <TrustBadges />
+        </div>
+
+        {/* Main Content */}
         <div className="container mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Colonne principale */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* À propos */}
-              <CoachAbout coach={coach} />
+          <div className="space-y-12">
+            {/* À propos + Méthodologie */}
+            <CoachAbout coach={coach} />
 
-              {/* Annonces */}
-              <CoachAnnouncements 
-                announcements={transformedAnnouncements} 
-                coachId={coach.id}
-                isInactive={isInactive}
-              />
-            </div>
+            {/* Offres de coaching */}
+            <CoachAnnouncements 
+              announcements={transformedAnnouncements} 
+              coachId={coach.id}
+              isInactive={isInactive}
+            />
 
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-6 space-y-6">
-                {/* Calendrier de disponibilités */}
-                {!isInactive && (
-                  <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Disponibilités</h3>
-                    <CoachPublicCalendar coachId={coach.id} />
+            {/* Reviews */}
+            <CoachReviews 
+              coachId={coach.id}
+              averageRating={averageRating}
+              totalReviews={totalReviews}
+            />
+
+            {/* Section "Pourquoi réserver avec moi" */}
+            <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 border-2 border-blue-100">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Pourquoi réserver avec moi ?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
-                )}
-
-                {/* Stats rapides */}
-                <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Statistiques</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Expérience</span>
-                      <span className="font-semibold text-white">{coach.experience || 0} ans</span>
-                    </div>
-                    {coach.roi && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">ROI</span>
-                        <span className="font-semibold text-emerald-400">{coach.roi}%</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Annonces actives</span>
-                      <span className="font-semibold text-white">{coach.announcements.length}</span>
-                    </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1">Approche personnalisée</h3>
+                    <p className="text-gray-600">Chaque session est adaptée à votre niveau et vos objectifs spécifiques</p>
                   </div>
                 </div>
-
-                {/* Formats */}
-                {coach.formats && coach.formats.length > 0 && (
-                  <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Spécialités</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {coach.formats.map((format: string) => (
-                        <span
-                          key={format}
-                          className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-sm font-medium"
-                        >
-                          {format}
-                        </span>
-                      ))}
-                    </div>
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
                   </div>
-                )}
-
-                {/* Langues */}
-                {coach.languages && coach.languages.length > 0 && (
-                  <div className="bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Langues parlées</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {coach.languages.map((lang: string) => (
-                        <span
-                          key={lang}
-                          className="px-3 py-1 bg-slate-800/50 text-gray-300 border border-white/5 rounded-lg text-sm"
-                        >
-                          {lang}
-                        </span>
-                      ))}
-                    </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1">Résultats rapides</h3>
+                    <p className="text-gray-600">Méthode éprouvée pour progresser rapidement et efficacement</p>
                   </div>
-                )}
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1">Ressources complètes</h3>
+                    <p className="text-gray-600">Accès aux replays, notes de session et matériel pédagogique</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1">Communauté active</h3>
+                    <p className="text-gray-600">Rejoignez un groupe d'élèves motivés et échangez vos expériences</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
