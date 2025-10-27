@@ -207,48 +207,57 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {announcements.map((announcement) => (
-        <GlassCard key={announcement.id} className={!announcement.isActive ? 'opacity-60' : ''}>
+        <GlassCard key={announcement.id} className={`p-6 hover:border-emerald-500/30 transition-all ${!announcement.isActive ? 'opacity-60' : ''}`}>
           <div className="space-y-4">
-            {/* Header avec titre et statut */}
-            <div className="flex justify-between items-start gap-3">
-              <h3 className="font-semibold text-lg flex-1 text-white">{announcement.title}</h3>
-                <Badge variant={announcement.isActive ? 'default' : 'secondary'}>
-                  {announcement.isActive ? 'Active' : 'Inactive'}
-                </Badge>
+            {/* Header avec icône, titre et statut */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                <Megaphone className="w-6 h-6 text-emerald-400" />
               </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-xl text-white mb-1 truncate">{announcement.title}</h3>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
+                    announcement.isActive 
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                      : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
+                  }`}>
+                    {announcement.isActive ? '✓ Active' : '○ Inactive'}
+                  </span>
+                </div>
+              </div>
+            </div>
 
               {/* Type et infos spécifiques */}
               <div className="flex flex-wrap gap-2">
                 {/* Badge Type avec couleur */}
-                <Badge 
-                  className={`font-normal ${
-                    announcement.type === 'STRATEGY' ? 'bg-blue-600 hover:bg-blue-700' :
-                    announcement.type === 'REVIEW' ? 'bg-green-600 hover:bg-green-700' :
-                    announcement.type === 'MENTAL' ? 'bg-pink-600 hover:bg-pink-700' :
-                    'bg-purple-600 hover:bg-purple-700'
-                  }`}
-                >
+                <span className={`px-3 py-1 rounded-lg text-sm font-semibold ${
+                  announcement.type === 'STRATEGY' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                  announcement.type === 'REVIEW' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                  announcement.type === 'MENTAL' ? 'bg-pink-500/10 text-pink-400 border border-pink-500/20' :
+                  'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                }`}>
                   {TYPE_LABELS[announcement.type] || announcement.type}
-                </Badge>
+                </span>
                 
                 {announcement.type === 'STRATEGY' && (
                   <>
                     {announcement.variant && (
-                      <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-300">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20">
                         {VARIANT_LABELS[announcement.variant] || announcement.variant}
-                      </Badge>
+                      </span>
                     )}
                     {announcement.format && (
-                      <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-indigo-300">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                         {FORMAT_LABELS[announcement.format] || announcement.format}
-                      </Badge>
+                      </span>
                     )}
                     {announcement.abiRange && (
-                      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-300">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                         ABI: {announcement.abiRange}
-                      </Badge>
+                      </span>
                     )}
                   </>
                 )}
@@ -256,19 +265,19 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
                 {announcement.type === 'REVIEW' && (
                   <>
                     {announcement.reviewType && (
-                      <Badge className="bg-teal-100 text-teal-800 hover:bg-teal-200 border-teal-300">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-teal-500/10 text-teal-400 border border-teal-500/20">
                         {announcement.reviewType.replace(/_/g, ' ')}
-                      </Badge>
+                      </span>
                     )}
                     {announcement.format && (
-                      <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-indigo-300">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                         {FORMAT_LABELS[announcement.format] || announcement.format}
-                      </Badge>
+                      </span>
                     )}
                     {announcement.reviewSupport && (
-                      <Badge className="bg-cyan-100 text-cyan-800 hover:bg-cyan-200 border-cyan-300">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                         {announcement.reviewSupport.replace(/_/g, ' ')}
-                      </Badge>
+                      </span>
                     )}
                   </>
                 )}
@@ -276,22 +285,22 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
                 {announcement.type === 'TOOL' && (
                   <>
                     {announcement.toolName && (
-                      <Badge className="bg-violet-100 text-violet-800 hover:bg-violet-200 border-violet-300">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
                         {announcement.toolName.replace(/_/g, ' ')}
-                      </Badge>
+                      </span>
                     )}
                     {announcement.toolObjective && (
-                      <Badge className="bg-fuchsia-100 text-fuchsia-800 hover:bg-fuchsia-200 border-fuchsia-300">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20">
                         {announcement.toolObjective.replace(/_/g, ' ')}
-                      </Badge>
+                      </span>
                     )}
                   </>
                 )}
                 
                 {announcement.type === 'MENTAL' && announcement.mentalFocus && (
-                  <Badge className="bg-pink-100 text-pink-800 hover:bg-pink-200 border-pink-300">
+                  <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-pink-500/10 text-pink-400 border border-pink-500/20">
                     {announcement.mentalFocus.replace(/_/g, ' ')}
-                  </Badge>
+                  </span>
                 )}
               </div>
               
@@ -329,40 +338,41 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2 pt-2">
-              <GradientButton
-                variant="ghost"
-                size="sm"
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+              <button
                 onClick={() => alert('Fonctionnalité de modification en cours de développement')}
+                className="flex-1 min-w-[120px] px-4 py-2.5 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-white rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
               >
-                <Edit className="mr-2 h-4 w-4" />
+                <Edit className="w-4 h-4" />
                 Modifier
-              </GradientButton>
-              <GradientButton
-                variant="ghost"
-                size="sm"
+              </button>
+              <button
                 onClick={() => handleToggleActive(announcement)}
+                className={`flex-1 min-w-[120px] px-4 py-2.5 border rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                  announcement.isActive
+                    ? 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20 text-amber-400'
+                    : 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/20 text-emerald-400'
+                }`}
               >
                 {announcement.isActive ? (
                   <>
-                    <EyeOff className="mr-2 h-4 w-4" />
+                    <EyeOff className="w-4 h-4" />
                     Désactiver
                   </>
                 ) : (
                   <>
-                    <Eye className="mr-2 h-4 w-4" />
+                    <Eye className="w-4 h-4" />
                     Activer
                   </>
                 )}
-              </GradientButton>
-              <GradientButton
-                variant="ghost"
-                size="sm"
+              </button>
+              <button
                 onClick={() => handleDelete(announcement.id)}
+                className="flex-1 min-w-[120px] px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="w-4 h-4" />
                 Supprimer
-              </GradientButton>
+              </button>
             </div>
 
             {/* Section Packs d'heures */}

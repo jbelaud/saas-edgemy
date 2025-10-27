@@ -60,7 +60,7 @@ export default function CoachAnnouncementsPage() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <GradientText variant="purple" className="text-4xl font-bold mb-2 flex items-center gap-3">
+            <GradientText variant="emerald" className="text-4xl font-bold mb-2 flex items-center gap-3">
               <Megaphone className="w-10 h-10" />
               Mes Annonces
             </GradientText>

@@ -168,20 +168,23 @@ export function AnnouncementPacksSection({ announcementId, hourlyRate }: Announc
   }
 
   return (
-    <div className="mt-4 pt-4 border-t">
+    <div className="mt-4 pt-4 border-t border-white/5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Package className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Packs d&apos;heures</span>
+          <Package className="h-4 w-4 text-purple-400" />
+          <span className="text-sm font-semibold text-white">Packs d&apos;heures</span>
         </div>
-        <Button onClick={() => handleOpenModal()} size="sm" variant="outline">
-          <Plus className="h-3 w-3 mr-1" />
+        <button
+          onClick={() => handleOpenModal()}
+          className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 rounded-lg text-xs font-medium transition-all flex items-center gap-1"
+        >
+          <Plus className="h-3 w-3" />
           Ajouter
-        </Button>
+        </button>
       </div>
 
       {packs.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-2">
+        <p className="text-xs text-gray-400 text-center py-3 bg-slate-800/30 rounded-lg border border-white/5">
           Aucun pack. Ajoutez des packs pour proposer des tarifs dégressifs.
         </p>
       ) : (
@@ -191,34 +194,30 @@ export function AnnouncementPacksSection({ announcementId, hourlyRate }: Announc
             return (
               <div
                 key={pack.id}
-                className="flex items-center justify-between p-2 border rounded text-sm"
+                className="flex items-center justify-between p-3 bg-slate-800/30 border border-white/5 rounded-lg hover:border-purple-500/20 transition-all"
               >
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Pack {pack.hours}h</span>
-                  <span className="text-primary font-bold">{(pack.totalPrice / 100).toFixed(0)}€</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold text-white">Pack {pack.hours}h</span>
+                  <span className="text-purple-400 font-bold text-lg">{(pack.totalPrice / 100).toFixed(0)}€</span>
                   {discount > 0 && (
-                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                    <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20">
                       -{discount}%
-                    </Badge>
+                    </span>
                   )}
                 </div>
                 <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
+                  <button
                     onClick={() => handleOpenModal(pack)}
+                    className="h-7 w-7 flex items-center justify-center hover:bg-slate-700/50 rounded transition-all"
                   >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
+                    <Edit className="h-3.5 w-3.5 text-gray-400 hover:text-white" />
+                  </button>
+                  <button
                     onClick={() => handleDelete(pack.id)}
+                    className="h-7 w-7 flex items-center justify-center hover:bg-red-500/10 rounded transition-all"
                   >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                    <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-400" />
+                  </button>
                 </div>
               </div>
             );
