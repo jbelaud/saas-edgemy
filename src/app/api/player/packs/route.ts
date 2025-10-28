@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
-// GET - Récupérer toutes les sessions du joueur (réservations + sessions de pack)
+// GET - Récupérer tous les packs du joueur
 export async function GET() {
   try {
     const session = await auth.api.getSession({
@@ -14,13 +14,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    // Récupérer toutes les réservations du joueur
-    const reservations = await prisma.reservation.findMany({
+    // Récupérer tous les packs du joueur
+    const packs = await prisma.coachingPackage.findMany({
       where: {
         playerId: session.user.id,
-        status: {
-          in: ['CONFIRMED', 'COMPLETED'],
-        },
+        status: 'ACTIVE',
       },
       include: {
         coach: {
@@ -37,25 +35,26 @@ export async function GET() {
             durationMin: true,
           },
         },
-        pack: {
+        sessions: {
           select: {
-            hours: true,
+            id: true,
+            startDate: true,
+            endDate: true,
+            status: true,
+          },
+          orderBy: {
+            startDate: 'desc',
           },
         },
       },
       orderBy: {
-        startDate: 'asc',
+        createdAt: 'desc',
       },
     });
 
-    // Séparer les sessions à venir et passées
-    const now = new Date();
-    const upcoming = reservations.filter(r => new Date(r.startDate) > now);
-    const past = reservations.filter(r => new Date(r.startDate) <= now);
-
-    return NextResponse.json({ upcoming, past });
+    return NextResponse.json({ packs });
   } catch (error) {
-    console.error('Erreur lors de la récupération des sessions:', error);
+    console.error('Erreur lors de la récupération des packs:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }

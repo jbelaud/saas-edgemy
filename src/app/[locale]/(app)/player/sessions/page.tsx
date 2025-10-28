@@ -51,60 +51,57 @@ export default function PlayerSessionsPage() {
 
   const fetchReservations = async () => {
     try {
-      // Récupérer les réservations classiques
-      const reservationsRes = await fetch('/api/player/reservations');
-      const reservationsData = reservationsRes.ok ? await reservationsRes.json() : [];
+      // Récupérer toutes les sessions (upcoming + past)
+      const response = await fetch('/api/player/sessions');
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement des sessions');
+      }
 
-      // Récupérer les sessions de pack
-      const sessionsRes = await fetch('/api/player/sessions');
-      const sessionsData = sessionsRes.ok ? await sessionsRes.json() : [];
+      const data = await response.json();
+      const { upcoming = [], past = [] } = data;
 
-      // Combiner et formater les deux types
-      const allSessions: Reservation[] = [
-        ...reservationsData.map((r: Reservation) => ({
-          ...r,
-          type: 'reservation' as const,
-        })),
-        ...sessionsData.map((s: {
+      // Combiner et formater toutes les sessions
+      const allSessions: Reservation[] = [...upcoming, ...past].map((r: {
+        id: string;
+        startDate: string;
+        endDate: string;
+        status: string;
+        packId: string | null;
+        coach: {
           id: string;
-          startDate: string;
-          endDate: string;
-          status: string;
-          package: {
-            coach: {
-              id: string;
-              user: { name: string | null; image: string | null };
-              slug: string;
-            };
-            announcement: { title: string };
-            totalHours: number;
-            remainingHours: number;
-          };
-        }) => ({
-          id: s.id,
-          startDate: s.startDate,
-          endDate: s.endDate,
-          status: s.status,
-          type: 'pack-session' as const,
-          coach: {
-            id: s.package.coach.id,
-            firstName: s.package.coach.user.name?.split(' ')[0] || null,
-            lastName: s.package.coach.user.name?.split(' ').slice(1).join(' ') || null,
-            avatarUrl: s.package.coach.user.image || null,
-            slug: s.package.coach.slug || '',
-          },
-          announcement: {
-            title: s.package.announcement.title,
-          },
-          packageInfo: {
-            totalHours: s.package.totalHours,
-            remainingHours: s.package.remainingHours,
-          },
-        })),
-      ];
-
-      // Trier par date
-      allSessions.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+          firstName: string;
+          lastName: string;
+          avatarUrl: string | null;
+        };
+        announcement: {
+          title: string;
+          durationMin: number;
+        };
+        pack?: {
+          hours: number;
+        };
+      }) => ({
+        id: r.id,
+        startDate: new Date(r.startDate),
+        endDate: new Date(r.endDate),
+        status: r.status,
+        type: r.packId ? 'pack-session' : 'reservation',
+        coach: {
+          id: r.coach.id,
+          firstName: r.coach.firstName,
+          lastName: r.coach.lastName,
+          avatarUrl: r.coach.avatarUrl,
+          slug: '', // TODO: ajouter slug dans l'API
+        },
+        announcement: {
+          title: r.announcement.title,
+          durationMin: r.announcement.durationMin,
+        },
+        packageInfo: r.pack ? {
+          totalHours: r.pack.hours,
+          remainingHours: r.pack.hours, // TODO: calculer les heures restantes
+        } : undefined,
+      }));
 
       setReservations(allSessions);
     } catch (error) {

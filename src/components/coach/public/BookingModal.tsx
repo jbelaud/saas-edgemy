@@ -125,8 +125,28 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
     setIsLoading(true);
 
     try {
-      // Mock success pour l'instant (pas de Stripe)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Créer la réservation
+      const response = await fetch('/api/reservations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          announcementId: announcement.id,
+          coachId,
+          startDate: selectedSlot.start.toISOString(),
+          endDate: selectedSlot.end.toISOString(),
+          packageId: bookingType === 'pack' && selectedPackForBooking ? selectedPackForBooking : null,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur lors de la réservation');
+      }
+
+      const data = await response.json();
+      console.log('Réservation créée:', data);
       
       setBookingSuccess(true);
       setTimeout(() => {
@@ -134,10 +154,12 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
         setBookingSuccess(false);
         setSelectedSlot(null);
         setMessage('');
+        // Rediriger vers les sessions du joueur
+        router.push('/player/sessions');
       }, 2000);
     } catch (error) {
       console.error('Erreur réservation:', error);
-      alert('Une erreur est survenue. Veuillez réessayer.');
+      alert(error instanceof Error ? error.message : 'Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
     }

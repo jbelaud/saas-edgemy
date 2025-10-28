@@ -130,6 +130,7 @@ export async function POST(request: NextRequest) {
           startDate: start,
           endDate: end,
           status: 'CONFIRMED',
+          paymentStatus: stripePaymentId ? 'PAID' : 'PENDING', // Mock pour MVP
           priceCents: packageId ? 0 : announcement.priceCents, // 0 si pack (déjà payé)
           stripePaymentId: stripePaymentId || null,
         },

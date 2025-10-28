@@ -29,6 +29,7 @@ import {
   ExternalLink,
   ArrowRightLeft,
   User,
+  Users,
 } from "lucide-react";
 
 interface NavItem {
@@ -58,6 +59,11 @@ const navItems: NavItem[] = [
     title: "Agenda",
     href: "/coach/agenda",
     icon: Calendar,
+  },
+  {
+    title: "Mes Élèves",
+    href: "/coach/students",
+    icon: Users,
   },
   {
     title: "Revenus",

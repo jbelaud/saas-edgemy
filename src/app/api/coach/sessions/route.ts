@@ -22,30 +22,32 @@ export async function GET() {
       return NextResponse.json({ error: 'Coach non trouvé' }, { status: 404 });
     }
 
-    // Récupérer toutes les sessions futures du coach
-    const sessions = await prisma.packageSession.findMany({
+    // Récupérer toutes les réservations du coach (futures et passées)
+    const reservations = await prisma.reservation.findMany({
       where: {
-        package: {
-          coachId: coach.id,
-        },
+        coachId: coach.id,
         status: {
-          in: ['SCHEDULED', 'COMPLETED'],
-        },
-        startDate: {
-          gte: new Date(), // Seulement les sessions futures
+          in: ['CONFIRMED', 'COMPLETED'],
         },
       },
       include: {
-        package: {
-          include: {
-            player: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-              },
-            },
+        player: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+        announcement: {
+          select: {
+            title: true,
+            durationMin: true,
+          },
+        },
+        pack: {
+          select: {
+            hours: true,
           },
         },
       },
@@ -54,7 +56,20 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(sessions);
+    // Formater pour le calendrier
+    const formattedSessions = reservations.map(r => ({
+      id: r.id,
+      startDate: r.startDate,
+      endDate: r.endDate,
+      package: {
+        player: {
+          name: r.player.name,
+          email: r.player.email,
+        },
+      },
+    }));
+
+    return NextResponse.json(formattedSessions);
   } catch (error) {
     console.error('Erreur lors de la récupération des sessions:', error);
     return NextResponse.json(

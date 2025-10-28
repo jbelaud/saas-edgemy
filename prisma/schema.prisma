@@ -67,6 +67,7 @@ model coach {
   availabilities   Availability[]
   coachingPackages CoachingPackage[]
   reservations     Reservation[]
+  notes            CoachNote[]
   user             user              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -161,6 +162,7 @@ model Reservation {
   startDate       DateTime
   endDate         DateTime
   status          ReservationStatus @default(PENDING)
+  paymentStatus   PaymentStatus     @default(PENDING)
   priceCents      Int
   stripePaymentId String?
   createdAt       DateTime          @default(now())
@@ -172,6 +174,8 @@ model Reservation {
   player          user              @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([packId])
+  @@index([playerId])
+  @@index([coachId])
 }
 
 model CoachingPackage {
@@ -209,6 +213,21 @@ model PackageSession {
   reservation     Reservation?         @relation(fields: [reservationId], references: [id])
 
   @@index([packageId])
+}
+
+model CoachNote {
+  id        String   @id @default(cuid())
+  coachId   String
+  playerId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  coach     coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  player    user     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([coachId])
+  @@index([playerId])
+  @@index([coachId, playerId])
 }
 
 model player {
@@ -250,6 +269,7 @@ model user {
   coachDraft       CoachDraft?
   coachingPackages CoachingPackage[]
   reservations     Reservation[]
+  coachNotes       CoachNote[]
   account          account[]
   coach            coach?
   player           player?
@@ -304,4 +324,11 @@ enum PackageSessionStatus {
   SCHEDULED
   COMPLETED
   CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
 }
