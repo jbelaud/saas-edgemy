@@ -8,6 +8,7 @@ import { fr } from 'date-fns/locale';
 import { Calendar, Clock, User, Loader2, Package } from 'lucide-react';
 import Image from 'next/image';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
+import { GlassCard, GradientText } from '@/components/ui';
 
 interface Reservation {
   id: string;
@@ -115,7 +116,7 @@ export default function PlayerSessionsPage() {
     return (
       <PlayerLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </PlayerLayout>
     );
@@ -134,8 +135,10 @@ export default function PlayerSessionsPage() {
     <PlayerLayout>
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Mes Sessions</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-4xl font-bold mb-2">
+          <GradientText variant="emerald">Mes Sessions</GradientText>
+        </h1>
+        <p className="text-gray-400 text-lg">
           Consultez vos sessions de coaching réservées
         </p>
       </div>
@@ -143,24 +146,24 @@ export default function PlayerSessionsPage() {
       <div className="space-y-8">
         {/* Prochaines sessions */}
         <div>
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-blue-600" />
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-white">
+            <Calendar className="h-5 w-5 text-emerald-400" />
             Prochaines sessions ({upcomingSessions.length})
           </h2>
           
           {upcomingSessions.length === 0 ? (
-            <div className="bg-white shadow rounded-lg p-8 text-center">
-              <p className="text-gray-500">Aucune session à venir</p>
+            <GlassCard className="p-8 text-center">
+              <p className="text-gray-300">Aucune session à venir</p>
               <p className="text-sm text-gray-400 mt-2">
                 Explorez les coachs disponibles pour réserver une session
               </p>
-            </div>
+            </GlassCard>
           ) : (
             <div className="grid gap-4">
               {upcomingSessions.map((reservation) => (
-                <div
+                <GlassCard
                   key={reservation.id}
-                  className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow"
+                  className="p-6 hover:border-emerald-500/30 transition-all"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -176,7 +179,7 @@ export default function PlayerSessionsPage() {
                         )}
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-lg">
+                            <h3 className="font-semibold text-lg text-white">
                               {reservation.announcement.title}
                             </h3>
                             {reservation.type === 'pack-session' && (
@@ -186,19 +189,19 @@ export default function PlayerSessionsPage() {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-600 flex items-center gap-1">
+                          <p className="text-sm text-gray-300 flex items-center gap-1">
                             <User className="h-4 w-4" />
                             avec {reservation.coach.firstName} {reservation.coach.lastName}
                           </p>
                           {reservation.packageInfo && (
-                            <p className="text-xs text-purple-600 mt-1">
+                            <p className="text-xs text-purple-400 mt-1">
                               Heures restantes: {reservation.packageInfo.remainingHours}h / {reservation.packageInfo.totalHours}h
                             </p>
                           )}
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-3">
+                      <div className="flex items-center gap-4 text-sm text-gray-300 mt-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
                           {format(new Date(reservation.startDate), "EEEE d MMMM yyyy", { locale: fr })}
@@ -215,14 +218,14 @@ export default function PlayerSessionsPage() {
                     <div className="text-right">
                       <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
                         reservation.status === 'CONFIRMED' 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-yellow-100 text-yellow-700'
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                          : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                       }`}>
                         {reservation.status === 'CONFIRMED' ? 'Confirmée' : 'En attente'}
                       </span>
                     </div>
                   </div>
-                </div>
+                </GlassCard>
               ))}
             </div>
           )}
@@ -231,15 +234,15 @@ export default function PlayerSessionsPage() {
         {/* Sessions passées */}
         {pastSessions.length > 0 && (
           <div>
-            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+            <h2 className="text-xl font-semibold mb-4 text-gray-400">
               Sessions passées ({pastSessions.length})
             </h2>
             
             <div className="grid gap-4">
               {pastSessions.map((reservation) => (
-                <div
+                <GlassCard
                   key={reservation.id}
-                  className="bg-gray-50 shadow-sm rounded-lg p-6 opacity-75"
+                  className="p-6 opacity-60"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -254,16 +257,16 @@ export default function PlayerSessionsPage() {
                           />
                         )}
                         <div>
-                          <h3 className="font-semibold">
+                          <h3 className="font-semibold text-white">
                             {reservation.announcement.title}
                           </h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-300">
                             avec {reservation.coach.firstName} {reservation.coach.lastName}
                           </p>
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mt-3">
+                      <div className="flex items-center gap-4 text-sm text-gray-400 mt-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
                           {format(new Date(reservation.startDate), "d MMMM yyyy", { locale: fr })}
@@ -275,7 +278,7 @@ export default function PlayerSessionsPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </GlassCard>
               ))}
             </div>
           </div>
