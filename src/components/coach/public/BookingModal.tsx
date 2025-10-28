@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ interface TimeSlot {
 
 export function BookingModal({ isOpen, onClose, announcement, coachId, selectedPackId }: BookingModalProps) {
   const router = useRouter();
+  const locale = useLocale();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -113,7 +115,7 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
 
   const handleSubmit = async () => {
     if (!session?.user) {
-      router.push('/sign-in');
+      router.push(`/${locale}/sign-in`);
       return;
     }
 
@@ -155,7 +157,7 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
         setSelectedSlot(null);
         setMessage('');
         // Rediriger vers les sessions du joueur
-        router.push('/player/sessions');
+        router.push(`/${locale}/player/sessions`);
       }, 2000);
     } catch (error) {
       console.error('Erreur réservation:', error);
