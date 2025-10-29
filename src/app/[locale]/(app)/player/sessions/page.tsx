@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar, Clock, User, Loader2, Package } from 'lucide-react';
 import { DiscordSessionButton } from '@/components/discord/DiscordSessionButton';
+import { CreateChannelButton } from '@/components/discord/CreateChannelButton';
 import Image from 'next/image';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 import { GlassCard, GradientText } from '@/components/ui';
@@ -18,6 +19,7 @@ interface Reservation {
   status: string;
   type: 'reservation' | 'pack-session';
   discordChannelId?: string | null;
+  coachId: string;
   coach: {
     id: string;
     firstName: string | null;
@@ -74,6 +76,8 @@ export default function PlayerSessionsPage() {
         endDate: string;
         status: string;
         packId: string | null;
+        discordChannelId?: string | null;
+        coachId: string;
         coach: {
           id: string;
           firstName: string;
@@ -94,6 +98,7 @@ export default function PlayerSessionsPage() {
         status: r.status,
         type: r.packId ? 'pack-session' : 'reservation',
         discordChannelId: r.discordChannelId || null,
+        coachId: r.coachId,
         coach: {
           id: r.coach.id,
           firstName: r.coach.firstName,
@@ -231,11 +236,18 @@ export default function PlayerSessionsPage() {
                         {reservation.status === 'CONFIRMED' ? 'Confirmée' : 'En attente'}
                       </span>
                       
-                      {/* Bouton Discord */}
-                      <DiscordSessionButton
-                        discordChannelId={reservation.discordChannelId || null}
-                        playerHasDiscord={!!playerDiscordId}
-                      />
+                      {/* Boutons Discord */}
+                      {reservation.discordChannelId ? (
+                        <DiscordSessionButton
+                          discordChannelId={reservation.discordChannelId}
+                          playerHasDiscord={!!playerDiscordId}
+                        />
+                      ) : (
+                        <CreateChannelButton
+                          reservationId={reservation.id}
+                          hasChannel={!!reservation.discordChannelId}
+                        />
+                      )}
                     </div>
                   </div>
                 </GlassCard>

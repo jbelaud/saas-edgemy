@@ -61,6 +61,32 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
   const [loadingSlots, setLoadingSlots] = useState(true);
   const [bookingType, setBookingType] = useState<'single' | 'pack'>(selectedPackId ? 'pack' : 'single');
   const [selectedPackForBooking, setSelectedPackForBooking] = useState<string | null>(selectedPackId || null);
+  const [isDiscordMember, setIsDiscordMember] = useState<boolean | null>(null);
+  const [checkingDiscord, setCheckingDiscord] = useState(true);
+
+  // Vérifier si l'utilisateur est membre du serveur Discord
+  useEffect(() => {
+    if (!isOpen || !session?.user) {
+      setCheckingDiscord(false);
+      return;
+    }
+
+    const checkDiscordMembership = async () => {
+      try {
+        const response = await fetch('/api/discord/check-member');
+        if (response.ok) {
+          const data = await response.json();
+          setIsDiscordMember(data.isMember);
+        }
+      } catch (error) {
+        console.error('Erreur vérification Discord:', error);
+      } finally {
+        setCheckingDiscord(false);
+      }
+    };
+
+    checkDiscordMembership();
+  }, [isOpen, session]);
 
   // Charger les créneaux disponibles
   useEffect(() => {
@@ -121,6 +147,12 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
 
     if (!selectedSlot) {
       alert('Veuillez sélectionner un créneau horaire');
+      return;
+    }
+
+    // Vérifier si l'utilisateur est membre du serveur Discord
+    if (isDiscordMember === false) {
+      alert('Vous devez rejoindre le serveur Discord Edgemy pour réserver une session. Rendez-vous dans Paramètres > Discord.');
       return;
     }
 
@@ -205,6 +237,34 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
               <DialogDescription className="text-xs md:text-sm">
                 Sélectionnez un créneau et confirmez votre réservation
               </DialogDescription>
+              
+              {/* Alerte Discord si pas membre */}
+              {!checkingDiscord && isDiscordMember === false && (
+                <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <p className="font-semibold text-orange-900 mb-1">
+                        Serveur Discord requis
+                      </p>
+                      <p className="text-orange-800">
+                        Vous devez rejoindre le serveur Discord Edgemy pour réserver une session.{' '}
+                        <a 
+                          href={`/${locale}/player/settings`}
+                          className="underline font-semibold hover:text-orange-900"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onClose();
+                            router.push(`/${locale}/player/settings`);
+                          }}
+                        >
+                          Aller dans Paramètres
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Type de réservation */}
