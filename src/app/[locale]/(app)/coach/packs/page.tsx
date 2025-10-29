@@ -185,7 +185,7 @@ export default function CoachPacksPage() {
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex items-start gap-4">
                       <Avatar className="h-14 w-14">
-                        <AvatarImage src={pkg.player.image || ''} />
+                        <AvatarImage src={pkg.player.image || undefined} />
                         <AvatarFallback>{initials}</AvatarFallback>
                       </Avatar>
                       <div>

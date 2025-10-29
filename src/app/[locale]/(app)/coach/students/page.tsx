@@ -198,7 +198,7 @@ export default function CoachStudentsPage() {
                   >
                     <div className="flex items-start gap-3">
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={student.image || ''} />
+                        <AvatarImage src={student.image || undefined} />
                         <AvatarFallback>{initials}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
@@ -233,7 +233,7 @@ export default function CoachStudentsPage() {
                   <GlassCard className="p-6">
                     <div className="flex items-start gap-4 mb-6">
                       <Avatar className="h-16 w-16">
-                        <AvatarImage src={selectedStudent.image || ''} />
+                        <AvatarImage src={selectedStudent.image || undefined} />
                         <AvatarFallback>
                           {selectedStudent.name
                             ?.split(' ')
