@@ -1,18 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { Users, Calendar, CheckCircle, Clock, Loader2, StickyNote, Save } from 'lucide-react';
-import Image from 'next/image';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
+import { GlassCard, GradientText } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, Calendar, Loader2, StickyNote, Save, Clock, CheckCircle, TrendingUp } from 'lucide-react';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface Student {
   id: string;
