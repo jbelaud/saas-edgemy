@@ -74,64 +74,25 @@ export default function CoachPacksPage() {
     }
   };
 
-  const handleScheduleSession = (
-    packId: string,
-    playerId: string,
-    playerName: string,
-    announcementTitle: string,
-    currentSessionNumber: number,
-    totalSessions: number,
-    durationMin: number
-  ) => {
-    setScheduleModal({
-      open: true,
-      packId,
-      playerId,
-      playerName,
-      announcementTitle,
-      currentSessionNumber,
-      totalSessions,
-      durationMin,
-    });
-  };
-
-  const handleScheduleSuccess = () => {
-    fetchPacks();
-    setScheduleModal(null);
-  };
-
-  const getStatusIcon = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
+      case 'ACTIVE':
+        return <Badge className="bg-green-500/20 text-green-300">Actif</Badge>;
       case 'COMPLETED':
-        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case 'CONFIRMED':
-        return <Clock className="h-4 w-4 text-blue-600" />;
+        return <Badge className="bg-blue-500/20 text-blue-300">Complété</Badge>;
       default:
-        return <Settings className="h-4 w-4 text-gray-400" />;
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getSessionStatusBadge = (status: string) => {
     switch (status) {
       case 'COMPLETED':
-        return 'Effectuée';
-      case 'CONFIRMED':
-        return 'Planifiée';
-      case 'PENDING':
-        return 'En attente';
+        return <Badge className="bg-green-500/20 text-green-300">Complétée</Badge>;
+      case 'SCHEDULED':
+        return <Badge className="bg-blue-500/20 text-blue-300">Planifiée</Badge>;
       default:
-        return status;
-    }
-  };
-
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'CONFIRMED':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      default:
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
@@ -139,229 +100,199 @@ export default function CoachPacksPage() {
     return (
       <CoachLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </CoachLayout>
     );
   }
 
-  const isInactive = coachStatus === 'INACTIVE';
-
-  if (isInactive) {
-    return (
-      <CoachLayout>
-        <div className="container mx-auto px-6 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Mes Packs</h1>
-            <p className="text-muted-foreground">
-              Gérez les sessions de vos packs d&apos;heures achetés par vos élèves
-            </p>
-          </div>
-          <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
-            <CardContent className="py-12">
-              <div className="text-center mb-6">
-                <Package className="h-12 w-12 text-orange-600 mx-auto mb-4" />
-                <p className="text-orange-900 font-semibold mb-2 text-xl">
-                  Activez votre abonnement pour gérer vos packs
-                </p>
-                <p className="text-orange-700 text-sm">
-                  Débloquez toutes les fonctionnalités de la plateforme
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 max-w-2xl mx-auto">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900 text-sm">Packs d&apos;heures</p>
-                    <p className="text-xs text-gray-600">Proposez des packs avantageux à vos élèves</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900 text-sm">Gestion des sessions</p>
-                    <p className="text-xs text-gray-600">Planifiez et suivez toutes vos sessions</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900 text-sm">Réservations illimitées</p>
-                    <p className="text-xs text-gray-600">Recevez autant de réservations que vous voulez</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900 text-sm">Paiements sécurisés</p>
-                    <p className="text-xs text-gray-600">Recevez vos paiements directement</p>
-                  </div>
-                </div>
-              </div>
-              <div className="text-center">
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
-                  onClick={() => router.push(`/${locale}/coach/onboarding`)}
-                >
-                  <Zap className="mr-2 h-5 w-5" />
-                  Activer mon abonnement maintenant
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </CoachLayout>
-    );
-  }
 
   return (
     <CoachLayout>
-      <div className="container mx-auto px-6 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Mes Packs</h1>
-        <p className="text-muted-foreground">
-          Gérez les sessions de vos packs d&apos;heures achetés par vos élèves
-        </p>
-      </div>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="mb-8">
+          <GradientText className="text-4xl font-bold mb-2">
+            Mes Packs
+          </GradientText>
+          <p className="text-gray-400">
+            Gérez les packs d'heures achetés par vos élèves
+          </p>
+        </div>
 
-      {packs.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg font-medium mb-2">Aucun pack acheté</p>
-            <p className="text-sm text-muted-foreground">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <GlassCard className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-purple-500/20 rounded-lg">
+                <Package className="h-6 w-6 text-purple-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Total packs</p>
+                <p className="text-2xl font-bold text-white">{stats.total}</p>
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-green-500/20 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-green-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Packs actifs</p>
+                <p className="text-2xl font-bold text-white">{stats.active}</p>
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-blue-500/20 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Packs complétés</p>
+                <p className="text-2xl font-bold text-white">{stats.completed}</p>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+
+        {/* Liste des packs */}
+        {packages.length === 0 ? (
+          <GlassCard className="p-12 text-center">
+            <Package className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+            <p className="text-lg font-medium text-white mb-2">Aucun pack acheté</p>
+            <p className="text-gray-400">
               Les packs achetés par vos élèves apparaîtront ici
             </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-6">
-          {packs.map((pack) =>
-            pack.playerPacks.map((playerPack) => {
-              const initials = playerPack.player.name
+          </GlassCard>
+        ) : (
+          <div className="space-y-6">
+            {packages.map((pkg) => {
+              const initials = pkg.player.name
                 ?.split(' ')
                 .map((n) => n[0])
                 .join('')
                 .toUpperCase() || 'U';
 
+              const progressPercent = (pkg.usedHours / pkg.totalHours) * 100;
+
               return (
-                <Card key={`${pack.id}-${playerPack.player.id}`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={playerPack.player.image || ''} />
-                          <AvatarFallback>{initials}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <Package className="h-5 w-5 text-primary" />
-                            <CardTitle className="text-xl">
-                              Pack {pack.hours}h — {playerPack.player.name}
-                            </CardTitle>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {pack.announcement.title}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="secondary">
-                              {playerPack.completedSessions} effectuée{playerPack.completedSessions > 1 ? 's' : ''}
-                            </Badge>
-                            <Badge variant="secondary">
-                              {playerPack.scheduledSessions} planifiée{playerPack.scheduledSessions > 1 ? 's' : ''}
-                            </Badge>
-                            {playerPack.remainingSessions > 0 && (
-                              <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                                {playerPack.remainingSessions} à planifier
-                              </Badge>
-                            )}
-                          </div>
+                <GlassCard key={pkg.id} className="p-6">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="h-14 w-14">
+                        <AvatarImage src={pkg.player.image || ''} />
+                        <AvatarFallback>{initials}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Package className="h-5 w-5 text-purple-400" />
+                          <h3 className="text-xl font-bold text-white">
+                            Pack {pkg.totalHours}h — {pkg.player.name || 'Joueur'}
+                          </h3>
                         </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {/* Liste des sessions */}
-                    <div className="space-y-2 mb-4">
-                      {playerPack.sessions.map((session) => (
-                        <div
-                          key={session.id}
-                          className="flex items-center justify-between p-3 border rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            {getStatusIcon(session.status)}
-                            <div>
-                              <p className="font-medium">
-                                Session {session.sessionNumber}/{pack.hours}
-                              </p>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Calendar className="h-3 w-3" />
-                                {format(new Date(session.startDate), 'PPP à HH:mm', { locale: fr })}
-                              </div>
-                            </div>
-                          </div>
-                          <Badge className={getStatusBadgeClass(session.status)}>
-                            {getStatusLabel(session.status)}
+                        <p className="text-sm text-gray-400 mb-2">
+                          {pkg.announcement.title}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(pkg.status)}
+                          <Badge variant="secondary">
+                            {pkg.totalSessions} session{pkg.totalSessions > 1 ? 's' : ''}
+                          </Badge>
+                          <Badge variant="secondary">
+                            {pkg.completedSessions} complétée{pkg.completedSessions > 1 ? 's' : ''}
                           </Badge>
                         </div>
-                      ))}
-                    </div>
-
-                    {/* Bouton ajouter une date */}
-                    {playerPack.remainingSessions > 0 && (
-                      <Button
-                        onClick={() =>
-                          handleScheduleSession(
-                            pack.id,
-                            playerPack.player.id,
-                            playerPack.player.name || 'Joueur',
-                            pack.announcement.title,
-                            playerPack.sessions.length + 1,
-                            pack.hours,
-                            pack.announcement.durationMin
-                          )
-                        }
-                        className="w-full"
-                        variant="outline"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Ajouter une date ({playerPack.remainingSessions} session{playerPack.remainingSessions > 1 ? 's' : ''} restante{playerPack.remainingSessions > 1 ? 's' : ''})
-                      </Button>
-                    )}
-
-                    {playerPack.remainingSessions === 0 && (
-                      <div className="text-center py-3 bg-green-50 rounded-lg border border-green-200">
-                        <p className="text-sm font-medium text-green-800">
-                          ✅ Toutes les sessions ont été planifiées
-                        </p>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </div>
-      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-400">Prix</p>
+                      <p className="text-xl font-bold text-white">
+                        {(pkg.priceCents / 100).toFixed(2)} €
+                      </p>
+                    </div>
+                  </div>
 
-      {/* Modal de planification */}
-      {scheduleModal && (
-        <SchedulePackSessionModal
-          packId={scheduleModal.packId}
-          playerId={scheduleModal.playerId}
-          playerName={scheduleModal.playerName}
-          announcementTitle={scheduleModal.announcementTitle}
-          currentSessionNumber={scheduleModal.currentSessionNumber}
-          totalSessions={scheduleModal.totalSessions}
-          durationMin={scheduleModal.durationMin}
-          open={scheduleModal.open}
-          onOpenChange={(open) => {
-            if (!open) setScheduleModal(null);
-          }}
-          onSuccess={handleScheduleSuccess}
-        />
-      )}
+                  {/* Progression */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium text-white">
+                        Progression
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        {pkg.usedHours}h / {pkg.totalHours}h utilisées
+                      </p>
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                    {pkg.remainingHours > 0 && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        {pkg.remainingHours}h restantes
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Sessions */}
+                  {pkg.sessions.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-blue-400" />
+                        Sessions ({pkg.sessions.length})
+                      </h4>
+                      <div className="space-y-2">
+                        {pkg.sessions.map((session) => (
+                          <div
+                            key={session.id}
+                            className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Clock className="h-4 w-4 text-gray-400" />
+                              <div>
+                                <p className="text-sm font-medium text-white">
+                                  {format(new Date(session.startDate), 'PPP', { locale: fr })}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  {format(new Date(session.startDate), 'HH:mm', { locale: fr })} - {format(new Date(session.endDate), 'HH:mm', { locale: fr })}
+                                </p>
+                              </div>
+                            </div>
+                            {getSessionStatusBadge(session.status)}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* CTA Planifier */}
+                  {pkg.remainingHours > 0 && (
+                    <Link href="/fr/coach/agenda">
+                      <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        Planifier une session ({pkg.remainingHours}h restantes)
+                      </Button>
+                    </Link>
+                  )}
+
+                  {pkg.remainingHours === 0 && (
+                    <div className="text-center py-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                      <p className="text-sm font-medium text-green-300">
+                        ✅ Toutes les heures ont été utilisées
+                      </p>
+                    </div>
+                  )}
+                </GlassCard>
+              );
+            })}
+          </div>
+        )}
       </div>
     </CoachLayout>
   );
