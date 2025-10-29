@@ -90,6 +90,33 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
     window.location.href = '/api/discord/oauth/authorize';
   };
 
+  const handleDisconnect = async () => {
+    if (!confirm('Êtes-vous sûr de vouloir déconnecter votre compte Discord ?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/discord/disconnect', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        setIsConnected(false);
+        setIsMemberOfServer(null);
+        setShowSuccess(false);
+        // Afficher un message de succès
+        alert('Discord déconnecté avec succès');
+        // Recharger la page pour mettre à jour l'état
+        window.location.reload();
+      } else {
+        alert('Erreur lors de la déconnexion');
+      }
+    } catch (error) {
+      console.error('Erreur déconnexion Discord:', error);
+      alert('Erreur lors de la déconnexion');
+    }
+  };
+
   if (isLoading) {
     return (
       <Button disabled className={className}>
@@ -120,26 +147,36 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
       )}
 
       {isConnected ? (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-green-600">
-            <CheckCircle className="h-4 w-4" />
-            <span>Discord connecté</span>
-          </div>
-          {isMemberOfServer !== null && (
-            <div className={`flex items-center gap-2 text-sm ${isMemberOfServer ? 'text-emerald-600' : 'text-orange-600'}`}>
-              {isMemberOfServer ? (
-                <>
-                  <CheckCircle className="h-4 w-4" />
-                  <span>Membre du serveur Edgemy ✓</span>
-                </>
-              ) : (
-                <>
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Pas encore membre du serveur</span>
-                </>
-              )}
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-green-600">
+              <CheckCircle className="h-4 w-4" />
+              <span>Discord connecté</span>
             </div>
-          )}
+            {isMemberOfServer !== null && (
+              <div className={`flex items-center gap-2 text-sm ${isMemberOfServer ? 'text-emerald-600' : 'text-orange-600'}`}>
+                {isMemberOfServer ? (
+                  <>
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Membre du serveur Edgemy ✓</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Pas encore membre du serveur</span>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+          <Button
+            onClick={handleDisconnect}
+            variant="outline"
+            size="sm"
+            className="border-red-500/30 text-red-500 hover:bg-red-500/10 hover:border-red-500/50"
+          >
+            Déconnecter Discord
+          </Button>
         </div>
       ) : (
         <Button
