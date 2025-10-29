@@ -156,7 +156,10 @@ export function PlayerSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-3">
         {navItems.map((item) => {
-          const isActive = pathname.includes(item.href);
+          // Vérification exacte du chemin pour éviter les faux positifs
+          // Par exemple, /player/coaches/explore ne doit pas activer /player/coaches
+          const isActive = pathname === `/${locale}${item.href}` || 
+                          (pathname.startsWith(`/${locale}${item.href}/`) && item.href !== '/player/coaches');
           const Icon = item.icon;
 
           return (

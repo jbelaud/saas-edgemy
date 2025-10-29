@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Loader2, Search, Filter } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { GlassCard, GradientText } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
@@ -60,7 +60,7 @@ export default function PlayerCoachesExplorePage() {
     return (
       <PlayerLayout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </PlayerLayout>
     );
@@ -69,12 +69,10 @@ export default function PlayerCoachesExplorePage() {
   if (error) {
     return (
       <PlayerLayout>
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-900">Erreur</CardTitle>
-            <CardDescription className="text-red-700">{error}</CardDescription>
-          </CardHeader>
-        </Card>
+        <GlassCard className="border-red-500/20 bg-red-500/10">
+          <h2 className="text-red-400 text-xl font-bold mb-2">Erreur</h2>
+          <p className="text-red-300">{error}</p>
+        </GlassCard>
       </PlayerLayout>
     );
   }
@@ -82,18 +80,17 @@ export default function PlayerCoachesExplorePage() {
   return (
     <PlayerLayout>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-1">
-          Trouve ton coach idéal
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-2">
+          <GradientText variant="emerald">Trouve ton coach idéal</GradientText>
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-400 text-lg">
           Explore notre sélection de coachs professionnels
         </p>
       </div>
 
       {/* Search and Filters */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
+      <GlassCard className="mb-6 p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -111,8 +108,7 @@ export default function PlayerCoachesExplorePage() {
               Filtres
             </Button>
           </div>
-        </CardContent>
-      </Card>
+      </GlassCard>
 
       {/* Coaches List */}
       <PlayerExploreCoaches coaches={coaches} searchQuery={searchQuery} />
