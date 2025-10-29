@@ -153,25 +153,26 @@ model Availability {
 }
 
 model Reservation {
-  id              String            @id @default(cuid())
-  announcementId  String
-  coachId         String
-  playerId        String
-  packId          String?
-  sessionNumber   Int?
-  startDate       DateTime
-  endDate         DateTime
-  status          ReservationStatus @default(PENDING)
-  paymentStatus   PaymentStatus     @default(PENDING)
-  priceCents      Int
-  stripePaymentId String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  packageSession  PackageSession?
-  announcement    Announcement      @relation(fields: [announcementId], references: [id], onDelete: Cascade)
-  coach           coach             @relation(fields: [coachId], references: [id], onDelete: Cascade)
-  pack            AnnouncementPack? @relation(fields: [packId], references: [id])
-  player          user              @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  id               String            @id @default(cuid())
+  announcementId   String
+  coachId          String
+  playerId         String
+  packId           String?
+  sessionNumber    Int?
+  startDate        DateTime
+  endDate          DateTime
+  status           ReservationStatus @default(PENDING)
+  paymentStatus    PaymentStatus     @default(PENDING)
+  priceCents       Int
+  stripePaymentId  String?
+  discordChannelId String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  packageSession   PackageSession?
+  announcement     Announcement      @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  coach            coach             @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  pack             AnnouncementPack? @relation(fields: [packId], references: [id])
+  player           user              @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([packId])
   @@index([playerId])
@@ -264,6 +265,7 @@ model user {
   name             String?
   image            String?
   role             Role              @default(USER)
+  discordId        String?           @unique
   createdAt        DateTime          @default(now())
   updatedAt        DateTime
   coachDraft       CoachDraft?

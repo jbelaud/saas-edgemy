@@ -164,6 +164,51 @@ export async function POST(request: NextRequest) {
       return reservation;
     });
 
+    // Créer automatiquement le salon Discord si les deux utilisateurs ont lié leur compte Discord
+    const coachUser = await prisma.user.findUnique({
+      where: { id: result.coach.userId },
+      select: { discordId: true },
+    });
+
+    const playerUser = await prisma.user.findUnique({
+      where: { id: result.playerId },
+      select: { discordId: true },
+    });
+
+    if (coachUser?.discordId && playerUser?.discordId) {
+      try {
+        // Appeler l'API de création de salon Discord en interne
+        const discordResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/discord/create-channel`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              // Passer le token d'authentification pour l'appel interne
+              Cookie: request.headers.get('cookie') || '',
+            },
+            body: JSON.stringify({
+              coachDiscordId: coachUser.discordId,
+              playerDiscordId: playerUser.discordId,
+              sessionId: result.id,
+            }),
+          }
+        );
+
+        if (!discordResponse.ok) {
+          console.error('Erreur lors de la création du salon Discord:', await discordResponse.text());
+          // Ne pas faire échouer la réservation si Discord échoue
+        } else {
+          console.log('Salon Discord créé avec succès pour la réservation', result.id);
+        }
+      } catch (discordError) {
+        console.error('Erreur lors de l\'appel à l\'API Discord:', discordError);
+        // Ne pas faire échouer la réservation si Discord échoue
+      }
+    } else {
+      console.log('Salon Discord non créé: un ou plusieurs utilisateurs n\'ont pas lié leur compte Discord');
+    }
+
     return NextResponse.json({ reservation: result }, { status: 201 });
   } catch (error) {
     console.error('Erreur lors de la création de la réservation:', error);
