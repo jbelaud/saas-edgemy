@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     if (!session?.user) {
       return NextResponse.redirect(
-        new URL('/sign-in?error=unauthorized', request.url)
+        new URL('/fr/sign-in?error=unauthorized', request.url)
       );
     }
 
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     if (!DISCORD_CLIENT_ID || !DISCORD_REDIRECT_URI) {
       console.error('Variables Discord OAuth manquantes');
       return NextResponse.redirect(
-        new URL('/player/settings?discord_error=config', request.url)
+        new URL('/fr/player/settings?discord_error=config', request.url)
       );
     }
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Erreur lors de l\'autorisation Discord:', error);
     return NextResponse.redirect(
-      new URL('/player/settings?discord_error=server', request.url)
+      new URL('/fr/player/settings?discord_error=server', request.url)
     );
   }
 }
