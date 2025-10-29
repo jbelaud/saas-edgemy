@@ -110,7 +110,7 @@ export function Footer() {
                 <Twitter className="w-4 h-4" />
               </a>
               <a 
-                href="https://discord.gg/dYDEzbVz" 
+                href="https://discord.gg/2f3tJdJ3Q2" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600 cursor-pointer"

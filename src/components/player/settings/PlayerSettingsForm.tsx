@@ -284,7 +284,7 @@ export function PlayerSettingsForm() {
             {/* Bouton pour rejoindre le serveur Discord (toujours visible) */}
             <div className="pt-2">
               <a
-                href={process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || 'https://discord.gg/edgemy'}
+                href={process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || 'https://discord.gg/2f3tJdJ3Q2'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block w-full"

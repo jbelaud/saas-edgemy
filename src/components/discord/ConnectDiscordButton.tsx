@@ -20,8 +20,9 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState<string | null>(null);
   const [showJoinServerDialog, setShowJoinServerDialog] = useState(false);
+  const [isMemberOfServer, setIsMemberOfServer] = useState<boolean | null>(null);
   
-  const DISCORD_INVITE_URL = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || 'https://discord.gg/edgemy';
+  const DISCORD_INVITE_URL = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || 'https://discord.gg/2f3tJdJ3Q2';
 
   // Vérifier si l'utilisateur a déjà connecté Discord
   useEffect(() => {
@@ -35,7 +36,17 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
         const response = await fetch('/api/user/profile');
         if (response.ok) {
           const data = await response.json();
-          setIsConnected(!!data.discordId);
+          const connected = !!data.discordId;
+          setIsConnected(connected);
+          
+          // Si Discord est connecté, vérifier si membre du serveur
+          if (connected) {
+            const memberResponse = await fetch('/api/discord/check-member');
+            if (memberResponse.ok) {
+              const memberData = await memberResponse.json();
+              setIsMemberOfServer(memberData.isMember);
+            }
+          }
         }
       } catch (error) {
         console.error('Erreur vérification Discord:', error);
@@ -109,9 +120,26 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
       )}
 
       {isConnected ? (
-        <div className="flex items-center gap-2 text-sm text-green-600">
-          <CheckCircle className="h-4 w-4" />
-          <span>Discord connecté</span>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm text-green-600">
+            <CheckCircle className="h-4 w-4" />
+            <span>Discord connecté</span>
+          </div>
+          {isMemberOfServer !== null && (
+            <div className={`flex items-center gap-2 text-sm ${isMemberOfServer ? 'text-emerald-600' : 'text-orange-600'}`}>
+              {isMemberOfServer ? (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Membre du serveur Edgemy ✓</span>
+                </>
+              ) : (
+                <>
+                  <AlertCircle className="h-4 w-4" />
+                  <span>Pas encore membre du serveur</span>
+                </>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <Button
