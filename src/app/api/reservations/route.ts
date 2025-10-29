@@ -52,6 +52,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérifier que le joueur n'essaie pas de réserver le jour même de son inscription
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { createdAt: true },
+    });
+
+    if (user) {
+      const now = new Date();
+      const userCreatedAt = new Date(user.createdAt);
+      
+      // Calculer la différence en heures
+      const hoursSinceRegistration = (now.getTime() - userCreatedAt.getTime()) / (1000 * 60 * 60);
+      
+      // Le joueur doit attendre au moins 24h après son inscription
+      if (hoursSinceRegistration < 24) {
+        return NextResponse.json(
+          { 
+            error: 'Vous devez attendre 24h après votre inscription avant de réserver une session',
+            hoursRemaining: Math.ceil(24 - hoursSinceRegistration),
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     const start = new Date(startDate);
     const end = new Date(endDate);
 

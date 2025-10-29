@@ -63,8 +63,10 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
   const [selectedPackForBooking, setSelectedPackForBooking] = useState<string | null>(selectedPackId || null);
   const [isDiscordMember, setIsDiscordMember] = useState<boolean | null>(null);
   const [checkingDiscord, setCheckingDiscord] = useState(true);
+  const [canBookToday, setCanBookToday] = useState<boolean>(true);
+  const [hoursUntilCanBook, setHoursUntilCanBook] = useState<number>(0);
 
-  // Vérifier si l'utilisateur est membre du serveur Discord
+  // Vérifier si l'utilisateur est membre du serveur Discord ET peut réserver (24h après inscription)
   useEffect(() => {
     if (!isOpen || !session?.user) {
       setCheckingDiscord(false);
@@ -85,7 +87,29 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
       }
     };
 
+    const checkRegistrationDate = async () => {
+      try {
+        const response = await fetch('/api/user/profile');
+        if (response.ok) {
+          const data = await response.json();
+          const createdAt = new Date(data.createdAt);
+          const now = new Date();
+          const hoursSinceRegistration = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+          
+          if (hoursSinceRegistration < 24) {
+            setCanBookToday(false);
+            setHoursUntilCanBook(Math.ceil(24 - hoursSinceRegistration));
+          } else {
+            setCanBookToday(true);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur vérification date inscription:', error);
+      }
+    };
+
     checkDiscordMembership();
+    checkRegistrationDate();
   }, [isOpen, session]);
 
   // Charger les créneaux disponibles
@@ -153,6 +177,12 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
     // Vérifier si l'utilisateur est membre du serveur Discord
     if (isDiscordMember === false) {
       alert('Vous devez rejoindre le serveur Discord Edgemy pour réserver une session. Rendez-vous dans Paramètres > Discord.');
+      return;
+    }
+
+    // Vérifier si l'utilisateur peut réserver (24h après inscription)
+    if (!canBookToday) {
+      alert(`Vous devez attendre 24h après votre inscription avant de réserver une session. Vous pourrez réserver dans ${hoursUntilCanBook}h.`);
       return;
     }
 
@@ -260,6 +290,28 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
                         >
                           Aller dans Paramètres
                         </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Alerte si inscription trop récente (moins de 24h) */}
+              {!canBookToday && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <p className="font-semibold text-blue-900 mb-1">
+                        Période d'attente de 24h
+                      </p>
+                      <p className="text-blue-800">
+                        Pour éviter les réservations de dernière minute, vous devez attendre 24h après votre inscription avant de réserver une session.
+                        {hoursUntilCanBook > 0 && (
+                          <span className="block mt-1 font-semibold">
+                            ⏰ Vous pourrez réserver dans {hoursUntilCanBook}h
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>
