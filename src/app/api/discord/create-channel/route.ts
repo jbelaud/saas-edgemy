@@ -10,18 +10,15 @@ interface DiscordChannel {
 }
 
 interface CreateChannelBody {
-  coachDiscordId: string;
-  playerDiscordId: string;
-  sessionId: string;
+  reservationId: string;
 }
 
 /**
  * POST /api/discord/create-channel
- * Crée un salon Discord privé (texte + vocal) pour une session de coaching
+ * Crée ou réutilise un salon Discord permanent pour une paire Coach-Joueur
  */
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier l'authentification
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -34,19 +31,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body: CreateChannelBody = await request.json();
-    const { coachDiscordId, playerDiscordId, sessionId } = body;
+    const { reservationId } = body;
 
-    // Validation des champs requis
-    if (!coachDiscordId || !playerDiscordId || !sessionId) {
+    if (!reservationId) {
       return NextResponse.json(
-        { error: 'coachDiscordId, playerDiscordId et sessionId requis' },
+        { error: 'reservationId requis' },
         { status: 400 }
       );
     }
 
-    // Vérifier que la réservation existe et appartient à l'utilisateur
+    // Récupérer la réservation avec toutes les infos
     const reservation = await prisma.reservation.findUnique({
-      where: { id: sessionId },
+      where: { id: reservationId },
       include: {
         coach: {
           select: {
@@ -80,146 +76,159 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier que l'utilisateur est le coach ou le joueur de cette réservation
-    if (
-      reservation.playerId !== session.user.id &&
-      reservation.coach.user.discordId !== coachDiscordId
-    ) {
+    // Vérifier que coach ET joueur ont connecté Discord
+    const coachDiscordId = reservation.coach.user.discordId;
+    const playerDiscordId = reservation.player.discordId;
+
+    if (!coachDiscordId || !playerDiscordId) {
       return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 403 }
+        { error: 'Coach et joueur doivent connecter Discord' },
+        { status: 400 }
       );
     }
 
-    // Vérifier que le salon n'existe pas déjà
-    if (reservation.discordChannelId) {
-      return NextResponse.json(
-        {
-          message: 'Salon Discord déjà créé',
-          channelId: reservation.discordChannelId,
-        },
-        { status: 200 }
-      );
-    }
-
-    // Récupérer les variables d'environnement Discord
+    // Variables Discord
     const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
     const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID;
     const DISCORD_CATEGORY_ID = process.env.DISCORD_CATEGORY_ID;
 
     if (!DISCORD_BOT_TOKEN || !DISCORD_GUILD_ID || !DISCORD_CATEGORY_ID) {
-      console.error('Variables Discord manquantes:', {
-        hasToken: !!DISCORD_BOT_TOKEN,
-        hasGuildId: !!DISCORD_GUILD_ID,
-        hasCategoryId: !!DISCORD_CATEGORY_ID,
-      });
       return NextResponse.json(
         { error: 'Configuration Discord incomplète' },
         { status: 500 }
       );
     }
 
-    // Créer le nom du salon (format: session-coach-joueur-timestamp)
-    const coachName = `${reservation.coach.firstName}-${reservation.coach.lastName}`
-      .toLowerCase()
-      .replace(/\s+/g, '-');
-    const playerName = (reservation.player.name || 'joueur')
-      .toLowerCase()
-      .replace(/\s+/g, '-');
-    const timestamp = Date.now().toString().slice(-6);
-    const channelName = `session-${coachName}-${playerName}-${timestamp}`;
-
-    // Créer le salon texte
-    const textChannelResponse = await fetch(
-      `https://discord.com/api/v10/guilds/${DISCORD_GUILD_ID}/channels`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
-          'Content-Type': 'application/json',
+    // Chercher un salon permanent existant
+    let channelRecord = await prisma.coachPlayerChannel.findUnique({
+      where: {
+        coachId_playerId: {
+          coachId: reservation.coachId,
+          playerId: reservation.playerId,
         },
-        body: JSON.stringify({
-          name: channelName,
-          type: 0, // 0 = GUILD_TEXT
-          parent_id: DISCORD_CATEGORY_ID,
-          permission_overwrites: [
-            {
-              id: DISCORD_GUILD_ID, // @everyone
-              type: 0,
-              deny: '1024', // VIEW_CHANNEL
-            },
-            {
-              id: coachDiscordId,
-              type: 1, // member
-              allow: '3072', // VIEW_CHANNEL + SEND_MESSAGES
-            },
-            {
-              id: playerDiscordId,
-              type: 1,
-              allow: '3072',
-            },
-          ],
-        }),
-      }
-    );
+      },
+    });
 
-    if (!textChannelResponse.ok) {
-      const error = await textChannelResponse.text();
-      console.error('Erreur création salon texte Discord:', error);
-      return NextResponse.json(
-        { error: 'Erreur lors de la création du salon texte' },
-        { status: 500 }
+    let textChannelId: string;
+    let voiceChannelId: string | null = null;
+
+    if (channelRecord) {
+      // Salon existant - réutiliser
+      textChannelId = channelRecord.discordChannelId;
+      voiceChannelId = channelRecord.discordVoiceId;
+
+      await prisma.coachPlayerChannel.update({
+        where: { id: channelRecord.id },
+        data: { lastUsedAt: new Date() },
+      });
+    } else {
+      // Créer un nouveau salon permanent
+      const coachName = `${reservation.coach.firstName}-${reservation.coach.lastName}`
+        .toLowerCase()
+        .replace(/\s+/g, '-');
+      const playerName = (reservation.player.name || 'joueur')
+        .toLowerCase()
+        .replace(/\s+/g, '-');
+      const channelName = `${coachName}-${playerName}`;
+
+      // Créer salon texte
+      const textChannelResponse = await fetch(
+        `https://discord.com/api/v10/guilds/${DISCORD_GUILD_ID}/channels`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: `💬-${channelName}`,
+            type: 0,
+            parent_id: DISCORD_CATEGORY_ID,
+            permission_overwrites: [
+              {
+                id: DISCORD_GUILD_ID,
+                type: 0,
+                deny: '1024',
+              },
+              {
+                id: coachDiscordId,
+                type: 1,
+                allow: '3072',
+              },
+              {
+                id: playerDiscordId,
+                type: 1,
+                allow: '3072',
+              },
+            ],
+          }),
+        }
       );
-    }
 
-    const textChannel: DiscordChannel = await textChannelResponse.json();
-
-    // Créer le salon vocal
-    const voiceChannelResponse = await fetch(
-      `https://discord.com/api/v10/guilds/${DISCORD_GUILD_ID}/channels`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: `🎙️ ${channelName}`,
-          type: 2, // 2 = GUILD_VOICE
-          parent_id: DISCORD_CATEGORY_ID,
-          permission_overwrites: [
-            {
-              id: DISCORD_GUILD_ID,
-              type: 0,
-              deny: '1024',
-            },
-            {
-              id: coachDiscordId,
-              type: 1,
-              allow: '3146752', // VIEW_CHANNEL + CONNECT + SPEAK
-            },
-            {
-              id: playerDiscordId,
-              type: 1,
-              allow: '3146752',
-            },
-          ],
-        }),
+      if (!textChannelResponse.ok) {
+        const error = await textChannelResponse.text();
+        console.error('Erreur création salon texte:', error);
+        return NextResponse.json(
+          { error: 'Erreur création salon texte' },
+          { status: 500 }
+        );
       }
-    );
 
-    if (!voiceChannelResponse.ok) {
-      const error = await voiceChannelResponse.text();
-      console.error('Erreur création salon vocal Discord:', error);
-      // Ne pas échouer si le salon vocal n'a pas pu être créé
+      const textChannel: DiscordChannel = await textChannelResponse.json();
+      textChannelId = textChannel.id;
+
+      // Créer salon vocal
+      const voiceChannelResponse = await fetch(
+        `https://discord.com/api/v10/guilds/${DISCORD_GUILD_ID}/channels`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: `🎙️-${channelName}`,
+            type: 2,
+            parent_id: DISCORD_CATEGORY_ID,
+            permission_overwrites: [
+              {
+                id: DISCORD_GUILD_ID,
+                type: 0,
+                deny: '1024',
+              },
+              {
+                id: coachDiscordId,
+                type: 1,
+                allow: '3146752',
+              },
+              {
+                id: playerDiscordId,
+                type: 1,
+                allow: '3146752',
+              },
+            ],
+          }),
+        }
+      );
+
+      if (voiceChannelResponse.ok) {
+        const voiceChannel: DiscordChannel = await voiceChannelResponse.json();
+        voiceChannelId = voiceChannel.id;
+      }
+
+      // Sauvegarder en BDD
+      channelRecord = await prisma.coachPlayerChannel.create({
+        data: {
+          coachId: reservation.coachId,
+          playerId: reservation.playerId,
+          discordChannelId: textChannelId,
+          discordVoiceId: voiceChannelId,
+        },
+      });
     }
 
-    const voiceChannel: DiscordChannel | null = voiceChannelResponse.ok
-      ? await voiceChannelResponse.json()
-      : null;
-
-    // Envoyer un message de bienvenue dans le salon texte
-    const welcomeMessage = `🎉 **Bienvenue dans votre session de coaching !**\n\n` +
+    // Envoyer message de session
+    const sessionMessage = `🎉 **Nouvelle session programmée !**\n\n` +
       `👤 **Coach**: ${reservation.coach.firstName} ${reservation.coach.lastName}\n` +
       `👤 **Joueur**: ${reservation.player.name || 'Joueur'}\n` +
       `📅 **Date**: ${new Date(reservation.startDate).toLocaleDateString('fr-FR', {
@@ -239,7 +248,7 @@ export async function POST(request: NextRequest) {
       `Bon coaching ! 🚀`;
 
     await fetch(
-      `https://discord.com/api/v10/channels/${textChannel.id}/messages`,
+      `https://discord.com/api/v10/channels/${textChannelId}/messages`,
       {
         method: 'POST',
         headers: {
@@ -247,30 +256,27 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          content: welcomeMessage,
+          content: sessionMessage,
         }),
       }
     );
 
-    // Mettre à jour la réservation avec l'ID du salon Discord
+    // Mettre à jour la réservation
     await prisma.reservation.update({
-      where: { id: sessionId },
+      where: { id: reservationId },
       data: {
-        discordChannelId: textChannel.id,
+        discordChannelId: textChannelId,
       },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        textChannelId: textChannel.id,
-        voiceChannelId: voiceChannel?.id || null,
-        channelName,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      success: true,
+      textChannelId,
+      voiceChannelId,
+      isNewChannel: channelRecord.createdAt.getTime() > Date.now() - 5000,
+    });
   } catch (error) {
-    console.error('Erreur lors de la création du salon Discord:', error);
+    console.error('Erreur création salon Discord:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }

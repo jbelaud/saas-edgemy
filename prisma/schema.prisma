@@ -68,6 +68,7 @@ model coach {
   coachingPackages CoachingPackage[]
   reservations     Reservation[]
   notes            CoachNote[]
+  channels         CoachPlayerChannel[]
   user             user              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -179,6 +180,23 @@ model Reservation {
   @@index([coachId])
 }
 
+model CoachPlayerChannel {
+  id                String   @id @default(cuid())
+  coachId           String
+  playerId          String
+  discordChannelId  String   // ID du salon texte Discord
+  discordVoiceId    String?  // ID du salon vocal Discord
+  createdAt         DateTime @default(now())
+  lastUsedAt        DateTime @updatedAt
+  
+  coach  coach @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  player user  @relation("PlayerChannels", fields: [playerId], references: [id], onDelete: Cascade)
+  
+  @@unique([coachId, playerId])
+  @@index([coachId])
+  @@index([playerId])
+}
+
 model CoachingPackage {
   id              String           @id @default(cuid())
   playerId        String
@@ -272,6 +290,7 @@ model user {
   coachingPackages CoachingPackage[]
   reservations     Reservation[]
   coachNotes       CoachNote[]
+  playerChannels   CoachPlayerChannel[] @relation("PlayerChannels")
   account          account[]
   coach            coach?
   player           player?

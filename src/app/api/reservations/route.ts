@@ -164,33 +164,34 @@ export async function POST(request: NextRequest) {
       return reservation;
     });
 
-    // Créer automatiquement le salon Discord si les deux utilisateurs ont lié leur compte Discord
-    const coachUser = await prisma.user.findUnique({
-      where: { id: result.coach.userId },
+    // Créer automatiquement le salon Discord permanent si les deux utilisateurs ont lié leur compte Discord
+    const coach = await prisma.coach.findUnique({
+      where: { id: coachId },
+      select: {
+        user: {
+          select: { discordId: true },
+        },
+      },
+    });
+
+    const player = await prisma.user.findUnique({
+      where: { id: session.user.id },
       select: { discordId: true },
     });
 
-    const playerUser = await prisma.user.findUnique({
-      where: { id: result.playerId },
-      select: { discordId: true },
-    });
-
-    if (coachUser?.discordId && playerUser?.discordId) {
+    if (coach?.user.discordId && player?.discordId) {
       try {
-        // Appeler l'API de création de salon Discord en interne
+        // Appeler l'API de création/réutilisation du salon Discord permanent
         const discordResponse = await fetch(
           `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/discord/create-channel`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              // Passer le token d'authentification pour l'appel interne
               Cookie: request.headers.get('cookie') || '',
             },
             body: JSON.stringify({
-              coachDiscordId: coachUser.discordId,
-              playerDiscordId: playerUser.discordId,
-              sessionId: result.id,
+              reservationId: result.id,
             }),
           }
         );

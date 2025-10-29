@@ -7,7 +7,6 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar, Clock, User, Loader2, Package } from 'lucide-react';
 import { DiscordSessionButton } from '@/components/discord/DiscordSessionButton';
-import { CreateChannelButton } from '@/components/discord/CreateChannelButton';
 import Image from 'next/image';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 import { GlassCard, GradientText } from '@/components/ui';
@@ -236,18 +235,11 @@ export default function PlayerSessionsPage() {
                         {reservation.status === 'CONFIRMED' ? 'Confirmée' : 'En attente'}
                       </span>
                       
-                      {/* Boutons Discord */}
-                      {reservation.discordChannelId ? (
-                        <DiscordSessionButton
-                          discordChannelId={reservation.discordChannelId}
-                          playerHasDiscord={!!playerDiscordId}
-                        />
-                      ) : (
-                        <CreateChannelButton
-                          reservationId={reservation.id}
-                          hasChannel={!!reservation.discordChannelId}
-                        />
-                      )}
+                      {/* Bouton Discord */}
+                      <DiscordSessionButton
+                        discordChannelId={reservation.discordChannelId || null}
+                        playerHasDiscord={!!playerDiscordId}
+                      />
                     </div>
                   </div>
                 </GlassCard>
