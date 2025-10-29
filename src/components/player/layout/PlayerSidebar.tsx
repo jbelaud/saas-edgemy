@@ -100,7 +100,12 @@ export function PlayerSidebar() {
     const checkCoachProfile = async () => {
       try {
         const response = await fetch('/api/coach/profile');
-        setHasCoachProfile(response.ok);
+        if (response.ok) {
+          const data = await response.json();
+          setHasCoachProfile(!!data.coach);
+        } else {
+          setHasCoachProfile(false);
+        }
       } catch {
         setHasCoachProfile(false);
       }

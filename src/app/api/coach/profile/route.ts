@@ -21,14 +21,8 @@ export async function GET() {
       where: { userId: session.user.id },
     });
 
-    if (!coach) {
-      return NextResponse.json(
-        { error: 'Profil coach non trouvé' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ coach });
+    // Retourner 200 même si pas de profil coach (comportement normal pour un joueur)
+    return NextResponse.json({ coach: coach || null });
   } catch (error) {
     console.error('Erreur lors de la récupération du profil coach:', error);
     return NextResponse.json(
