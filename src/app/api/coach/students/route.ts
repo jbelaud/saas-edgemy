@@ -22,6 +22,26 @@ export async function GET() {
       return NextResponse.json({ error: 'Coach non trouvé' }, { status: 404 });
     }
 
+    // Récupérer toutes les notes du coach
+    const notes = await prisma.coachNote.findMany({
+      where: {
+        coachId: coach.id,
+      },
+      include: {
+        player: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
     // Récupérer tous les joueurs qui ont réservé au moins une session
     const reservations = await prisma.reservation.findMany({
       where: {
@@ -54,6 +74,9 @@ export async function GET() {
       const playerId = reservation.player.id;
       
       if (!studentsMap.has(playerId)) {
+        // Récupérer les notes pour ce joueur
+        const playerNotes = notes.filter(note => note.playerId === playerId);
+        
         studentsMap.set(playerId, {
           id: playerId,
           name: reservation.player.name,
@@ -63,6 +86,13 @@ export async function GET() {
           upcomingSessions: 0,
           completedSessions: 0,
           sessions: [],
+          notes: playerNotes.map(note => ({
+            id: note.id,
+            content: note.content,
+            createdAt: note.createdAt,
+            updatedAt: note.updatedAt,
+          })),
+          totalNotes: playerNotes.length,
         });
       }
       

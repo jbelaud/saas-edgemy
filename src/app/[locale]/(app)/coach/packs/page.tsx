@@ -2,94 +2,73 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { GlassCard, GradientText } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Package, CheckCircle2, Clock, Settings, Plus, Loader2, Calendar, Zap } from 'lucide-react';
-import { SchedulePackSessionModal } from '@/components/coach/packs/SchedulePackSessionModal';
+import { Package, Clock, Loader2, Calendar, User, TrendingUp, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import Link from 'next/link';
 
-interface Session {
+interface CoachPackage {
   id: string;
-  sessionNumber: number;
-  startDate: string;
-  endDate: string;
+  player: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  };
+  announcement: {
+    title: string;
+  };
+  totalHours: number;
+  remainingHours: number;
+  usedHours: number;
+  priceCents: number;
   status: string;
-}
-
-interface Player {
-  id: string;
-  name: string;
-  email: string;
-  image: string | null;
-}
-
-interface PlayerPack {
-  player: Player;
-  sessions: Session[];
+  createdAt: string;
+  sessions: {
+    id: string;
+    startDate: string;
+    endDate: string;
+    durationMinutes: number;
+    status: string;
+    reservationStatus?: string;
+  }[];
   totalSessions: number;
   completedSessions: number;
-  scheduledSessions: number;
-  remainingSessions: number;
-}
-
-interface Pack {
-  id: string;
-  hours: number;
-  totalPrice: number;
-  discountPercent: number | null;
-  announcement: {
-    id: string;
-    title: string;
-    type: string;
-    durationMin: number;
-  };
-  playerPacks: PlayerPack[];
 }
 
 export default function CoachPacksPage() {
   const router = useRouter();
-  const params = useParams();
-  const locale = params.locale as string;
-  const { isPending } = useSession();
-  const [packs, setPacks] = useState<Pack[]>([]);
+  const { data: session, isPending } = useSession();
+  const [packages, setPackages] = useState<CoachPackage[]>([]);
+  const [stats, setStats] = useState({ total: 0, active: 0, completed: 0 });
   const [isLoading, setIsLoading] = useState(true);
-  const [coachStatus, setCoachStatus] = useState<string | null>(null);
-  const [scheduleModal, setScheduleModal] = useState<{
-    open: boolean;
-    packId: string;
-    playerId: string;
-    playerName: string;
-    announcementTitle: string;
-    currentSessionNumber: number;
-    totalSessions: number;
-    durationMin: number;
-  } | null>(null);
 
   useEffect(() => {
-    fetchPacks();
-  }, []);
+    if (session?.user) {
+      fetchPackages();
+    }
+  }, [session]);
 
-  const fetchPacks = async () => {
+  const fetchPackages = async () => {
     try {
-      // Récupérer le statut du coach
-      const dashboardResponse = await fetch('/api/coach/dashboard');
-      if (dashboardResponse.ok) {
-        const dashboardData = await dashboardResponse.json();
-        setCoachStatus(dashboardData.coach.status);
-      }
-
-      const response = await fetch('/api/coach/packs');
+      const response = await fetch('/api/coach/packages');
       if (response.ok) {
         const data = await response.json();
-        setPacks(data.packs || []);
+        setPackages(data.packages || []);
+        setStats({
+          total: data.total || 0,
+          active: data.active || 0,
+          completed: data.completed || 0,
+        });
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des packs:', error);
+      console.error('Erreur chargement packs:', error);
     } finally {
       setIsLoading(false);
     }
