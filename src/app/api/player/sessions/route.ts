@@ -14,6 +14,12 @@ export async function GET() {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
+    // Récupérer le discordId du joueur
+    const player = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { discordId: true },
+    });
+
     // Récupérer toutes les réservations du joueur
     const reservations = await prisma.reservation.findMany({
       where: {
@@ -53,7 +59,11 @@ export async function GET() {
     const upcoming = reservations.filter(r => new Date(r.startDate) > now);
     const past = reservations.filter(r => new Date(r.startDate) <= now);
 
-    return NextResponse.json({ upcoming, past });
+    return NextResponse.json({ 
+      upcoming, 
+      past,
+      playerDiscordId: player?.discordId || null,
+    });
   } catch (error) {
     console.error('Erreur lors de la récupération des sessions:', error);
     return NextResponse.json(

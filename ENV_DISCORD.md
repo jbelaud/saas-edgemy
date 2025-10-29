@@ -15,6 +15,9 @@ DISCORD_REDIRECT_URI=https://app.edgemy.fr/api/discord/oauth/callback
 
 # URL de l'application (pour les appels internes)
 NEXT_PUBLIC_APP_URL=https://app.edgemy.fr
+
+# Variables publiques (accessibles côté client)
+NEXT_PUBLIC_DISCORD_GUILD_ID=your_server_id_here
 ```
 
 ## Où trouver ces valeurs ?

@@ -6,6 +6,7 @@ import { useSession } from '@/lib/auth-client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar, Clock, User, Loader2, Package } from 'lucide-react';
+import { DiscordSessionButton } from '@/components/discord/DiscordSessionButton';
 import Image from 'next/image';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 import { GlassCard, GradientText } from '@/components/ui';
@@ -16,6 +17,7 @@ interface Reservation {
   endDate: Date;
   status: string;
   type: 'reservation' | 'pack-session';
+  discordChannelId?: string | null;
   coach: {
     id: string;
     firstName: string | null;
@@ -37,6 +39,7 @@ export default function PlayerSessionsPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [playerDiscordId, setPlayerDiscordId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -59,7 +62,10 @@ export default function PlayerSessionsPage() {
       }
 
       const data = await response.json();
-      const { upcoming = [], past = [] } = data;
+      const { upcoming = [], past = [], playerDiscordId: discordId = null } = data;
+      
+      // Sauvegarder le discordId du joueur
+      setPlayerDiscordId(discordId);
 
       // Combiner et formater toutes les sessions
       const allSessions: Reservation[] = [...upcoming, ...past].map((r: {
@@ -87,6 +93,7 @@ export default function PlayerSessionsPage() {
         endDate: new Date(r.endDate),
         status: r.status,
         type: r.packId ? 'pack-session' : 'reservation',
+        discordChannelId: r.discordChannelId || null,
         coach: {
           id: r.coach.id,
           firstName: r.coach.firstName,
@@ -215,7 +222,7 @@ export default function PlayerSessionsPage() {
                       </div>
                     </div>
                     
-                    <div className="text-right">
+                    <div className="flex flex-col items-end gap-2">
                       <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
                         reservation.status === 'CONFIRMED' 
                           ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
@@ -223,6 +230,12 @@ export default function PlayerSessionsPage() {
                       }`}>
                         {reservation.status === 'CONFIRMED' ? 'Confirmée' : 'En attente'}
                       </span>
+                      
+                      {/* Bouton Discord */}
+                      <DiscordSessionButton
+                        discordChannelId={reservation.discordChannelId || null}
+                        playerHasDiscord={!!playerDiscordId}
+                      />
                     </div>
                   </div>
                 </GlassCard>
