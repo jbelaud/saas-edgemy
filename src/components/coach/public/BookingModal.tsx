@@ -63,8 +63,7 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
   const [selectedPackForBooking, setSelectedPackForBooking] = useState<string | null>(selectedPackId || null);
   const [isDiscordMember, setIsDiscordMember] = useState<boolean | null>(null);
   const [checkingDiscord, setCheckingDiscord] = useState(true);
-  const [canBookToday, setCanBookToday] = useState<boolean>(true);
-  const [hoursUntilCanBook, setHoursUntilCanBook] = useState<number>(0);
+  const [minBookingDate, setMinBookingDate] = useState<Date | null>(null);
 
   // Vérifier si l'utilisateur est membre du serveur Discord ET peut réserver (24h après inscription)
   useEffect(() => {
@@ -93,15 +92,10 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
         if (response.ok) {
           const data = await response.json();
           const createdAt = new Date(data.createdAt);
-          const now = new Date();
-          const hoursSinceRegistration = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
           
-          if (hoursSinceRegistration < 24) {
-            setCanBookToday(false);
-            setHoursUntilCanBook(Math.ceil(24 - hoursSinceRegistration));
-          } else {
-            setCanBookToday(true);
-          }
+          // Calculer la date minimum (inscription + 24h)
+          const minDate = new Date(createdAt.getTime() + 24 * 60 * 60 * 1000);
+          setMinBookingDate(minDate);
         }
       } catch (error) {
         console.error('Erreur vérification date inscription:', error);
@@ -180,9 +174,10 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
       return;
     }
 
-    // Vérifier si l'utilisateur peut réserver (24h après inscription)
-    if (!canBookToday) {
-      alert(`Vous devez attendre 24h après votre inscription avant de réserver une session. Vous pourrez réserver dans ${hoursUntilCanBook}h.`);
+    // Vérifier si le créneau sélectionné est dans les 24h après l'inscription
+    if (minBookingDate && selectedSlot.start < minBookingDate) {
+      const hoursUntil = Math.ceil((minBookingDate.getTime() - selectedSlot.start.getTime()) / (1000 * 60 * 60));
+      alert(`Cette session a lieu trop tôt. Vous ne pouvez réserver que des sessions qui ont lieu au moins 24h après votre inscription. Choisissez un créneau à partir du ${minBookingDate.toLocaleDateString('fr-FR')} à ${minBookingDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}.`);
       return;
     }
 
@@ -296,22 +291,20 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
                 </div>
               )}
 
-              {/* Alerte si inscription trop récente (moins de 24h) */}
-              {!canBookToday && (
+              {/* Alerte si inscription récente (créneaux < 24h non disponibles) */}
+              {minBookingDate && minBookingDate > new Date() && (
                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex items-start gap-2">
                     <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <div className="text-xs">
                       <p className="font-semibold text-blue-900 mb-1">
-                        Période d'attente de 24h
+                        Délai de 24h pour les nouvelles inscriptions
                       </p>
                       <p className="text-blue-800">
-                        Pour éviter les réservations de dernière minute, vous devez attendre 24h après votre inscription avant de réserver une session.
-                        {hoursUntilCanBook > 0 && (
-                          <span className="block mt-1 font-semibold">
-                            ⏰ Vous pourrez réserver dans {hoursUntilCanBook}h
-                          </span>
-                        )}
+                        Pour éviter les réservations de dernière minute, vous ne pouvez réserver que des sessions qui ont lieu au moins 24h après votre inscription.
+                        <span className="block mt-1 font-semibold">
+                          ⏰ Créneaux disponibles à partir du {minBookingDate.toLocaleDateString('fr-FR')} à {minBookingDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -441,19 +434,27 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
                       <div key={date}>
                         <p className="text-[9px] md:text-[10px] font-semibold text-gray-700 mb-1 uppercase">{date}</p>
                         <div className="grid grid-cols-2 gap-1 md:gap-1.5">
-                          {slots.map((slot) => (
-                            <button
-                              key={slot.id}
-                              onClick={() => setSelectedSlot(slot)}
-                              className={`p-1 md:p-1.5 rounded-lg border-2 transition-all text-center ${
-                                selectedSlot?.id === slot.id
-                                  ? 'border-orange-500 bg-orange-50 shadow-md'
-                                  : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50/50'
-                              }`}
-                            >
-                              <p className="font-bold text-[9px] md:text-[10px]">{slot.time}</p>
-                            </button>
-                          ))}
+                          {slots.map((slot) => {
+                            const isTooEarly = !!(minBookingDate && slot.start < minBookingDate);
+                            return (
+                              <button
+                                key={slot.id}
+                                onClick={() => !isTooEarly && setSelectedSlot(slot)}
+                                disabled={isTooEarly}
+                                className={`p-1 md:p-1.5 rounded-lg border-2 transition-all text-center ${
+                                  isTooEarly
+                                    ? 'border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed'
+                                    : selectedSlot?.id === slot.id
+                                    ? 'border-orange-500 bg-orange-50 shadow-md'
+                                    : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50/50'
+                                }`}
+                              >
+                                <p className={`font-bold text-[9px] md:text-[10px] ${isTooEarly ? 'line-through text-gray-400' : ''}`}>
+                                  {slot.time}
+                                </p>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     ))}

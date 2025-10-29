@@ -52,33 +52,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier que le joueur n'essaie pas de réserver le jour même de son inscription
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Vérifier que la session n'a pas lieu dans les 24h suivant l'inscription
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { createdAt: true },
     });
 
     if (user) {
-      const now = new Date();
       const userCreatedAt = new Date(user.createdAt);
       
-      // Calculer la différence en heures
-      const hoursSinceRegistration = (now.getTime() - userCreatedAt.getTime()) / (1000 * 60 * 60);
+      // Calculer la date minimum pour réserver (inscription + 24h)
+      const minBookingDate = new Date(userCreatedAt.getTime() + 24 * 60 * 60 * 1000);
       
-      // Le joueur doit attendre au moins 24h après son inscription
-      if (hoursSinceRegistration < 24) {
+      // Vérifier que la session commence au moins 24h après l'inscription
+      if (start < minBookingDate) {
+        const hoursUntilCanBook = Math.ceil((minBookingDate.getTime() - start.getTime()) / (1000 * 60 * 60));
         return NextResponse.json(
           { 
-            error: 'Vous devez attendre 24h après votre inscription avant de réserver une session',
-            hoursRemaining: Math.ceil(24 - hoursSinceRegistration),
+            error: 'Vous ne pouvez pas réserver une session qui a lieu dans les 24h suivant votre inscription',
+            minBookingDate: minBookingDate.toISOString(),
+            hoursUntilCanBook,
           },
           { status: 403 }
         );
       }
     }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
 
     // Vérifier que le créneau est toujours disponible (éviter race conditions)
     const existingReservation = await prisma.reservation.findFirst({
