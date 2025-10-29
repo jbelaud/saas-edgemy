@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { GlassCard } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Languages, TrendingUp, MapPin, Award, Clock } from 'lucide-react';
+import { Star, Languages, TrendingUp, Award, Clock } from 'lucide-react';
 
 interface Coach {
   id: string;

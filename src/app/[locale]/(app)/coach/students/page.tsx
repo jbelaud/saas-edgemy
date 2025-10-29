@@ -147,7 +147,7 @@ export default function CoachStudentsPage() {
               <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 text-lg">Aucun élève pour le moment</p>
               <p className="text-sm text-gray-400 mt-2">
-                Vos élèves apparaîtront ici dès qu'ils auront réservé une session avec vous
+                Vos élèves apparaîtront ici dès qu&apos;ils auront réservé une session avec vous
               </p>
             </CardContent>
           </Card>
