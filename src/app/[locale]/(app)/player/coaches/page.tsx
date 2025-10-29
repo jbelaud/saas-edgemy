@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { useLocale } from 'next-intl';
 import { Loader2, Search } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { GlassCard, GradientText, GradientButton } from '@/components/ui';
 import Link from 'next/link';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 import { PlayerCoachesList } from '@/components/player/coaches/PlayerCoachesList';
@@ -67,7 +66,7 @@ export default function PlayerCoachesPage() {
     return (
       <PlayerLayout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </PlayerLayout>
     );
@@ -81,12 +80,10 @@ export default function PlayerCoachesPage() {
   if (error) {
     return (
       <PlayerLayout>
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-900">Erreur</CardTitle>
-            <CardDescription className="text-red-700">{error}</CardDescription>
-          </CardHeader>
-        </Card>
+        <GlassCard className="border-red-500/20 bg-red-500/10">
+          <h2 className="text-red-400 text-xl font-bold mb-2">Erreur</h2>
+          <p className="text-red-300">{error}</p>
+        </GlassCard>
       </PlayerLayout>
     );
   }
@@ -94,38 +91,36 @@ export default function PlayerCoachesPage() {
   return (
     <PlayerLayout>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-1">
-          Mes coachs
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-2">
+          <GradientText variant="emerald">Mes Coachs</GradientText>
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-400 text-lg">
           Retrouve tous les coachs avec qui tu as travaillé
         </p>
       </div>
 
       {coaches.length === 0 ? (
-        <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50">
-          <CardHeader>
-            <CardTitle className="text-emerald-900 flex items-center gap-2 text-2xl">
-              <Search className="h-6 w-6" />
+        <GlassCard className="border-emerald-500/20 bg-gradient-to-r from-emerald-500/10 to-teal-500/10">
+          <div className="mb-6">
+            <h2 className="text-white flex items-center gap-2 text-2xl font-bold mb-3">
+              <Search className="h-6 w-6 text-emerald-400" />
               Tu n&apos;as pas encore réservé de coach
-            </CardTitle>
-            <CardDescription className="text-emerald-800 text-base mt-3">
+            </h2>
+            <p className="text-gray-300 text-base">
               Commence ton parcours de progression en réservant ta première session avec un coach professionnel.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href={`/${locale}/player/coaches/explore`}>
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold"
-              >
-                <Search className="mr-2 h-5 w-5" />
-                Trouver un coach
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+          <Link href={`/${locale}/player/coaches/explore`}>
+            <GradientButton 
+              size="lg" 
+              variant="emerald"
+            >
+              <Search className="mr-2 h-5 w-5" />
+              Trouver un coach
+            </GradientButton>
+          </Link>
+        </GlassCard>
       ) : (
         <PlayerCoachesList coaches={coaches} />
       )}
