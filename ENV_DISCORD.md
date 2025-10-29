@@ -18,6 +18,7 @@ NEXT_PUBLIC_APP_URL=https://app.edgemy.fr
 
 # Variables publiques (accessibles côté client)
 NEXT_PUBLIC_DISCORD_GUILD_ID=your_server_id_here
+NEXT_PUBLIC_DISCORD_INVITE_URL=https://discord.gg/your_invite_code
 ```
 
 ## Où trouver ces valeurs ?

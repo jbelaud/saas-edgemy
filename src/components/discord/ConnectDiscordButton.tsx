@@ -6,6 +6,7 @@ import { useSession } from '@/lib/auth-client';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { JoinDiscordServerDialog } from '@/components/discord/JoinDiscordServerDialog';
 
 interface ConnectDiscordButtonProps {
   className?: string;
@@ -18,6 +19,9 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState<string | null>(null);
+  const [showJoinServerDialog, setShowJoinServerDialog] = useState(false);
+  
+  const DISCORD_INVITE_URL = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || 'https://discord.gg/edgemy';
 
   // Vérifier si l'utilisateur a déjà connecté Discord
   useEffect(() => {
@@ -51,6 +55,8 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
     if (discordSuccess === 'true') {
       setShowSuccess(true);
       setIsConnected(true);
+      // Afficher la popup d'invitation au serveur
+      setShowJoinServerDialog(true);
       setTimeout(() => setShowSuccess(false), 5000);
     }
 
@@ -122,6 +128,13 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
           Connecter Discord
         </Button>
       )}
+
+      {/* Dialog d'invitation au serveur Discord */}
+      <JoinDiscordServerDialog
+        open={showJoinServerDialog}
+        onOpenChange={setShowJoinServerDialog}
+        inviteUrl={DISCORD_INVITE_URL}
+      />
     </div>
   );
 }
