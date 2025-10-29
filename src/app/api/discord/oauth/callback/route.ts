@@ -28,13 +28,13 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Erreur OAuth Discord:', error);
       return NextResponse.redirect(
-        new URL('/dashboard?discord_error=access_denied', request.url)
+        new URL('/player/settings?discord_error=access_denied', request.url)
       );
     }
 
     if (!code) {
       return NextResponse.redirect(
-        new URL('/dashboard?discord_error=no_code', request.url)
+        new URL('/player/settings?discord_error=no_code', request.url)
       );
     }
 
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     if (!DISCORD_CLIENT_ID || !DISCORD_CLIENT_SECRET || !DISCORD_REDIRECT_URI) {
       console.error('Variables Discord OAuth manquantes');
       return NextResponse.redirect(
-        new URL('/dashboard?discord_error=config', request.url)
+        new URL('/player/settings?discord_error=config', request.url)
       );
     }
 
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
       const errorText = await tokenResponse.text();
       console.error('Erreur échange token Discord:', errorText);
       return NextResponse.redirect(
-        new URL('/dashboard?discord_error=token_exchange', request.url)
+        new URL('/player/settings?discord_error=token_exchange', request.url)
       );
     }
 
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
       const errorText = await userResponse.text();
       console.error('Erreur récupération utilisateur Discord:', errorText);
       return NextResponse.redirect(
-        new URL('/dashboard?discord_error=user_fetch', request.url)
+        new URL('/player/settings?discord_error=user_fetch', request.url)
       );
     }
 
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
 
     if (existingUser && existingUser.id !== session.user.id) {
       return NextResponse.redirect(
-        new URL('/dashboard?discord_error=already_linked', request.url)
+        new URL('/player/settings?discord_error=already_linked', request.url)
       );
     }
 
@@ -112,12 +112,12 @@ export async function GET(request: NextRequest) {
 
     // Rediriger vers le dashboard avec succès
     return NextResponse.redirect(
-      new URL('/dashboard?discord_success=true', request.url)
+      new URL('/player/settings?discord_success=true', request.url)
     );
   } catch (error) {
     console.error('Erreur lors du callback OAuth Discord:', error);
     return NextResponse.redirect(
-      new URL('/dashboard?discord_error=server', request.url)
+      new URL('/player/settings?discord_error=server', request.url)
     );
   }
 }
