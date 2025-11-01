@@ -145,10 +145,11 @@ export function CoachSidebar() {
         collapsed ? "w-16" : "w-64"
       )}
     >
-      {/* Header avec logo */}
-      <div className="flex flex-col border-b border-white/10">
-        <div className="flex h-16 items-center justify-center px-3">
-          {!collapsed && (
+      {/* Header avec logo et toggle */}
+      <div className="border-b border-white/10">
+        {!collapsed ? (
+          // Sidebar ouverte : logo et toggle sur la même ligne
+          <div className="flex h-16 items-center justify-between px-3">
             <Link href={`/${locale}`} className="flex items-center gap-2 group">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 font-bold text-slate-950 transform group-hover:scale-105 transition-transform">
                 E
@@ -157,31 +158,37 @@ export function CoachSidebar() {
                 Edgemy
               </span>
             </Link>
-          )}
-          {collapsed && (
-            <Link href={`/${locale}`} className="flex items-center justify-center group">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 font-bold text-slate-950 transform group-hover:scale-105 transition-transform">
-                E
-              </div>
-            </Link>
-          )}
-        </div>
-
-        {/* Toggle button - en dessous du logo */}
-        <div className="flex justify-center pb-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setCollapsed(!collapsed)}
-            className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/5"
-          >
-            {collapsed ? (
-              <PanelLeft className="h-4 w-4" />
-            ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCollapsed(!collapsed)}
+              className="h-8 w-8 flex-shrink-0 text-gray-400 hover:text-white hover:bg-white/5"
+            >
               <PanelLeftClose className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
+            </Button>
+          </div>
+        ) : (
+          // Sidebar fermée : logo en haut, toggle en dessous
+          <div className="flex flex-col">
+            <div className="flex h-16 items-center justify-center px-3">
+              <Link href={`/${locale}`} className="flex items-center justify-center group">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 font-bold text-slate-950 transform group-hover:scale-105 transition-transform">
+                  E
+                </div>
+              </Link>
+            </div>
+            <div className="flex justify-center pb-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setCollapsed(!collapsed)}
+                className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/5"
+              >
+                <PanelLeft className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
