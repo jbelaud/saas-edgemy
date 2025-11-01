@@ -1,7 +1,8 @@
 import Stripe from 'stripe';
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth-client';
+import { auth } from '@/lib/auth';
 import { STRIPE_CONFIG, SubscriptionPlan } from '@/lib/stripe/types';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
   try {
     // Vérifier l'authentification
     const session = await auth.api.getSession({
-      headers: req.headers,
+      headers: await headers(),
     });
 
     if (!session?.user) {
@@ -134,7 +135,7 @@ export async function DELETE(req: Request) {
   try {
     // Vérifier l'authentification
     const session = await auth.api.getSession({
-      headers: req.headers,
+      headers: await headers(),
     });
 
     if (!session?.user) {
