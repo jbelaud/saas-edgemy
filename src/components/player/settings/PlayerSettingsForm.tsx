@@ -272,7 +272,7 @@ export function PlayerSettingsForm() {
               <div>
                 <h4 className="text-sm font-semibold text-orange-300 mb-1">Sécurité et confidentialité</h4>
                 <p className="text-xs text-orange-200/80">
-                  Un seul compte Edgemy peut être lié à un compte Discord. Ton ID Discord est stocké de manière sécurisée et n'est utilisé que pour créer tes salons de session privés.
+                  Un seul compte Edgemy peut être lié à un compte Discord. Ton ID Discord est stocké de manière sécurisée et n&apos;est utilisé que pour créer tes salons de session privés.
                 </p>
               </div>
             </div>

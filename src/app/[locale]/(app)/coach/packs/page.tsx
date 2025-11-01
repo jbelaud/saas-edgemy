@@ -116,7 +116,7 @@ export default function CoachPacksPage() {
             Mes Packs
           </GradientText>
           <p className="text-gray-400">
-            Gérez les packs d'heures achetés par vos élèves
+            Gérez les packs d&apos;heures achetés par vos élèves
           </p>
         </div>
 

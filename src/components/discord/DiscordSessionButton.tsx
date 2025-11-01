@@ -65,7 +65,7 @@ export function DiscordSessionButton({
               <DialogTitle className="text-white">Discord non connecté</DialogTitle>
             </div>
             <DialogDescription className="text-gray-300">
-              Pour accéder au salon Discord de votre session, vous devez d'abord connecter votre compte Discord.
+              Pour accéder au salon Discord de votre session, vous devez d&apos;abord connecter votre compte Discord.
             </DialogDescription>
           </DialogHeader>
           
