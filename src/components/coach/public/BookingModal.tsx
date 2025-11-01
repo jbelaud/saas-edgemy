@@ -18,6 +18,7 @@ import { Calendar, Clock, Euro, Loader2, AlertCircle, Package, CheckCircle, Chev
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { redirectToCheckout } from '@/lib/stripe-client';
 
 interface AnnouncementPack {
   id: string;
@@ -206,20 +207,29 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
 
       const data = await response.json();
       console.log('Réservation créée:', data);
-      
-      setBookingSuccess(true);
-      setTimeout(() => {
-        onClose();
-        setBookingSuccess(false);
-        setSelectedSlot(null);
-        setMessage('');
-        // Rediriger vers les sessions du joueur
-        router.push(`/${locale}/player/sessions`);
-      }, 2000);
+
+      // Récupérer les informations du coach pour le paiement
+      const coachResponse = await fetch(`/api/coach/${coachId}`);
+      let coachName = 'Coach';
+      if (coachResponse.ok) {
+        const coachData = await coachResponse.json();
+        coachName = coachData.name || 'Coach';
+      }
+
+      // Rediriger vers Stripe pour le paiement
+      await redirectToCheckout({
+        reservationId: data.id,
+        coachName,
+        playerEmail: session.user.email,
+        price: displayPrice,
+        type: bookingType === 'pack' ? 'PACK' : 'SINGLE',
+      });
+
+      // Note: La redirection vers Stripe prend le relais ici
+      // Le retour se fera via les URLs success/cancel configurées dans create-session
     } catch (error) {
       console.error('Erreur réservation:', error);
       alert(error instanceof Error ? error.message : 'Une erreur est survenue. Veuillez réessayer.');
-    } finally {
       setIsLoading(false);
     }
   };

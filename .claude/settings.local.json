@@ -21,7 +21,8 @@
       "Bash(npx prisma db push:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(git rm:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(npx prisma:*)"
     ],
     "deny": [],
     "ask": []

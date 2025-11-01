@@ -38,38 +38,42 @@ model account {
 }
 
 model coach {
-  id               String            @id @default(cuid())
-  userId           String            @unique
-  slug             String            @unique
-  firstName        String
-  lastName         String
-  bio              String?
-  bannerUrl        String?
-  avatarUrl        String?
-  status           CoachStatus       @default(INACTIVE)
-  stripeAccountId  String?
-  subscriptionId   String?
-  badges           String[]
-  formats          String[]
-  stakes           String?
-  roi              Float?
-  experience       Int?
-  languages        String[]
-  twitchUrl        String?
-  youtubeUrl       String?
-  twitterUrl       String?
-  discordUrl       String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  timezone         String?
-  methodology      String?
-  announcements    Announcement[]
-  availabilities   Availability[]
-  coachingPackages CoachingPackage[]
-  reservations     Reservation[]
-  notes            CoachNote[]
-  channels         CoachPlayerChannel[]
-  user             user              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                     String            @id @default(cuid())
+  userId                 String            @unique
+  slug                   String            @unique
+  firstName              String
+  lastName               String
+  bio                    String?
+  bannerUrl              String?
+  avatarUrl              String?
+  status                 CoachStatus       @default(INACTIVE)
+  stripeAccountId        String?
+  stripeCustomerId       String?           // ID client Stripe pour abonnement
+  subscriptionId         String?           // ID abonnement Stripe
+  subscriptionStatus     SubscriptionStatus? // Statut abonnement
+  subscriptionPlan       SubscriptionPlan? // Plan (MONTHLY/YEARLY)
+  currentPeriodEnd       DateTime?         // Fin période abonnement
+  badges                 String[]
+  formats                String[]
+  stakes                 String?
+  roi                    Float?
+  experience             Int?
+  languages              String[]
+  twitchUrl              String?
+  youtubeUrl             String?
+  twitterUrl             String?
+  discordUrl             String?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  timezone               String?
+  methodology            String?
+  announcements          Announcement[]
+  availabilities         Availability[]
+  coachingPackages       CoachingPackage[]
+  reservations           Reservation[]
+  notes                  CoachNote[]
+  channels               CoachPlayerChannel[]
+  user                   user              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CoachDraft {
@@ -164,8 +168,12 @@ model Reservation {
   endDate          DateTime
   status           ReservationStatus @default(PENDING)
   paymentStatus    PaymentStatus     @default(PENDING)
-  priceCents       Int
+  type             ReservationType   @default(SINGLE) // Type: SINGLE ou PACK
+  priceCents       Int                                 // Prix payé par le joueur (en centimes)
+  commissionCents  Int               @default(0)       // Commission Edgemy Phase 1 (en centimes)
+  coachEarningsCents Int             @default(0)       // Gains du coach (en centimes)
   stripePaymentId  String?
+  stripeSessionId  String?                             // ID de la session Stripe Checkout
   discordChannelId String?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
@@ -368,6 +376,24 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+}
+
+enum ReservationType {
+  SINGLE
+  PACK
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  TRIALING
+}
+
+enum SubscriptionPlan {
+  MONTHLY
+  YEARLY
 }
 
 enum LogSeverity {
