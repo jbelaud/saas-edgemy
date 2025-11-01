@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminGlassCard } from "@/components/admin/ui/AdminGlassCard";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface DiscordLog {
@@ -17,13 +17,13 @@ interface DiscordLogsTableProps {
 
 export function DiscordLogsTable({ logs }: DiscordLogsTableProps) {
   return (
-    <AdminGlassCard>
+    <Card className="bg-slate-900/50 backdrop-blur-xl border-white/10">
       <div className="py-12 text-center">
         <p className="text-gray-400">
           Aucun log Discord pour le moment. Cette fonctionnalité sera implémentée
           ultérieurement.
         </p>
       </div>
-    </AdminGlassCard>
+    </Card>
   );
 }

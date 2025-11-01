@@ -291,6 +291,7 @@ model user {
   reservations     Reservation[]
   coachNotes       CoachNote[]
   playerChannels   CoachPlayerChannel[] @relation("PlayerChannels")
+  adminLogs        AdminLog[]
   account          account[]
   coach            coach?
   player           player?
@@ -306,6 +307,21 @@ model verification {
   updatedAt  DateTime
 
   @@unique([identifier, value])
+}
+
+model AdminLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String?
+  severity  LogSeverity @default(INFO)
+  source    String?
+  createdAt DateTime @default(now())
+  adminId   String?
+  admin     user?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([adminId])
+  @@index([createdAt])
+  @@index([severity])
 }
 
 enum Role {
@@ -352,4 +368,10 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+}
+
+enum LogSeverity {
+  INFO
+  WARNING
+  ERROR
 }

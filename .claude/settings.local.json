@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm add:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: correction erreurs ESLint et ajout package manquant\n\n- Échappement des apostrophes dans les textes français (react/no-unescaped-entities)\n- Ajout de @radix-ui/react-alert-dialog manquant\n- Correction dans coach/packs/page.tsx, DiscordSessionButton.tsx et PlayerSettingsForm.tsx\n\nLe build Vercel devrait maintenant passer sans erreur.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(npx next build:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: correction redirection déconnexion avec locale\n\n- Ajout de la locale dans la redirection après déconnexion\n- Les utilisateurs sont maintenant redirigés vers /{locale} au lieu de /\n- Nettoyage de l''import ExternalLink non utilisé dans CoachSidebar\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "Bash(dir \"C:\\Developpement\\saas-edgemy\\app\" /s /b)",
+      "Bash(dir \"C:\\Developpement\\saas-edgemy\\src\")",
+      "Bash(dir \"C:\\Developpement\\saas-edgemy\\src\\app\")",
+      "Bash(dir \"C:\\Developpement\\saas-edgemy\\src\\components\")",
+      "Bash(dir \"C:\\Developpement\\saas-edgemy\\src\\components\\ui\")",
+      "Bash(dir \"C:\\Developpement\\saas-edgemy\\src\\app\" /s /ad)",
+      "Bash(tree:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(git rm:*)",
+      "Bash(git reset:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
