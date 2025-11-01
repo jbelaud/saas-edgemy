@@ -80,7 +80,7 @@ export default function PaymentSuccessPage() {
               onClick={() => router.push(`/${locale}/explore`)}
               className="w-full"
             >
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </Button>
           </div>
 

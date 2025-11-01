@@ -28,9 +28,10 @@ export async function POST(req: Request) {
 
   try {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-  } catch (err: any) {
-    console.error('Webhook signature verification error:', err.message);
-    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('Webhook signature verification error:', message);
+    return new Response(`Webhook Error: ${message}`, { status: 400 });
   }
 
   // Traiter les événements Stripe
@@ -195,7 +196,7 @@ export async function POST(req: Request) {
             subscriptionStatus = 'ACTIVE';
         }
 
-        const periodEnd = (subscription as any).current_period_end;
+        const periodEnd = (subscription as Stripe.Subscription & { current_period_end?: number }).current_period_end;
 
         await prisma.coach.update({
           where: { id: coachId },
@@ -220,7 +221,7 @@ export async function POST(req: Request) {
           break;
         }
 
-        const periodEnd = (subscription as any).current_period_end;
+        const periodEnd = (subscription as Stripe.Subscription & { current_period_end?: number }).current_period_end;
 
         await prisma.coach.update({
           where: { id: coachId },
@@ -236,7 +237,7 @@ export async function POST(req: Request) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = (invoice as any).subscription;
+        const subscriptionId = (invoice as Stripe.Invoice & { subscription?: string }).subscription;
 
         if (subscriptionId && invoice.customer_email) {
           console.error(`❌ Échec paiement facture abonnement: ${subscriptionId}`);

@@ -23,13 +23,13 @@ export default function PaymentCancelPage() {
             Paiement annulé
           </CardTitle>
           <CardDescription className="text-base">
-            Votre paiement a été annulé. Aucun montant n'a été débité.
+            Votre paiement a été annulé. Aucun montant n&apos;a été débité.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-900">
-              <strong>ℹ️ Que s'est-il passé ?</strong>
+              <strong>ℹ️ Que s&apos;est-il passé ?</strong>
               <br />
               Vous avez annulé le processus de paiement. Votre réservation est toujours en attente mais ne sera pas confirmée sans paiement.
             </p>
@@ -39,7 +39,7 @@ export default function PaymentCancelPage() {
             <p className="text-sm text-amber-900">
               <strong>⚠️ Important</strong>
               <br />
-              Votre créneau horaire sera automatiquement annulé si le paiement n'est pas effectué dans les prochaines heures.
+              Votre créneau horaire sera automatiquement annulé si le paiement n&apos;est pas effectué dans les prochaines heures.
             </p>
           </div>
 
@@ -57,7 +57,7 @@ export default function PaymentCancelPage() {
               className="w-full"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </Button>
           </div>
         </CardContent>
