@@ -249,7 +249,13 @@ export function PlayerSidebar() {
               </>
             )}
             <DropdownMenuItem
-              onClick={() => signOut()}
+              onClick={() => signOut({
+                fetchOptions: {
+                  onSuccess: () => {
+                    window.location.href = `/${locale}`;
+                  }
+                }
+              })}
               className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-300"
             >
               <LogOut className="mr-2 h-4 w-4" />
