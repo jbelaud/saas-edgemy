@@ -84,9 +84,27 @@ const navItems: NavItem[] = [
 export function PlayerSidebar() {
   const pathname = usePathname();
   const locale = useLocale();
-  const [collapsed, setCollapsed] = useState(true); // Collapsed par défaut sur mobile
+  // Ouvert sur desktop, fermé sur mobile
+  const [collapsed, setCollapsed] = useState(false);
   const [hasCoachProfile, setHasCoachProfile] = useState(false);
   const { data: session } = useSession();
+
+  // Détecter la taille de l'écran pour fermer sur mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) { // md breakpoint
+        setCollapsed(true);
+      } else {
+        setCollapsed(false);
+      }
+    };
+
+    // Initial check
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const user = session?.user;
   const initials = user?.name
@@ -123,9 +141,9 @@ export function PlayerSidebar() {
         collapsed ? "w-16" : "w-64"
       )}
     >
-      {/* Header avec logo et toggle */}
-      <div className="flex h-16 items-center justify-between border-b border-white/10 px-3">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+      {/* Header avec logo */}
+      <div className="flex flex-col border-b border-white/10">
+        <div className="flex h-16 items-center justify-center px-3">
           {!collapsed && (
             <Link href={`/${locale}`} className="flex items-center gap-2 group">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 font-bold text-slate-950 transform group-hover:scale-105 transition-transform">
@@ -142,20 +160,22 @@ export function PlayerSidebar() {
             </Link>
           )}
         </div>
-        
-        {/* Toggle button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCollapsed(!collapsed)}
-          className="h-8 w-8 flex-shrink-0 text-gray-400 hover:text-white hover:bg-white/5"
-        >
-          {collapsed ? (
-            <PanelLeft className="h-4 w-4" />
-          ) : (
-            <PanelLeftClose className="h-4 w-4" />
-          )}
-        </Button>
+
+        {/* Toggle button - en dessous du logo */}
+        <div className="flex justify-center pb-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCollapsed(!collapsed)}
+            className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/5"
+          >
+            {collapsed ? (
+              <PanelLeft className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Navigation */}
