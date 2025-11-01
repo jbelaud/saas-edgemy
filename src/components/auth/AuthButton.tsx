@@ -7,11 +7,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, LayoutDashboard } from "lucide-react";
+import { LogOut, LayoutDashboard, Settings } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 
@@ -38,37 +37,74 @@ export function AuthButton() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/10 transition-all">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.image || ""} alt={user.name || ""} />
-              <AvatarFallback>{initials}</AvatarFallback>
+              <AvatarImage src={user.image || undefined} alt={user.name || ""} />
+              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white font-semibold">
+                {initials}
+              </AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user.name}</p>
-              <p className="text-xs leading-none text-muted-foreground">
-                {user.email}
-              </p>
+        <DropdownMenuContent
+          className="w-64 p-0 bg-slate-900/95 backdrop-blur-xl border border-white/10 shadow-2xl"
+          align="end"
+          forceMount
+        >
+          {/* Header avec GlassCard */}
+          <div className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-b border-white/10">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={user.image || undefined} alt={user.name || ""} />
+                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-semibold truncate">{user.name}</p>
+                <p className="text-gray-400 text-sm truncate">{user.email}</p>
+              </div>
             </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href={`/${locale}/player/dashboard`} className="flex items-center cursor-pointer">
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              <span>Dashboard</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => signOut()}
-            className="cursor-pointer text-red-600"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Déconnexion</span>
-          </DropdownMenuItem>
+          </div>
+
+          {/* Menu items */}
+          <div className="p-2">
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/${locale}/player/dashboard`}
+                className="flex items-center gap-3 px-3 py-3 text-white hover:bg-white/10 rounded-lg transition-all cursor-pointer group"
+              >
+                <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
+                  <LayoutDashboard className="h-4 w-4 text-blue-400" />
+                </div>
+                <span className="font-medium">Dashboard</span>
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/${locale}/player/settings`}
+                className="flex items-center gap-3 px-3 py-3 text-white hover:bg-white/10 rounded-lg transition-all cursor-pointer group"
+              >
+                <div className="p-2 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
+                  <Settings className="h-4 w-4 text-purple-400" />
+                </div>
+                <span className="font-medium">Paramètres</span>
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="bg-white/10 my-2" />
+
+            <DropdownMenuItem
+              onClick={() => signOut()}
+              className="flex items-center gap-3 px-3 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-all cursor-pointer group"
+            >
+              <div className="p-2 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
+                <LogOut className="h-4 w-4 text-red-400 group-hover:text-red-300" />
+              </div>
+              <span className="font-medium">Déconnexion</span>
+            </DropdownMenuItem>
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     );
