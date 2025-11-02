@@ -8,16 +8,13 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, Euro, Loader2, AlertCircle, Package, CheckCircle, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Loader2, AlertCircle, CheckCircle, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { redirectToCheckout } from '@/lib/stripe-client';
 
 interface AnnouncementPack {
@@ -55,9 +52,8 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
   const locale = useLocale();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
-  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingSuccess] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
   const [bookingType, setBookingType] = useState<'single' | 'pack'>(selectedPackId ? 'pack' : 'single');
@@ -156,7 +152,6 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
   // Calculer le prix et la durée selon si c'est un pack ou une session
   const displayPrice = selectedPack ? selectedPack.totalPrice / 100 : announcement.price;
   const displayDuration = announcement.duration;
-  const isPack = bookingType === 'pack' && !!selectedPack;
 
   const handleSubmit = async () => {
     if (!session?.user) {
@@ -177,7 +172,6 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
 
     // Vérifier si le créneau sélectionné est dans les 24h après l'inscription
     if (minBookingDate && selectedSlot.start < minBookingDate) {
-      const hoursUntil = Math.ceil((minBookingDate.getTime() - selectedSlot.start.getTime()) / (1000 * 60 * 60));
       alert(`Cette session a lieu trop tôt. Vous ne pouvez réserver que des sessions qui ont lieu au moins 24h après votre inscription. Choisissez un créneau à partir du ${minBookingDate.toLocaleDateString('fr-FR')} à ${minBookingDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}.`);
       return;
     }

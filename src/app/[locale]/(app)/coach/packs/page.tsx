@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
-import { useRouter } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { GlassCard, GradientText } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Package, Clock, Loader2, Calendar, User, TrendingUp, CheckCircle } from 'lucide-react';
+import { Package, Clock, Loader2, Calendar, TrendingUp, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from 'next/link';
@@ -43,7 +42,6 @@ interface CoachPackage {
 }
 
 export default function CoachPacksPage() {
-  const router = useRouter();
   const { data: session, isPending } = useSession();
   const [packages, setPackages] = useState<CoachPackage[]>([]);
   const [stats, setStats] = useState({ total: 0, active: 0, completed: 0 });

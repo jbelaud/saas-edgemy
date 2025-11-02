@@ -131,7 +131,7 @@ export async function POST(req: Request) {
  * DELETE /api/stripe/subscribe-coach
  * Annuler l'abonnement d'un coach
  */
-export async function DELETE(req: Request) {
+export async function DELETE() {
   try {
     // Vérifier l'authentification
     const session = await auth.api.getSession({

@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
-import { AdminGlassCard } from "@/components/admin/ui/AdminGlassCard";
 import { RevenueStats } from "@/components/admin/revenue/RevenueStats";
 import { SubscriptionChart } from "@/components/admin/revenue/SubscriptionChart";
 import { CommissionsTable } from "@/components/admin/revenue/CommissionsTable";

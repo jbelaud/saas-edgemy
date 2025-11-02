@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Users, Calendar, Loader2, StickyNote, Save, Clock, CheckCircle, TrendingUp } from 'lucide-react';
+import { Users, Calendar, Loader2, StickyNote, Save, Clock, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 

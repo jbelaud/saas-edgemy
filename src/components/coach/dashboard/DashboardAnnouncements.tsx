@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GlassCard, GradientButton } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock, Megaphone, Zap, CheckCircle2, Plus } from 'lucide-react';
+import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock, Megaphone, Zap, CheckCircle2 } from 'lucide-react';
 import { AnnouncementPacksSection } from '@/components/coach/announcements/AnnouncementPacksSection';
 
 interface Announcement {

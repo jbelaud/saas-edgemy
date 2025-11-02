@@ -14,9 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Calendar,
   Clock,
-  CreditCard,
   MessageSquare,
-  Phone,
   CheckCircle,
   XCircle,
   RotateCcw,

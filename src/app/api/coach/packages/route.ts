@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma';
  * GET /api/coach/packages
  * Récupère tous les packs de coaching réservés par les joueurs pour ce coach
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),

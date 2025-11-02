@@ -84,11 +84,6 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
     setIsBookingOpen(true);
   };
 
-  const handleViewDetails = (announcement: Announcement) => {
-    setSelectedAnnouncement(announcement);
-    setIsDetailOpen(true);
-  };
-
   const handleNotifyMe = async (announcementId: string) => {
     if (!notifyEmail) return;
     

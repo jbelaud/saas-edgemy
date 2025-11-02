@@ -12,7 +12,7 @@ interface Props {
   isLoading: boolean;
 }
 
-export function OnboardingStep5({ data, onComplete, onBack, isLoading }: Props) {
+export function OnboardingStep5({ onComplete, onBack, isLoading }: Props) {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
 
   const handleSubscribe = async () => {

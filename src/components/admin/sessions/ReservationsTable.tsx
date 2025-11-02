@@ -16,9 +16,6 @@ import {
 import {
   Search,
   ExternalLink,
-  CheckCircle,
-  XCircle,
-  RotateCcw,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";

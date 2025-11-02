@@ -30,31 +30,11 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
   const avatarUrl = coach.avatarUrl || coach.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(coach.firstName + ' ' + coach.lastName)}&size=200&background=f97316&color=fff&bold=true`;
   const isTopCoach = coach.badges?.includes('TOP_COACH');
   
-  const [notifyEmail, setNotifyEmail] = useState('');
-  const [isNotifying, setIsNotifying] = useState(false);
-  const [notificationSent, setNotificationSent] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  
+
   const rating = 4.9; // Mock - à remplacer par vraies données
   const reviewsCount = 127; // Mock
   const studentsCount = 45; // Mock
-
-  const handleNotifyCoach = async () => {
-    if (!notifyEmail) return;
-    
-    setIsNotifying(true);
-    // TODO: Implémenter l'API pour notifier le coach
-    console.log('Notify coach about interested player:', { 
-      coachId: coach.firstName, 
-      playerEmail: notifyEmail 
-    });
-    
-    setTimeout(() => {
-      setIsNotifying(false);
-      setNotificationSent(true);
-      setNotifyEmail('');
-    }, 1000);
-  };
 
   const handleDiscordContact = () => {
     if (coach.discordUrl) {

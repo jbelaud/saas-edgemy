@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, User, Globe, Bell, Shield } from 'lucide-react';
+import { Loader2, Save, User, Bell, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ConnectDiscordButton } from '@/components/discord/ConnectDiscordButton';
 

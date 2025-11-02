@@ -32,12 +32,6 @@ async function getDiscordChannels() {
   });
 }
 
-async function getDiscordLogs() {
-  // Pour le moment, retourner des logs fictifs
-  // Dans une vraie app, vous ajouteriez une table DiscordLog
-  return [];
-}
-
 export default async function AdminDiscordPage() {
   return (
     <div className="space-y-6">
@@ -93,6 +87,5 @@ async function DiscordChannelsTableWrapper() {
 }
 
 async function DiscordLogsTableWrapper() {
-  const logs = await getDiscordLogs();
-  return <DiscordLogsTable logs={logs} />;
+  return <DiscordLogsTable />;
 }
