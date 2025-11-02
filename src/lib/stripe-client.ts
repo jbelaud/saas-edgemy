@@ -40,16 +40,11 @@ export async function redirectToCheckout(params: PaymentSessionParams): Promise<
       throw new Error('Stripe n\'a pas pu être chargé');
     }
 
-    // Utiliser l'URL de session si disponible
+    // Rediriger vers Stripe Checkout via URL (méthode recommandée)
     if (data.url) {
       window.location.href = data.url;
-    } else if (data.sessionId) {
-      const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
-      if (error) {
-        throw error;
-      }
     } else {
-      throw new Error('Session de paiement invalide');
+      throw new Error('URL de session de paiement manquante');
     }
   } catch (error) {
     console.error('Erreur redirection Stripe:', error);
