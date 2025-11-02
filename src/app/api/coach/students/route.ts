@@ -67,19 +67,52 @@ export async function GET() {
       },
     });
 
+    // Préparer la liste des joueurs pour récupérer leurs objectifs
+    const playerUserIds = Array.from(
+      new Set(reservations.map((reservation) => reservation.player.id)),
+    );
+
+    const playerProfiles = playerUserIds.length > 0
+      ? await prisma.player.findMany({
+          where: {
+            userId: {
+              in: playerUserIds,
+            },
+          },
+          select: {
+            id: true,
+            userId: true,
+            goals: true,
+            formats: true,
+            abi: true,
+            winnings: true,
+            firstName: true,
+            lastName: true,
+            timezone: true,
+          },
+        })
+      : [];
+
+    const playerProfileMap = new Map(playerProfiles.map((profile) => [profile.userId, profile]));
+
     // Grouper par joueur
     const studentsMap = new Map();
     
     reservations.forEach(reservation => {
       const playerId = reservation.player.id;
+      const profile = playerProfileMap.get(playerId);
       
       if (!studentsMap.has(playerId)) {
         // Récupérer les notes pour ce joueur
         const playerNotes = notes.filter(note => note.playerId === playerId);
-        
+
+        const profileName = profile
+          ? `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim()
+          : null;
+
         studentsMap.set(playerId, {
           id: playerId,
-          name: reservation.player.name,
+          name: profileName && profileName.length > 0 ? profileName : reservation.player.name,
           email: reservation.player.email,
           image: reservation.player.image,
           totalSessions: 0,
@@ -93,6 +126,12 @@ export async function GET() {
             updatedAt: note.updatedAt,
           })),
           totalNotes: playerNotes.length,
+          goals: profile?.goals ?? null,
+          formats: profile?.formats ?? [],
+          abi: profile?.abi ?? null,
+          winnings: profile?.winnings ?? null,
+          playerProfileId: profile?.id ?? null,
+          timezone: profile?.timezone ?? null,
         });
       }
       

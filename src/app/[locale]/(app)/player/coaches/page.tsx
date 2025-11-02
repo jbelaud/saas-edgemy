@@ -103,8 +103,7 @@ export default function PlayerCoachesPage() {
       {coaches.length === 0 ? (
         <GlassCard className="border-emerald-500/20 bg-gradient-to-r from-emerald-500/10 to-teal-500/10">
           <div className="mb-6">
-            <h2 className="text-white flex items-center gap-2 text-2xl font-bold mb-3">
-              <Search className="h-6 w-6 text-emerald-400" />
+            <h2 className="text-white text-2xl font-bold mb-3">
               Tu n&apos;as pas encore réservé de coach
             </h2>
             <p className="text-gray-300 text-base">

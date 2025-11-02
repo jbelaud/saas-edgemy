@@ -22,7 +22,19 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(git rm:*)",
       "Bash(git reset:*)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(pnpm exec playwright:*)",
+      "Bash(pnpm test:unit:*)",
+      "Bash(pnpm test:e2e:*)",
+      "Bash(pnpm dev)",
+      "Bash(tsx:*)",
+      "Bash(pnpm exec tsx:*)",
+      "WebSearch",
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(cmd //c taskkill //PID 16104 //F)",
+      "Bash(cmd //c taskkill //PID 12836 //F)"
     ],
     "deny": [],
     "ask": []

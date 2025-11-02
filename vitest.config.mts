@@ -5,8 +5,8 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   test: {
-    // Environnement jsdom pour simuler un navigateur
-    environment: 'jsdom',
+    // Environnement happy-dom pour simuler un navigateur (plus léger que jsdom)
+    environment: 'happy-dom',
 
     // Fichiers de setup
     setupFiles: ['./tests/setup.ts'],

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { GlassCard, GradientText } from '@/components/ui';
@@ -9,6 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, Bell, Shield } from 'lucide-react';
 import { ConnectDiscordButton } from '@/components/discord/ConnectDiscordButton';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function CoachSettingsPage() {
   const { data: session } = useSession();
@@ -25,10 +33,11 @@ export default function CoachSettingsPage() {
         const response = await fetch('/api/coach/profile');
         if (response.ok) {
           const data = await response.json();
+          const coach = data?.coach ?? data ?? {};
           setCoachData({
-            firstName: data.firstName || '',
-            lastName: data.lastName || '',
-            timezone: data.timezone || 'Europe/Paris',
+            firstName: coach.firstName || '',
+            lastName: coach.lastName || '',
+            timezone: coach.timezone || 'Europe/Paris',
           });
         }
       } catch (error) {
@@ -51,7 +60,11 @@ export default function CoachSettingsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(coachData),
+        body: JSON.stringify({
+          firstName: coachData.firstName,
+          lastName: coachData.lastName,
+          timezone: coachData.timezone,
+        }),
       });
 
       if (response.ok) {
@@ -66,6 +79,29 @@ export default function CoachSettingsPage() {
       setIsLoading(false);
     }
   };
+
+  const timezones = useMemo(() => {
+    if (typeof Intl !== 'undefined' && typeof Intl.supportedValuesOf === 'function') {
+      return Intl.supportedValuesOf('timeZone');
+    }
+
+    return [
+      'UTC',
+      'Europe/Paris',
+      'Europe/London',
+      'America/New_York',
+      'America/Los_Angeles',
+      'America/Sao_Paulo',
+      'Africa/Casablanca',
+      'Africa/Johannesburg',
+      'Asia/Tokyo',
+      'Asia/Shanghai',
+      'Asia/Singapore',
+      'Asia/Dubai',
+      'Australia/Sydney',
+      'Pacific/Auckland',
+    ];
+  }, []);
 
   return (
     <CoachLayout>
@@ -94,7 +130,7 @@ export default function CoachSettingsPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="firstName" className="text-gray-300">
+                  <Label htmlFor="firstName" className="text-white/80">
                     Prénom
                   </Label>
                   <Input
@@ -105,12 +141,12 @@ export default function CoachSettingsPage() {
                         prev ? { ...prev, firstName: e.target.value } : null
                       )
                     }
-                    className="mt-1"
+                    className="mt-1 text-white placeholder:text-white/40 border-white/20 focus-visible:ring-emerald-400/40"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="lastName" className="text-gray-300">
+                  <Label htmlFor="lastName" className="text-white/80">
                     Nom
                   </Label>
                   <Input
@@ -121,25 +157,39 @@ export default function CoachSettingsPage() {
                         prev ? { ...prev, lastName: e.target.value } : null
                       )
                     }
-                    className="mt-1"
+                    className="mt-1 text-white placeholder:text-white/40 border-white/20 focus-visible:ring-emerald-400/40"
                   />
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="timezone" className="text-gray-300">
+              <div className="space-y-2">
+                <Label htmlFor="timezone" className="text-white/80">
                   Fuseau horaire
                 </Label>
-                <Input
-                  id="timezone"
-                  value={coachData?.timezone || ''}
-                  onChange={(e) =>
+                <Select
+                  value={coachData?.timezone || 'Europe/Paris'}
+                  onValueChange={(value) =>
                     setCoachData((prev) =>
-                      prev ? { ...prev, timezone: e.target.value } : null
+                      prev ? { ...prev, timezone: value } : { firstName: '', lastName: '', timezone: value }
                     )
                   }
-                  className="mt-1"
-                />
+                >
+                  <SelectTrigger className="w-full justify-between rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10 focus-visible:ring-emerald-400/40">
+                    <SelectValue placeholder="Choisir un fuseau horaire" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64 bg-slate-900/95 text-white">
+                    <SelectGroup>
+                      {timezones.map((timezone) => (
+                        <SelectItem key={timezone} value={timezone} className="text-sm text-white">
+                          {timezone}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  Ce fuseau sera utilisé pour planifier vos disponibilités et envoyer les rappels.
+                </p>
               </div>
 
               <Button
@@ -198,6 +248,68 @@ export default function CoachSettingsPage() {
 
               <p className="text-xs text-gray-500 mt-2">
                 💡 Nécessaire pour créer automatiquement les salons Discord avec vos élèves
+              </p>
+            </div>
+          </GlassCard>
+
+          {/* Stripe Professionnel */}
+          <GlassCard className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-sky-500/20 rounded-lg">
+                <svg
+                  className="h-5 w-5 text-sky-300"
+                  viewBox="0 0 32 32"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M27.87 9.08C26.4 8.43 24.3 7.84 21.38 7.84c-4.68 0-7.85 2.03-7.85 6.2 0 4.44 3.84 4.49 7.02 4.9 2.35.3 3.2.74 3.2 1.81 0 1.5-1.88 1.73-3.4 1.73-2.26 0-3.46-.35-5.31-1.17l-.75-.35-.79 4.8c1.33.61 3.77 1.14 6.31 1.17 5.32 0 8.14-2.05 8.14-6.35 0-4.88-3.98-4.56-7.05-4.91-2.37-.26-3.2-.73-3.2-1.78 0-.97.98-1.68 3.12-1.68 1.88 0 3.49.32 4.63.83l.55.26.78-4.64z" />
+                  <path d="M12.18 8.22H7.68L3.9 23.4h4.5l3.78-15.18z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-white">
+                Compte professionnel Stripe
+              </h2>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-sky-500/10 border border-sky-500/30 rounded-lg">
+                <p className="text-sm text-sky-300 mb-2 font-semibold">
+                  Pourquoi connecter Stripe ?
+                </p>
+                <ul className="text-sm text-gray-300 space-y-1">
+                  <li>✅ Recevez vos paiements directement sur votre compte bancaire</li>
+                  <li>✅ Accédez à un tableau de bord professionnel pour vos revenus</li>
+                  <li>✅ Conformité légale et fiscale simplifiée</li>
+                  <li>✅ Protection contre la fraude et gestion des remboursements</li>
+                </ul>
+              </div>
+
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-start gap-3">
+                <Shield className="h-5 w-5 text-emerald-300 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-emerald-300 mb-1">
+                    Sécurité des paiements
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    Stripe vérifie votre identité et sécurise toutes les transactions. Vous gardez le contrôle sur vos versements et pouvez définir votre fréquence de paiement.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white">Statut du compte</p>
+                  <p className="text-xs text-gray-400">Non connecté</p>
+                </div>
+                <Button
+                  className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700"
+                >
+                  Configurer mon compte Stripe
+                </Button>
+              </div>
+
+              <p className="text-xs text-gray-500">
+                💡 Après connexion, vous pourrez suivre vos versements depuis votre tableau de bord Stripe et disposer d’un historique complet pour votre comptabilité.
               </p>
             </div>
           </GlassCard>

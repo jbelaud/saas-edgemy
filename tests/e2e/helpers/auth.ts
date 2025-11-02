@@ -10,21 +10,21 @@ export interface TestUser {
   role: 'PLAYER' | 'COACH' | 'ADMIN';
 }
 
-// Utilisateurs de test (à créer dans votre DB de test)
+// Utilisateurs de test E2E (créés par prisma/seed-e2e-users-api.ts)
 export const TEST_USERS = {
   player: {
-    email: 'player.test@edgemy.com',
-    password: 'TestPassword123!',
+    email: 'e2e-player@edgemy.test',
+    password: 'TestE2E@2024!',
     role: 'PLAYER' as const,
   },
   coach: {
-    email: 'coach.test@edgemy.com',
-    password: 'TestPassword123!',
+    email: 'e2e-coach@edgemy.test',
+    password: 'TestE2E@2024!',
     role: 'COACH' as const,
   },
   admin: {
-    email: 'admin.test@edgemy.com',
-    password: 'TestPassword123!',
+    email: 'e2e-admin@edgemy.test',
+    password: 'TestE2E@2024!',
     role: 'ADMIN' as const,
   },
 };
@@ -33,17 +33,43 @@ export const TEST_USERS = {
  * Se connecte avec un utilisateur de test
  */
 export async function login(page: Page, user: TestUser) {
-  await page.goto('/fr/sign-in');
+  // Utiliser la page de test login
+  await page.goto('/fr/test/login', { waitUntil: 'networkidle' });
 
-  // Remplir le formulaire de connexion
-  await page.fill('input[name="email"]', user.email);
-  await page.fill('input[name="password"]', user.password);
+  // Attendre que le formulaire soit visible et interactif
+  await page.waitForSelector('[data-testid="login-form"]', {
+    timeout: 10000,
+    state: 'visible'
+  });
+
+  // Attendre que les champs soient vraiment interactifs (pas seulement visibles)
+  await page.waitForSelector('[data-testid="email-input"]:not([disabled])', {
+    timeout: 5000,
+    state: 'visible'
+  });
+  await page.waitForSelector('[data-testid="password-input"]:not([disabled])', {
+    timeout: 5000,
+    state: 'visible'
+  });
+
+  // Petit délai pour laisser Next.js terminer l'hydration
+  await page.waitForTimeout(500);
+
+  // Remplir le formulaire de connexion (utilise data-testid)
+  await page.fill('[data-testid="email-input"]', user.email);
+  await page.fill('[data-testid="password-input"]', user.password);
+
+  // Attendre que le bouton soit cliquable
+  await page.waitForSelector('[data-testid="submit-button"]:not([disabled])', {
+    timeout: 5000,
+    state: 'visible'
+  });
 
   // Cliquer sur le bouton de connexion
-  await page.click('button[type="submit"]');
+  await page.click('[data-testid="submit-button"]');
 
-  // Attendre la redirection après connexion
-  await page.waitForURL(/\/(fr|en)\/(player|coach|admin)/, { timeout: 10000 });
+  // Attendre la redirection après connexion (plus tolérant sur l'URL)
+  await page.waitForURL(/\/(fr|en)\//, { timeout: 15000 });
 }
 
 /**

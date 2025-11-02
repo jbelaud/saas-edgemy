@@ -17,6 +17,17 @@ export async function GET() {
       return NextResponse.json({ redirectTo: '/' }, { status: 401 });
     }
 
+    // Récupérer l'utilisateur complet avec son rôle
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, role: true },
+    });
+
+    // Si l'utilisateur est ADMIN, rediriger vers le dashboard admin
+    if (user?.role === 'ADMIN') {
+      return NextResponse.json({ redirectTo: '/admin/dashboard' });
+    }
+
     // Vérifier si l'utilisateur a un profil coach
     const coach = await prisma.coach.findUnique({
       where: { userId: session.user.id },

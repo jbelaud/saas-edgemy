@@ -9,7 +9,7 @@ interface GradientButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const GradientButton = forwardRef<HTMLButtonElement, GradientButtonProps>(
   ({ variant = 'amber', size = 'md', fullWidth = false, className = '', children, ...props }, ref) => {
-    const baseClasses = 'font-bold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100';
+    const baseClasses = 'inline-flex items-center justify-center gap-2 font-bold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100';
     
     const variantClasses = {
       amber: `bg-gradient-to-r ${designTokens.gradients.amber} hover:${designTokens.gradients.amberHover} text-slate-950 ${designTokens.effects.shadow.amber}`,

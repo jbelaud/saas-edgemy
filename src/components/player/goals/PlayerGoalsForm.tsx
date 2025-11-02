@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from '@/lib/auth-client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { GlassCard, GradientButton, GradientText } from '@/components/ui';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Target, Rocket, BarChart3, CalendarRange } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const POKER_FORMATS = [
@@ -115,114 +114,203 @@ export function PlayerGoalsForm() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="py-12">
-          <div className="flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-          </div>
-        </CardContent>
-      </Card>
+      <GlassCard className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
+      </GlassCard>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Définis tes objectifs</CardTitle>
-          <CardDescription>
-            Partage tes objectifs pour que tes coachs puissent mieux t&apos;accompagner
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Objectif principal */}
-          <div className="space-y-2">
-            <Label htmlFor="goals">Objectif principal</Label>
-            <Textarea
-              id="goals"
-              placeholder="Ex: Améliorer mon jeu en MTT, passer de micro-stakes à low-stakes..."
-              value={goals}
-              onChange={(e) => setGoals(e.target.value)}
-              rows={4}
-            />
+    <div className="space-y-8">
+      {/* Hero section */}
+      <GlassCard className="border-emerald-500/20 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30">
+                <Target className="h-6 w-6 text-emerald-300" />
+              </div>
+              <GradientText as="h2" variant="emerald" className="text-2xl font-semibold">
+                Définis ton plan de progression
+              </GradientText>
+            </div>
+            <p className="text-gray-300 max-w-2xl">
+              Clarifie ta vision, priorise les formats qui comptent pour toi et suis tes objectifs financiers pour que chaque session soit un pas de plus vers le succès.
+            </p>
           </div>
 
+          <div className="grid grid-cols-2 gap-3 text-sm text-gray-200">
+            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+              <div className="p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30">
+                <CalendarRange className="h-5 w-5 text-emerald-300" />
+              </div>
+              <div>
+                <p className="font-semibold text-white">Planifie tes sessions</p>
+                <p className="text-xs text-gray-400">Des objectifs clairs pour des coachings ciblés</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+              <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                <Rocket className="h-5 w-5 text-purple-300" />
+              </div>
+              <div>
+                <p className="font-semibold text-white">Projection mensuelle</p>
+                <p className="text-xs text-gray-400">Visualise ton ABI et tes gains visés</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+              <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                <BarChart3 className="h-5 w-5 text-cyan-300" />
+              </div>
+              <div>
+                <p className="font-semibold text-white">Mesure tes progrès</p>
+                <p className="text-xs text-gray-400">Un suivi pour toi et tes coachs</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+              <div className="p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30">
+                <Save className="h-5 w-5 text-emerald-300" />
+              </div>
+              <div>
+                <p className="font-semibold text-white">Sauvegarde instantanée</p>
+                <p className="text-xs text-gray-400">Mets à jour tes objectifs à tout moment</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </GlassCard>
+
+      <GlassCard>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Objectif principal */}
+          <section className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <Target className="h-5 w-5 text-emerald-300" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-white">Vision principale</h3>
+                <p className="text-sm text-gray-400">Décris ce que tu veux accomplir dans les 3 à 6 prochains mois.</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="goals" className="text-sm text-gray-300">Objectif principal</Label>
+              <Textarea
+                id="goals"
+                placeholder="Exemple : Passer des micro-stakes aux low-stakes et deep run au moins un 50€ dans les deux prochains mois."
+                value={goals}
+                onChange={(e) => setGoals(e.target.value)}
+                rows={5}
+                className="border border-white/10 bg-white/5 text-white placeholder:text-gray-500 focus:border-emerald-400"
+              />
+            </div>
+          </section>
+
           {/* Formats préférés */}
-          <div className="space-y-3">
-            <Label>Formats préférés</Label>
+          <section className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                <Rocket className="h-5 w-5 text-purple-300" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-white">Formats prioritaires</h3>
+                <p className="text-sm text-gray-400">Sélectionne les formats sur lesquels tu veux concentrer ton volume.</p>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {POKER_FORMATS.map((format) => (
-                <div key={format.id} className="flex items-center space-x-2">
+                <label
+                  key={format.id}
+                  htmlFor={format.id}
+                  className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 cursor-pointer transition hover:border-emerald-400/60"
+                >
                   <Checkbox
                     id={format.id}
                     checked={formats.includes(format.id)}
                     onCheckedChange={() => handleFormatToggle(format.id)}
+                    className="h-4 w-4 border-white/30 data-[state=checked]:bg-emerald-400 data-[state=checked]:border-emerald-400"
                   />
-                  <label
-                    htmlFor={format.id}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                  >
-                    {format.label}
-                  </label>
-                </div>
+                  <span className="text-sm text-gray-200">{format.label}</span>
+                </label>
               ))}
             </div>
+          </section>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* ABI moyen */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                  <BarChart3 className="h-5 w-5 text-cyan-300" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white">ABI moyen cible</h3>
+                  <p className="text-sm text-gray-400">Calcule la moyenne des buy-ins que tu veux jouer.</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="abi" className="text-sm text-gray-300">ABI moyen (€)</Label>
+                <Input
+                  id="abi"
+                  type="number"
+                  step="0.01"
+                  placeholder="Ex: 25.00"
+                  value={abi}
+                  onChange={(e) => setAbi(e.target.value)}
+                  className="border border-white/10 bg-white/5 text-white placeholder:text-gray-500 focus:border-emerald-400"
+                />
+                <p className="text-xs text-gray-500">
+                  Donne une cible réaliste pour que tes coachs adaptent leurs recommandations.
+                </p>
+              </div>
+            </section>
+
+            {/* Gains visés */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                  <Rocket className="h-5 w-5 text-emerald-300" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white">Objectif de gains</h3>
+                  <p className="text-sm text-gray-400">Fixe un objectif mensuel pour suivre ta progression.</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="winnings" className="text-sm text-gray-300">Gains visés (€/mois)</Label>
+                <Input
+                  id="winnings"
+                  type="number"
+                  step="0.01"
+                  placeholder="Ex: 1000.00"
+                  value={winnings}
+                  onChange={(e) => setWinnings(e.target.value)}
+                  className="border border-white/10 bg-white/5 text-white placeholder:text-gray-500 focus:border-emerald-400"
+                />
+                <p className="text-xs text-gray-500">
+                  Utilise cet objectif comme boussole pour tes prochains coachings.
+                </p>
+              </div>
+            </section>
           </div>
 
-          {/* ABI moyen */}
-          <div className="space-y-2">
-            <Label htmlFor="abi">ABI moyen (€)</Label>
-            <Input
-              id="abi"
-              type="number"
-              step="0.01"
-              placeholder="Ex: 25.00"
-              value={abi}
-              onChange={(e) => setAbi(e.target.value)}
-            />
-            <p className="text-sm text-gray-500">
-              Average Buy-In moyen de tes tournois
-            </p>
-          </div>
-
-          {/* Gains visés */}
-          <div className="space-y-2">
-            <Label htmlFor="winnings">Gains visés (€/mois)</Label>
-            <Input
-              id="winnings"
-              type="number"
-              step="0.01"
-              placeholder="Ex: 1000.00"
-              value={winnings}
-              onChange={(e) => setWinnings(e.target.value)}
-            />
-            <p className="text-sm text-gray-500">
-              Objectif de gains mensuels
-            </p>
-          </div>
-
-          {/* Bouton de sauvegarde */}
-          <div className="flex justify-end pt-4">
-            <Button
-              type="submit"
-              disabled={isSaving}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
+          <div className="flex justify-end">
+            <GradientButton type="submit" size="lg" variant="emerald" disabled={isSaving}>
               {isSaving ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enregistrement...
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Enregistrement en cours...
                 </>
               ) : (
                 <>
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className="h-5 w-5" />
                   Enregistrer mes objectifs
                 </>
               )}
-            </Button>
+            </GradientButton>
           </div>
-        </CardContent>
-      </Card>
-    </form>
+        </form>
+      </GlassCard>
+    </div>
   );
 }

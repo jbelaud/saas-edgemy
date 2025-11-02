@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
-import { GlassCard, GradientText } from '@/components/ui';
+import { GlassCard, GradientText, Modal } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -36,6 +36,12 @@ interface Student {
     status: string;
     title: string;
   }[];
+  goals: string | null;
+  formats: string[];
+  abi: number | null;
+  winnings: number | null;
+  playerProfileId: string | null;
+  timezone: string | null;
 }
 
 export default function CoachStudentsPage() {
@@ -45,6 +51,7 @@ export default function CoachStudentsPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [newNote, setNewNote] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
+  const [isGoalsModalOpen, setIsGoalsModalOpen] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
@@ -52,12 +59,24 @@ export default function CoachStudentsPage() {
     }
   }, [session]);
 
+  useEffect(() => {
+    setIsGoalsModalOpen(false);
+  }, [selectedStudent]);
+
   const fetchStudents = async () => {
     try {
       const response = await fetch('/api/coach/students');
       if (response.ok) {
         const data = await response.json();
-        setStudents(data.students || []);
+        setStudents((data.students || []).map((student: Student) => ({
+          ...student,
+          formats: student.formats || [],
+          goals: student.goals ?? null,
+          abi: student.abi ?? null,
+          winnings: student.winnings ?? null,
+          playerProfileId: student.playerProfileId ?? null,
+          timezone: student.timezone ?? null,
+        })));
       }
     } catch (error) {
       console.error('Erreur chargement élèves:', error);
@@ -231,46 +250,57 @@ export default function CoachStudentsPage() {
                 <div className="space-y-6">
                   {/* Informations */}
                   <GlassCard className="p-6">
-                    <div className="flex items-start gap-4 mb-6">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={selectedStudent.image || undefined} />
-                        <AvatarFallback>
-                          {selectedStudent.name
-                            ?.split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <h2 className="text-2xl font-bold text-white mb-1">
-                          {selectedStudent.name || 'Joueur'}
-                        </h2>
-                        <p className="text-gray-400">{selectedStudent.email}</p>
+                    <div className="flex flex-col gap-4 mb-6">
+                      <div className="flex flex-wrap items-start gap-4">
+                        <Avatar className="h-16 w-16">
+                          <AvatarImage src={selectedStudent.image || undefined} />
+                          <AvatarFallback>
+                            {selectedStudent.name
+                              ?.split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-[220px]">
+                          <div className="flex flex-wrap items-center gap-3 mb-1">
+                            <h2 className="text-2xl font-bold text-white">
+                              {selectedStudent.name || 'Joueur'}
+                            </h2>
+                            <Button
+                              size="sm"
+                              className="border-emerald-400/40 bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/25 hover:text-white hover:border-emerald-400"
+                              onClick={() => setIsGoalsModalOpen(true)}
+                            >
+                              Voir les objectifs
+                            </Button>
+                          </div>
+                          <p className="text-gray-400">{selectedStudent.email}</p>
+                        </div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
-                      <div className="text-center p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                        <Calendar className="h-5 w-5 text-blue-400 mx-auto mb-1" />
-                        <p className="text-2xl font-bold text-white">
+                      <div className="text-center p-3 bg-blue-950/60 rounded-lg border border-blue-500/40">
+                        <Calendar className="h-5 w-5 text-blue-300 mx-auto mb-1" />
+                        <p className="text-2xl font-bold text-blue-100">
                           {selectedStudent.totalSessions}
                         </p>
-                        <p className="text-xs text-gray-400">Total</p>
+                        <p className="text-xs text-blue-300/80">Total</p>
                       </div>
-                      <div className="text-center p-3 bg-orange-500/10 rounded-lg border border-orange-500/20">
-                        <Clock className="h-5 w-5 text-orange-400 mx-auto mb-1" />
-                        <p className="text-2xl font-bold text-white">
+                      <div className="text-center p-3 bg-amber-950/60 rounded-lg border border-amber-500/40">
+                        <Clock className="h-5 w-5 text-amber-300 mx-auto mb-1" />
+                        <p className="text-2xl font-bold text-amber-100">
                           {selectedStudent.upcomingSessions}
                         </p>
-                        <p className="text-xs text-gray-400">À venir</p>
+                        <p className="text-xs text-amber-300/80">À venir</p>
                       </div>
-                      <div className="text-center p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                        <CheckCircle className="h-5 w-5 text-green-400 mx-auto mb-1" />
-                        <p className="text-2xl font-bold text-white">
+                      <div className="text-center p-3 bg-emerald-950/60 rounded-lg border border-emerald-500/40">
+                        <CheckCircle className="h-5 w-5 text-emerald-300 mx-auto mb-1" />
+                        <p className="text-2xl font-bold text-emerald-100">
                           {selectedStudent.completedSessions}
                         </p>
-                        <p className="text-xs text-gray-400">Complétées</p>
+                        <p className="text-xs text-emerald-300/80">Complétées</p>
                       </div>
                     </div>
                   </GlassCard>
@@ -386,6 +416,74 @@ export default function CoachStudentsPage() {
           </div>
         )}
       </div>
+
+      {selectedStudent && (
+        <Modal
+          open={isGoalsModalOpen}
+          onClose={() => setIsGoalsModalOpen(false)}
+          title={`Objectifs de ${selectedStudent.name || 'joueur'}`}
+          maxWidth="lg"
+        >
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-2">Objectif principal</h3>
+              {selectedStudent.goals ? (
+                <p className="text-gray-200 whitespace-pre-wrap leading-relaxed">
+                  {selectedStudent.goals}
+                </p>
+              ) : (
+                <p className="text-gray-500">Aucun objectif renseigné pour le moment.</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <GlassCard className="p-4 bg-white/5 border-white/10">
+                <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">ABI cible</p>
+                <p className="text-xl font-semibold text-white">
+                  {selectedStudent.abi != null
+                    ? `${selectedStudent.abi.toLocaleString('fr-FR', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2,
+                      })} €`
+                    : 'Non renseigné'}
+                </p>
+              </GlassCard>
+              <GlassCard className="p-4 bg-white/5 border-white/10">
+                <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">Gains visés</p>
+                <p className="text-xl font-semibold text-white">
+                  {selectedStudent.winnings != null
+                    ? `${selectedStudent.winnings.toLocaleString('fr-FR', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2,
+                      })} € / mois`
+                    : 'Non renseigné'}
+                </p>
+              </GlassCard>
+              <GlassCard className="p-4 bg-white/5 border-white/10">
+                <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">Fuseau horaire</p>
+                <p className="text-xl font-semibold text-white">
+                  {selectedStudent.timezone || 'Non renseigné'}
+                </p>
+              </GlassCard>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-3">Formats prioritaires</h3>
+              {selectedStudent.formats.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {selectedStudent.formats.map((format) => (
+                    <Badge key={format} className="bg-white/10 border-white/10 text-white">
+                      {format}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">Aucun format prioritaire renseigné.</p>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
     </CoachLayout>
   );
 }

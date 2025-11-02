@@ -1,118 +1,142 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
-import { useRouter, useParams } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { GlassCard, GradientText } from '@/components/ui';
 import { Button } from '@/components/ui/button';
-import { Euro, TrendingUp, Calendar, DollarSign, ArrowUpRight, Loader2, Zap, CheckCircle2 } from 'lucide-react';
+import {
+  Loader2,
+  TrendingUp,
+  Euro,
+  ArrowUpRight,
+  Clock,
+  Zap,
+  CheckCircle2,
+  Banknote,
+  Calendar,
+  Wallet,
+  BarChart3,
+} from 'lucide-react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+
+interface CoachDashboardResponse {
+  coach: {
+    status: string;
+  };
+  stats: {
+    totalRevenue: number;
+    monthlyRevenue: number;
+    totalReservations: number;
+    totalHours: number;
+    pendingReservations: number;
+    upcomingReservations: number;
+    activeAnnouncements: number;
+    monthlyRevenueData: Array<{ month: string; revenue: number }>;
+  };
+}
 
 export default function CoachRevenuePage() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
   const { data: session, isPending } = useSession();
-  const [coachStatus, setCoachStatus] = useState<string | null>(null);
+
+  const [dashboardData, setDashboardData] = useState<CoachDashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCoachStatus = async () => {
+    const fetchDashboard = async () => {
       try {
         const response = await fetch('/api/coach/dashboard');
-        if (response.ok) {
-          const data = await response.json();
-          setCoachStatus(data.coach.status);
+        if (!response.ok) {
+          throw new Error('Impossible de récupérer le dashboard coach');
         }
+        const data = await response.json();
+        setDashboardData(data);
       } catch (error) {
-        console.error('Erreur:', error);
+        console.error('Erreur récupération dashboard coach:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     if (session?.user) {
-      fetchCoachStatus();
+      fetchDashboard();
     }
   }, [session]);
+
+  const stats = dashboardData?.stats;
+  const isInactive = dashboardData?.coach.status === 'INACTIVE';
+
+  const revenuePerHour = useMemo(() => {
+    if (!stats || stats.totalHours === 0) return 0;
+    return stats.totalRevenue / stats.totalHours;
+  }, [stats]);
+
+  const averageOrderValue = useMemo(() => {
+    if (!stats || stats.totalReservations === 0) return 0;
+    return stats.totalRevenue / stats.totalReservations;
+  }, [stats]);
 
   if (isPending || isLoading) {
     return (
       <CoachLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
         </div>
       </CoachLayout>
     );
   }
 
-  const isInactive = coachStatus === 'INACTIVE';
-
   if (isInactive) {
     return (
       <CoachLayout>
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">
-              Revenus
-            </h1>
-            <p className="text-gray-600">
-              Suivez vos revenus et statistiques financières
-            </p>
-          </div>
-          <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
-            <CardContent className="py-12">
-              <div className="text-center mb-6">
-                <Euro className="h-12 w-12 text-orange-600 mx-auto mb-4" />
-                <p className="text-orange-900 font-semibold mb-2 text-xl">
+        <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+          <GlassCard className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-500/20 p-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="space-y-3">
+                <GradientText className="text-3xl font-semibold" variant="amber">
                   Activez votre abonnement pour suivre vos revenus
+                </GradientText>
+                <p className="text-gray-200 max-w-xl">
+                  Accédez au tableau de bord financier complet, recevez vos paiements et générez des rapports prêts pour votre comptabilité.
                 </p>
-                <p className="text-orange-700 text-sm">
-                  Débloquez toutes les fonctionnalités de la plateforme
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 max-w-2xl mx-auto">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900 text-sm">Statistiques détaillées</p>
-                    <p className="text-xs text-gray-600">Suivez vos revenus en temps réel</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900 text-sm">Paiements sécurisés</p>
-                    <p className="text-xs text-gray-600">Recevez vos paiements directement</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900 text-sm">Historique complet</p>
-                    <p className="text-xs text-gray-600">Accédez à l&apos;historique de toutes vos transactions</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900 text-sm">Rapports mensuels</p>
-                    <p className="text-xs text-gray-600">Générez des rapports pour votre comptabilité</p>
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  {[
+                    'Statistiques détaillées en temps réel',
+                    'Historique complet de vos paiements',
+                    'Notifications de versements automatiques',
+                    'Exports mensuels pour la comptabilité',
+                  ].map((item) => (
+                    <div key={item} className="flex items-start gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5" />
+                      <p className="text-sm text-gray-100">{item}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="text-center">
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold"
-                  onClick={() => router.push(`/${locale}/coach/onboarding`)}
-                >
-                  <Zap className="mr-2 h-5 w-5" />
-                  Activer mon abonnement maintenant
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8"
+                onClick={() => router.push(`/${locale}/coach/onboarding`)}
+              >
+                <Zap className="h-5 w-5 mr-2" />
+                Activer mon abonnement
+              </Button>
+            </div>
+          </GlassCard>
+        </div>
+      </CoachLayout>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <CoachLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <p className="text-gray-400">Impossible d’afficher les revenus pour le moment.</p>
         </div>
       </CoachLayout>
     );
@@ -120,147 +144,208 @@ export default function CoachRevenuePage() {
 
   return (
     <CoachLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            Revenus
-          </h1>
-          <p className="text-gray-600">
-            Suivez vos revenus et statistiques financières
+      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+        <header className="flex flex-col gap-3">
+          <div className="inline-flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/25">
+              <Euro className="h-6 w-6 text-emerald-300" />
+            </div>
+            <GradientText className="text-3xl font-semibold" variant="emerald">
+              Revenus & performance
+            </GradientText>
+          </div>
+          <p className="text-gray-300 max-w-2xl">
+            Analysez vos gains, suivez vos réservations et anticipez vos prochains paiements.
           </p>
+        </header>
+
+        {/* KPI cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <GlassCard className="p-6 border-emerald-500/20">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-400">Revenus total</p>
+              <TrendingUp className="h-5 w-5 text-emerald-300" />
+            </div>
+            <p className="text-3xl font-semibold text-white">{stats.totalRevenue.toFixed(2)} €</p>
+            <p className="text-xs text-emerald-300/80 mt-2 flex items-center gap-1">
+              <ArrowUpRight className="h-4 w-4" />
+              {stats.monthlyRevenue.toFixed(2)} € générés ce mois-ci
+            </p>
+          </GlassCard>
+
+          <GlassCard className="p-6 border-blue-500/20">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-400">Heures coachées</p>
+              <Clock className="h-5 w-5 text-blue-300" />
+            </div>
+            <p className="text-3xl font-semibold text-white">{stats.totalHours.toFixed(1)} h</p>
+            <p className="text-xs text-blue-300/80 mt-2">
+              {stats.totalReservations} sessions complétées
+            </p>
+          </GlassCard>
+
+          <GlassCard className="p-6 border-amber-500/20">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-400">Revenu moyen / session</p>
+              <Wallet className="h-5 w-5 text-amber-300" />
+            </div>
+            <p className="text-3xl font-semibold text-white">{averageOrderValue.toFixed(2)} €</p>
+            <p className="text-xs text-amber-300/80 mt-2">
+              {revenuePerHour.toFixed(2)} € par heure de coaching
+            </p>
+          </GlassCard>
+
+          <GlassCard className="p-6 border-purple-500/20">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-400">Prochaines sessions</p>
+              <Calendar className="h-5 w-5 text-purple-300" />
+            </div>
+            <p className="text-3xl font-semibold text-white">{stats.upcomingReservations}</p>
+            <p className="text-xs text-purple-300/80 mt-2">
+              {stats.pendingReservations} demandes en attente
+            </p>
+          </GlassCard>
         </div>
 
-        {/* Stats principales */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Revenus ce mois
-              </CardTitle>
-              <Euro className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0 €</div>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <ArrowUpRight className="h-3 w-3 text-green-600" />
-                <span className="text-green-600">+0%</span> vs mois dernier
-              </p>
-            </CardContent>
-          </Card>
+        {/* Revenue chart */}
+        <GlassCard className="p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-lg font-semibold text-white">Évolution mensuelle</h3>
+              <p className="text-sm text-gray-400">Revenus encaissés sur les 6 derniers mois</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                Revenus encaissés
+              </div>
+            </div>
+          </div>
+          <div className="h-72">
+            {stats.monthlyRevenueData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={stats.monthlyRevenueData}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="5%" stopColor="#34d399" stopOpacity={0.9} />
+                      <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" opacity={0.4} />
+                  <XAxis dataKey="month" stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                  <YAxis stroke="#9ca3af" tickFormatter={(value) => `${value}€`} tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    formatter={(value: number) => [`${value.toFixed(2)} €`, 'Revenus']}
+                    contentStyle={{
+                      backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(148, 163, 184, 0.2)',
+                      color: '#f8fafc',
+                    }}
+                    labelStyle={{ color: '#94a3b8' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#34d399"
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#colorRevenue)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                Aucune donnée disponible pour l’instant.
+              </div>
+            )}
+          </div>
+        </GlassCard>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Sessions ce mois
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">
-                Aucune session réalisée
-              </p>
-            </CardContent>
-          </Card>
+        {/* Summary grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <GlassCard className="p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                <Banknote className="h-5 w-5 text-emerald-300" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Résumé financier</h3>
+                <p className="text-sm text-gray-400">Vision claire de vos recettes et demandes</p>
+              </div>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
+                <span className="text-gray-300">Annonces actives</span>
+                <span className="text-white font-semibold">{stats.activeAnnouncements}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
+                <span className="text-gray-300">Demandes en attente</span>
+                <span className="text-amber-300 font-semibold">{stats.pendingReservations}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
+                <span className="text-gray-300">Sessions à venir</span>
+                <span className="text-emerald-300 font-semibold">{stats.upcomingReservations}</span>
+              </div>
+            </div>
+          </GlassCard>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Revenu moyen/session
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0 €</div>
-              <p className="text-xs text-muted-foreground">
-                Pas encore de données
-              </p>
-            </CardContent>
-          </Card>
+          <GlassCard className="p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <BarChart3 className="h-5 w-5 text-blue-300" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Optimisation</h3>
+                <p className="text-sm text-gray-400">Recommandations pour augmenter vos revenus</p>
+              </div>
+            </div>
+            <ul className="space-y-3 text-sm text-gray-300">
+              <li className="flex items-start gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Relancez vos joueurs récurrents pour des packs + gains réguliers.
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-400" />
+                Activez plus de créneaux pour augmenter vos chances de réservation.
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-400" />
+                Créez une annonce pack pour fidéliser vos élèves.
+              </li>
+            </ul>
+          </GlassCard>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Croissance
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0%</div>
-              <p className="text-xs text-muted-foreground">
-                Tendance mensuelle
+          <GlassCard className="p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                <Wallet className="h-5 w-5 text-purple-300" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Versements & paiements</h3>
+                <p className="text-sm text-gray-400">Paramétrez vos informations bancaires Stripe</p>
+              </div>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="p-4 bg-white/5 border border-purple-500/20 rounded-lg">
+                <p className="text-white font-medium">Compte Stripe</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Finalisez la connexion pour recevoir vos futurs paiements.
+                </p>
+                <Button
+                  variant="outline"
+                  className="mt-4 border-purple-500/70 bg-purple-950/60 text-purple-100 hover:bg-purple-800/70 hover:border-purple-400 hover:text-white"
+                  onClick={() => router.push(`/${locale}/coach/settings?tab=payouts`)}
+                >
+                  Configurer mes versements
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500">
+                Les versements sont traités automatiquement sous 7 jours ouvrés après validation des sessions.
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </GlassCard>
         </div>
-
-        {/* Graphique des revenus */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Évolution des revenus</CardTitle>
-            <CardDescription>
-              Vos revenus des 12 derniers mois
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
-              <div className="text-center">
-                <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">
-                  Aucune donnée de revenus pour le moment
-                </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Commencez à donner des sessions pour voir vos statistiques
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Dernières transactions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Dernières transactions</CardTitle>
-            <CardDescription>
-              Historique de vos paiements reçus
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center h-32 border-2 border-dashed rounded-lg">
-              <p className="text-gray-600">
-                Aucune transaction pour le moment
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Informations de paiement */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Informations de paiement</CardTitle>
-            <CardDescription>
-              Gérez vos informations bancaires pour recevoir vos paiements
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <p className="font-medium">Compte Stripe</p>
-                  <p className="text-sm text-gray-600">
-                    Non configuré
-                  </p>
-                </div>
-                <span className="text-sm text-orange-600 font-medium">
-                  Action requise
-                </span>
-              </div>
-              <p className="text-sm text-gray-600">
-                Vous devez configurer votre compte Stripe pour recevoir des paiements.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </CoachLayout>
   );
