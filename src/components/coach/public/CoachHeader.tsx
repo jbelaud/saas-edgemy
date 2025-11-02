@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Star, Twitch, Youtube, Twitter, MessageCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -75,11 +76,14 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden ring-4 ring-white/20 shadow-2xl">
-                <img
+              <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden ring-4 ring-white/20 shadow-2xl">
+                <Image
                   src={avatarUrl}
                   alt={`${coach.firstName} ${coach.lastName}`}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(min-width: 768px) 10rem, 8rem"
+                  unoptimized
                 />
               </div>
               {isTopCoach && (
@@ -211,11 +215,16 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-50 py-4 px-6 animate-in slide-in-from-bottom">
           <div className="container mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img
-                src={avatarUrl}
-                alt={`${coach.firstName} ${coach.lastName}`}
-                className="w-12 h-12 rounded-full object-cover ring-2 ring-orange-500"
-              />
+              <div className="relative w-12 h-12 rounded-full ring-2 ring-orange-500 overflow-hidden">
+                <Image
+                  src={avatarUrl}
+                  alt={`${coach.firstName} ${coach.lastName}`}
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                  unoptimized
+                />
+              </div>
               <div>
                 <p className="font-bold text-gray-900">
                   {coach.firstName} {coach.lastName}

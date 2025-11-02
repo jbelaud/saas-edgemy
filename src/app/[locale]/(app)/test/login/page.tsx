@@ -27,7 +27,7 @@ export default function TestLoginPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-500">Cette page n'est disponible qu'en développement</h1>
+          <h1 className="text-2xl font-bold text-red-500">Cette page n&apos;est disponible qu&apos;en développement</h1>
         </div>
       </div>
     );
@@ -104,9 +104,7 @@ export default function TestLoginPage() {
       <div className="w-full max-w-md p-8 bg-slate-800 rounded-xl border border-white/10">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white mb-2">Test Login</h1>
-          <p className="text-sm text-gray-400">
-            Page de test pour l'authentification E2E
-          </p>
+          <p className="text-sm text-gray-400">Page de test pour l&apos;authentification E2E</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4" data-testid="login-form">

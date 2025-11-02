@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -86,10 +87,13 @@ export function OnboardingStep3({ data, onNext, onBack }: Props) {
         <div className="flex items-center gap-4">
           {avatarUrl ? (
             <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200">
-              <img
+              <Image
                 src={avatarUrl}
                 alt="Avatar"
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="96px"
+                unoptimized
               />
             </div>
           ) : (
@@ -142,10 +146,13 @@ export function OnboardingStep3({ data, onNext, onBack }: Props) {
         <div className="space-y-4">
           {bannerUrl ? (
             <div className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200">
-              <img
+              <Image
                 src={bannerUrl}
                 alt="Bannière"
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="100vw"
+                unoptimized
               />
             </div>
           ) : (
