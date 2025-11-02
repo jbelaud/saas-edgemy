@@ -166,11 +166,11 @@ export async function DELETE(req: Request) {
       cancel_at_period_end: true,
     });
 
-    console.log(`✅ Abonnement ${coach.subscriptionId} annulé (fin de période: ${new Date((subscription as any).current_period_end * 1000).toISOString()})`);
+    console.log(`✅ Abonnement ${coach.subscriptionId} annulé (fin de période: ${new Date(((subscription as unknown) as { current_period_end: number }).current_period_end * 1000).toISOString()})`);
 
     return NextResponse.json({
       message: 'Abonnement annulé. Il restera actif jusqu\'à la fin de la période en cours.',
-      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+      currentPeriodEnd: new Date(((subscription as unknown) as { current_period_end: number }).current_period_end * 1000),
     });
   } catch (err) {
     console.error('❌ Erreur annulation abonnement:', err);
