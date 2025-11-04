@@ -96,6 +96,15 @@ export async function POST(req: Request) {
       );
     }
 
+    // Vérifier que l'URL de base est configurée
+    if (!process.env.NEXT_PUBLIC_APP_URL) {
+      console.error('❌ NEXT_PUBLIC_APP_URL n\'est pas définie');
+      return NextResponse.json(
+        { error: 'Configuration serveur manquante (NEXT_PUBLIC_APP_URL)' },
+        { status: 500 }
+      );
+    }
+
     // Créer l'Account Link pour l'onboarding
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
