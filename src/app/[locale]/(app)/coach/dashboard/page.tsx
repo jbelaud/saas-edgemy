@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { useLocale } from 'next-intl';
-import { Loader2, TrendingUp, Users, Clock, Euro, ExternalLink, Sparkles, CheckCircle2, Zap } from 'lucide-react';
+import { Loader2, TrendingUp, Users, Clock, Euro, ExternalLink, Sparkles, CheckCircle2, Zap, BarChart3, UserCircle2, Megaphone } from 'lucide-react';
 import { GlassCard, GradientButton, GradientText } from '@/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardStats } from '@/components/coach/dashboard/DashboardStats';
@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { useCoachRoleSetup } from '@/hooks/useCoachRoleSetup';
 import { useSearchParams } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
+import { CoachOnboardingModal } from '@/components/coach/onboarding/CoachOnboardingModal';
 
 export default function CoachDashboardPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function CoachDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSettingUp, setIsSettingUp] = useState(false);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
   
   // Hook pour créer le profil coach lors de la première connexion Google
   useCoachRoleSetup();
@@ -92,9 +94,9 @@ export default function CoachDashboardPage() {
     return null;
   }
 
-  // Vérifier le statut du coach
+  // Vérifier le statut d'abonnement du coach
   const { coach, stats } = data;
-  const isInactive = coach.status === 'INACTIVE';
+  const hasActiveSubscription = coach.subscriptionStatus === 'ACTIVE';
 
   return (
     <CoachLayout>
@@ -109,7 +111,7 @@ export default function CoachDashboardPage() {
             Gérez votre activité de coaching
           </p>
         </div>
-        {!isInactive && (
+        {hasActiveSubscription && (
           <Link href={`/${locale}/coach/${coach.slug}`} target="_blank">
             <GradientButton variant="ghost" size="lg">
               <ExternalLink className="mr-2 h-4 w-4" />
@@ -120,7 +122,7 @@ export default function CoachDashboardPage() {
       </div>
 
       {/* Status Alerts */}
-      {isInactive && (
+      {!hasActiveSubscription && (
         <GlassCard className="mb-6 border-amber-500/20 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
           <div className="mb-6">
             <h2 className="text-white flex items-center gap-2 text-2xl font-bold mb-3">
@@ -162,11 +164,11 @@ export default function CoachDashboardPage() {
                 </div>
               </div>
             </div>
-            <GradientButton 
-              size="lg" 
+            <GradientButton
+              size="lg"
               variant="amber"
               className="w-full md:w-auto"
-              onClick={() => router.push(`/${locale}/coach/onboarding`)}
+              onClick={() => setIsOnboardingModalOpen(true)}
             >
               <Zap className="mr-2 h-5 w-5" />
               Activer mon abonnement maintenant
@@ -225,9 +227,18 @@ export default function CoachDashboardPage() {
       {/* Tabs */}
       <Tabs defaultValue="stats" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="stats">Vue d&apos;ensemble</TabsTrigger>
-          <TabsTrigger value="profile">Profil</TabsTrigger>
-          <TabsTrigger value="announcements">Annonces</TabsTrigger>
+          <TabsTrigger value="stats">
+            <BarChart3 className="h-4 w-4" />
+            Vue d&apos;ensemble
+          </TabsTrigger>
+          <TabsTrigger value="profile">
+            <UserCircle2 className="h-4 w-4" />
+            Profil
+          </TabsTrigger>
+          <TabsTrigger value="announcements">
+            <Megaphone className="h-4 w-4" />
+            Annonces
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="stats">
@@ -239,9 +250,18 @@ export default function CoachDashboardPage() {
         </TabsContent>
 
         <TabsContent value="announcements">
-          <DashboardAnnouncements coach={coach} />
+          <DashboardAnnouncements
+            coach={coach}
+            onOpenOnboarding={() => setIsOnboardingModalOpen(true)}
+          />
         </TabsContent>
       </Tabs>
+
+      {/* Onboarding Modal */}
+      <CoachOnboardingModal
+        open={isOnboardingModalOpen}
+        onOpenChange={setIsOnboardingModalOpen}
+      />
     </CoachLayout>
   );
 }

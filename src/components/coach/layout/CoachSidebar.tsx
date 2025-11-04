@@ -40,7 +40,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    title: "Dashboard",
+    title: "Tableau de bord",
     href: "/coach/dashboard",
     icon: LayoutDashboard,
   },
@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
     icon: Megaphone,
   },
   {
-    title: "Packs",
+    title: "Packs & offres",
     href: "/coach/packs",
     icon: Package,
   },
@@ -60,7 +60,7 @@ const navItems: NavItem[] = [
     icon: Calendar,
   },
   {
-    title: "Mes Élèves",
+    title: "Mes élèves",
     href: "/coach/students",
     icon: Users,
   },

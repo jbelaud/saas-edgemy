@@ -12,18 +12,18 @@ import {
   Euro,
   ArrowUpRight,
   Clock,
-  Zap,
-  CheckCircle2,
   Banknote,
   Calendar,
   Wallet,
   BarChart3,
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
+import { CoachOnboardingModal } from '@/components/coach/onboarding/CoachOnboardingModal';
 
 interface CoachDashboardResponse {
   coach: {
-    status: string;
+    subscriptionStatus: string | null;
   };
   stats: {
     totalRevenue: number;
@@ -45,6 +45,7 @@ export default function CoachRevenuePage() {
 
   const [dashboardData, setDashboardData] = useState<CoachDashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -68,7 +69,7 @@ export default function CoachRevenuePage() {
   }, [session]);
 
   const stats = dashboardData?.stats;
-  const isInactive = dashboardData?.coach.status === 'INACTIVE';
+  const hasActiveSubscription = dashboardData?.coach.subscriptionStatus === 'ACTIVE';
 
   const revenuePerHour = useMemo(() => {
     if (!stats || stats.totalHours === 0) return 0;
@@ -90,53 +91,11 @@ export default function CoachRevenuePage() {
     );
   }
 
-  if (isInactive) {
-    return (
-      <CoachLayout>
-        <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
-          <GlassCard className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-500/20 p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="space-y-3">
-                <GradientText className="text-3xl font-semibold" variant="amber">
-                  Activez votre abonnement pour suivre vos revenus
-                </GradientText>
-                <p className="text-gray-200 max-w-xl">
-                  Accédez au tableau de bord financier complet, recevez vos paiements et générez des rapports prêts pour votre comptabilité.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  {[
-                    'Statistiques détaillées en temps réel',
-                    'Historique complet de vos paiements',
-                    'Notifications de versements automatiques',
-                    'Exports mensuels pour la comptabilité',
-                  ].map((item) => (
-                    <div key={item} className="flex items-start gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5" />
-                      <p className="text-sm text-gray-100">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8"
-                onClick={() => router.push(`/${locale}/coach/onboarding`)}
-              >
-                <Zap className="h-5 w-5 mr-2" />
-                Activer mon abonnement
-              </Button>
-            </div>
-          </GlassCard>
-        </div>
-      </CoachLayout>
-    );
-  }
-
   if (!stats) {
     return (
       <CoachLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <p className="text-gray-400">Impossible d’afficher les revenus pour le moment.</p>
+          <p className="text-gray-400">Impossible d&apos;afficher les revenus pour le moment.</p>
         </div>
       </CoachLayout>
     );
@@ -144,7 +103,11 @@ export default function CoachRevenuePage() {
 
   return (
     <CoachLayout>
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <SubscriptionGate
+        isActive={hasActiveSubscription}
+        onOpenOnboarding={() => setIsOnboardingModalOpen(true)}
+      >
+        <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
         <header className="flex flex-col gap-3">
           <div className="inline-flex items-center gap-3">
             <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/25">
@@ -346,7 +309,14 @@ export default function CoachRevenuePage() {
             </div>
           </GlassCard>
         </div>
-      </div>
+        </div>
+      </SubscriptionGate>
+
+      {/* Onboarding Modal */}
+      <CoachOnboardingModal
+        open={isOnboardingModalOpen}
+        onOpenChange={setIsOnboardingModalOpen}
+      />
     </CoachLayout>
   );
 }

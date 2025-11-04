@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Users, Calendar, Loader2, StickyNote, Save, Clock, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
+import { CoachOnboardingModal } from '@/components/coach/onboarding/CoachOnboardingModal';
 
 interface Note {
   id: string;
@@ -52,12 +54,27 @@ export default function CoachStudentsPage() {
   const [newNote, setNewNote] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [isGoalsModalOpen, setIsGoalsModalOpen] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
+      fetchCoachProfile();
       fetchStudents();
     }
   }, [session]);
+
+  const fetchCoachProfile = async () => {
+    try {
+      const response = await fetch('/api/coach/profile');
+      if (response.ok) {
+        const data = await response.json();
+        setSubscriptionStatus(data.coach?.subscriptionStatus || null);
+      }
+    } catch (error) {
+      console.error('Erreur chargement profil coach:', error);
+    }
+  };
 
   useEffect(() => {
     setIsGoalsModalOpen(false);
@@ -132,16 +149,20 @@ export default function CoachStudentsPage() {
 
   return (
     <CoachLayout>
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <GradientText className="text-4xl font-bold mb-2">
-            Mes Élèves
-          </GradientText>
-          <p className="text-gray-400">
-            Gérez vos élèves et suivez leur progression
-          </p>
-        </div>
+      <SubscriptionGate
+        isActive={subscriptionStatus === 'ACTIVE'}
+        onOpenOnboarding={() => setIsOnboardingModalOpen(true)}
+      >
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          {/* Header */}
+          <div className="mb-8">
+            <GradientText className="text-4xl font-bold mb-2">
+              Mes Élèves
+            </GradientText>
+            <p className="text-gray-400">
+              Gérez vos élèves et suivez leur progression
+            </p>
+          </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -415,7 +436,8 @@ export default function CoachStudentsPage() {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </SubscriptionGate>
 
       {selectedStudent && (
         <Modal
@@ -484,6 +506,12 @@ export default function CoachStudentsPage() {
           </div>
         </Modal>
       )}
+
+      {/* Onboarding Modal */}
+      <CoachOnboardingModal
+        open={isOnboardingModalOpen}
+        onOpenChange={setIsOnboardingModalOpen}
+      />
     </CoachLayout>
   );
 }

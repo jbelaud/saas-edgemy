@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, Bell, Shield } from 'lucide-react';
 import { ConnectDiscordButton } from '@/components/discord/ConnectDiscordButton';
+import { StripeConnectSettings } from '@/components/coach/settings/StripeConnectSettings';
 import {
   Select,
   SelectContent,
@@ -271,47 +272,7 @@ export default function CoachSettingsPage() {
               </h2>
             </div>
 
-            <div className="space-y-4">
-              <div className="p-4 bg-sky-500/10 border border-sky-500/30 rounded-lg">
-                <p className="text-sm text-sky-300 mb-2 font-semibold">
-                  Pourquoi connecter Stripe ?
-                </p>
-                <ul className="text-sm text-gray-300 space-y-1">
-                  <li>✅ Recevez vos paiements directement sur votre compte bancaire</li>
-                  <li>✅ Accédez à un tableau de bord professionnel pour vos revenus</li>
-                  <li>✅ Conformité légale et fiscale simplifiée</li>
-                  <li>✅ Protection contre la fraude et gestion des remboursements</li>
-                </ul>
-              </div>
-
-              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-start gap-3">
-                <Shield className="h-5 w-5 text-emerald-300 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-emerald-300 mb-1">
-                    Sécurité des paiements
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Stripe vérifie votre identité et sécurise toutes les transactions. Vous gardez le contrôle sur vos versements et pouvez définir votre fréquence de paiement.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-white">Statut du compte</p>
-                  <p className="text-xs text-gray-400">Non connecté</p>
-                </div>
-                <Button
-                  className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700"
-                >
-                  Configurer mon compte Stripe
-                </Button>
-              </div>
-
-              <p className="text-xs text-gray-500">
-                💡 Après connexion, vous pourrez suivre vos versements depuis votre tableau de bord Stripe et disposer d’un historique complet pour votre comptabilité.
-              </p>
-            </div>
+            <StripeConnectSettings />
           </GlassCard>
 
           {/* Notifications */}

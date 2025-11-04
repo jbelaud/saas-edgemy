@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { GlassCard, GradientButton } from '@/components/ui';
+import { GlassCard } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock, Megaphone, Zap, CheckCircle2 } from 'lucide-react';
+import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock, Megaphone } from 'lucide-react';
 import { AnnouncementPacksSection } from '@/components/coach/announcements/AnnouncementPacksSection';
+import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
 
 interface Announcement {
   id: string;
@@ -33,11 +34,10 @@ interface Announcement {
 }
 
 import type { CoachWithRelations } from '@/types/dashboard';
-import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
 
 interface DashboardAnnouncementsProps {
   coach: CoachWithRelations;
+  onOpenOnboarding?: () => void;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -63,12 +63,10 @@ const FORMAT_LABELS: Record<string, string> = {
   MIXED: 'Mixed',
 };
 
-export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
-  const router = useRouter();
-  const locale = useLocale();
+export function DashboardAnnouncements({ coach, onOpenOnboarding }: DashboardAnnouncementsProps) {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const isInactive = coach.status === 'INACTIVE';
+  const hasActiveSubscription = coach.subscriptionStatus === 'ACTIVE';
 
   useEffect(() => {
     fetchAnnouncements();
@@ -133,81 +131,24 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
     );
   }
 
-  if (isInactive) {
-    return (
-      <GlassCard className="border-amber-500/20 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
-        <div className="py-6">
-          <div className="text-center mb-6">
-            <Megaphone className="h-12 w-12 text-amber-400 mx-auto mb-4" />
-            <p className="text-white font-semibold mb-2 text-xl">
-              Activez votre abonnement pour créer des annonces
-            </p>
-            <p className="text-gray-300 text-sm">
-              Débloquez toutes les fonctionnalités de la plateforme
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 max-w-2xl mx-auto">
-            <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
-              <div className="text-left">
-                <p className="font-semibold text-white text-sm">Annonces illimitées</p>
-                <p className="text-xs text-gray-400">Créez autant d&apos;annonces que vous le souhaitez</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
-              <div className="text-left">
-                <p className="font-semibold text-white text-sm">Profil public visible</p>
-                <p className="text-xs text-gray-400">Apparaissez dans les résultats de recherche</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
-              <div className="text-left">
-                <p className="font-semibold text-white text-sm">Réservations illimitées</p>
-                <p className="text-xs text-gray-400">Recevez autant de réservations que vous voulez</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
-              <div className="text-left">
-                <p className="font-semibold text-white text-sm">Paiements sécurisés</p>
-                <p className="text-xs text-gray-400">Recevez vos paiements directement</p>
-              </div>
-            </div>
-          </div>
-          <div className="text-center">
-            <GradientButton 
-              size="lg" 
-              variant="amber"
-              onClick={() => router.push(`/${locale}/coach/onboarding`)}
-            >
-              <Zap className="mr-2 h-5 w-5" />
-              Activer mon abonnement maintenant
-            </GradientButton>
-          </div>
-        </div>
-      </GlassCard>
-    );
-  }
-
-  if (announcements.length === 0) {
-    return (
-      <GlassCard>
-        <div className="py-12 text-center">
-          <p className="text-gray-400 mb-4">
-            Vous n&apos;avez pas encore créé d&apos;annonce
-          </p>
-          <p className="text-sm text-gray-500">
-            Cliquez sur &quot;Créer une annonce&quot; pour commencer
-          </p>
-        </div>
-      </GlassCard>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <SubscriptionGate
+      isActive={hasActiveSubscription}
+      onOpenOnboarding={onOpenOnboarding}
+    >
+      {announcements.length === 0 ? (
+        <GlassCard>
+          <div className="py-12 text-center">
+            <p className="text-gray-400 mb-4">
+              Vous n&apos;avez pas encore créé d&apos;annonce
+            </p>
+            <p className="text-sm text-gray-500">
+              Cliquez sur &quot;Créer une annonce&quot; pour commencer
+            </p>
+          </div>
+        </GlassCard>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {announcements.map((announcement) => (
         <GlassCard key={announcement.id} className={`p-6 hover:border-emerald-500/30 transition-all ${!announcement.isActive ? 'opacity-60' : ''}`}>
           <div className="space-y-4">
@@ -383,6 +324,8 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
           </div>
         </GlassCard>
       ))}
-    </div>
+        </div>
+      )}
+    </SubscriptionGate>
   );
 }

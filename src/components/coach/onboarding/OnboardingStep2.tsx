@@ -36,10 +36,10 @@ export function OnboardingStep2({ data, onNext, onBack }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-white mb-2">
           Liens sociaux
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-300">
           Partagez vos réseaux sociaux pour augmenter votre visibilité (optionnel)
         </p>
       </div>
@@ -110,10 +110,10 @@ export function OnboardingStep2({ data, onNext, onBack }: Props) {
 
       {/* Actions */}
       <div className="flex justify-between pt-4">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="outline" onClick={onBack} className="bg-white/90 border-white/20 text-gray-900 hover:bg-white hover:text-black">
           Retour
         </Button>
-        <Button type="submit" size="lg">
+        <Button type="submit" size="lg" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg shadow-amber-500/30">
           Continuer
         </Button>
       </div>

@@ -34,7 +34,10 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(cmd //c taskkill //PID 16104 //F)",
-      "Bash(cmd //c taskkill //PID 12836 //F)"
+      "Bash(cmd //c taskkill //PID 12836 //F)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [],
     "ask": []

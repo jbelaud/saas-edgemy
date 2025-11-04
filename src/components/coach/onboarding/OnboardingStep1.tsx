@@ -59,10 +59,10 @@ export function OnboardingStep1({ data, onNext }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-white mb-2">
           Informations personnelles
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-300">
           Présentez-vous et partagez votre expertise en poker
         </p>
       </div>
@@ -199,7 +199,7 @@ export function OnboardingStep1({ data, onNext }: Props) {
 
       {/* Actions */}
       <div className="flex justify-end pt-4">
-        <Button type="submit" size="lg">
+        <Button type="submit" size="lg" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg shadow-amber-500/30">
           Continuer
         </Button>
       </div>

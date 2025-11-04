@@ -18,6 +18,14 @@ export async function GET(request: NextRequest) {
         status: 'ACTIVE',
         ...(format && { formats: { has: format } }),
         ...(language && { languages: { has: language } }),
+        ...(type && {
+          announcements: {
+            some: {
+              isActive: true,
+              type,
+            },
+          },
+        }),
       },
       select: {
         id: true,
@@ -32,6 +40,7 @@ export async function GET(request: NextRequest) {
         roi: true,
         stakes: true,
         badges: true,
+        subscriptionStatus: true,
         announcements: {
           where: {
             isActive: true,

@@ -56,5 +56,132 @@
       "totalRevenue": "Total Revenue",
       "activeStudents": "Active Students"
     }
+  },
+  "discoverCoaches": {
+    "hero": {
+      "title": "Discover our elite poker coaches",
+      "subtitle": "Meet the top active coaches on Edgemy, available for tailored one-to-one sessions.",
+      "ctaPrimary": "Explore coaches",
+      "ctaSecondary": "Become an Edgemy coach",
+      "stat1": {
+        "label": "Active coaches with subscription"
+      },
+      "stat2": {
+        "value": "MTT • Cash Game • Spin & Go",
+        "label": "Formats covered"
+      },
+      "stat3": {
+        "value": "Strategy • Tools • Mental • Review",
+        "label": "Coaching categories available"
+      }
+    },
+    "filters": {
+      "title": "Refine your search",
+      "searchPlaceholder": "Search a coach or a format...",
+      "typesTitle": "Coaching categories",
+      "formatsTitle": "Game formats",
+      "languagesTitle": "Languages",
+      "reset": "Reset"
+    },
+    "states": {
+      "loading": "Loading coaches...",
+      "error": "We can't load coaches right now.",
+      "empty": {
+        "title": "No coach matches your search",
+        "description": "Adjust your filters or come back later, new coaches join Edgemy every week."
+      }
+    },
+    "card": {
+      "topCoach": "Top Coach",
+      "experience": "{count, plural, one {# year of experience} other {# years of experience}}",
+      "priceFrom": "From",
+      "perHour": " /hour",
+      "languages": "Languages",
+      "formats": "Formats",
+      "viewProfile": "View profile",
+      "book": "Book"
+    },
+    "badges": {
+      "STRATEGY": "Strategy",
+      "REVIEW": "Review",
+      "TOOL": "Tools",
+      "MENTAL": "Mental"
+    }
+  },
+  "player": {
+    "coaches": {
+      "loading": {
+        "title": "Loading your coaches",
+        "subtitle": "We are preparing your session history and coach insights."
+      },
+      "errors": {
+        "title": "Unable to load your coaches",
+        "default": "An unexpected error occurred."
+      },
+      "section": {
+        "badge": "Personalised coaching",
+        "title": "My coaches",
+        "subtitle": "Review your session history, reopen private channels and keep in touch with your coaches."
+      },
+      "actions": {
+        "find": "Find a new coach",
+        "retry": "Try again",
+        "discover": "Explore coaches",
+        "backToDashboard": "Back to dashboard"
+      },
+      "metrics": {
+        "totalSessions": "Sessions completed",
+        "totalSessionsHint": "All the sessions completed with your coaches",
+        "lastSession": "Latest session",
+        "lastSessionHint": "Date of your most recent session",
+        "noSession": "No session recorded yet"
+      },
+      "empty": {
+        "title": "You haven't worked with a coach yet",
+        "description": "Explore our catalogue of experts to book your first session and accelerate your progress.",
+        "highlight1": "Benefit from personalised support tailored to your level and goals.",
+        "highlight2": "Review key hands with coaches specialised in MTT, Cash Game or Spin & Go.",
+        "highlight3": "Receive a clear training plan after each session.",
+        "highlight4": "Access exclusive resources shared by the coaches.",
+        "guide": {
+          "badge": "How to get started?",
+          "title": "Recommended action plan",
+          "description": "Follow these steps to find the right coach and schedule your first session.",
+          "step1": {
+            "title": "Explore coaches",
+            "description": "Filter by game format, stakes and specialities to identify the best profiles."
+          },
+          "step2": {
+            "title": "Book a session",
+            "description": "Choose an available slot and confirm your booking in a few clicks."
+          },
+          "step3": {
+            "title": "Prepare yourself",
+            "description": "Share your goals and hands to review to maximise the session's impact."
+          }
+        }
+      },
+      "card": {
+        "status": {
+          "ACTIVE": "Active",
+          "PENDING_REVIEW": "Pending review",
+          "INACTIVE": "Inactive",
+          "SUSPENDED": "Suspended"
+        },
+        "sessionsCount": "{count, plural, one {# session completed} other {# sessions completed}}",
+        "lastSession": "Last session: {date}",
+        "noSession": "No session recorded yet",
+        "bio": "Coach profile",
+        "types": "Session types",
+        "formats": "Formats covered",
+        "languages": "Languages",
+        "channel": {
+          "openDiscord": "Open Discord room",
+          "unavailable": "Room unavailable",
+          "tooltip": "Go to your Discord room to keep the conversation going and share resources."
+        },
+        "profile": "View profile"
+      }
+    }
   }
 }

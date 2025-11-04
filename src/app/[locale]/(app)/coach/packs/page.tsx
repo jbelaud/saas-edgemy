@@ -11,6 +11,8 @@ import { Package, Clock, Loader2, Calendar, TrendingUp, CheckCircle } from 'luci
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from 'next/link';
+import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
+import { CoachOnboardingModal } from '@/components/coach/onboarding/CoachOnboardingModal';
 
 interface CoachPackage {
   id: string;
@@ -46,12 +48,27 @@ export default function CoachPacksPage() {
   const [packages, setPackages] = useState<CoachPackage[]>([]);
   const [stats, setStats] = useState({ total: 0, active: 0, completed: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
+      fetchCoachProfile();
       fetchPackages();
     }
   }, [session]);
+
+  const fetchCoachProfile = async () => {
+    try {
+      const response = await fetch('/api/coach/profile');
+      if (response.ok) {
+        const data = await response.json();
+        setSubscriptionStatus(data.coach?.subscriptionStatus || null);
+      }
+    } catch (error) {
+      console.error('Erreur chargement profil coach:', error);
+    }
+  };
 
   const fetchPackages = async () => {
     try {
@@ -107,16 +124,20 @@ export default function CoachPacksPage() {
 
   return (
     <CoachLayout>
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <GradientText className="text-4xl font-bold mb-2">
-            Mes Packs
-          </GradientText>
-          <p className="text-gray-400">
-            Gérez les packs d&apos;heures achetés par vos élèves
-          </p>
-        </div>
+      <SubscriptionGate
+        isActive={subscriptionStatus === 'ACTIVE'}
+        onOpenOnboarding={() => setIsOnboardingModalOpen(true)}
+      >
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          {/* Header */}
+          <div className="mb-8">
+            <GradientText className="text-4xl font-bold mb-2">
+              Mes Packs
+            </GradientText>
+            <p className="text-gray-400">
+              Gérez les packs d&apos;heures achetés par vos élèves
+            </p>
+          </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -291,7 +312,14 @@ export default function CoachPacksPage() {
             })}
           </div>
         )}
-      </div>
+        </div>
+      </SubscriptionGate>
+
+      {/* Onboarding Modal */}
+      <CoachOnboardingModal
+        open={isOnboardingModalOpen}
+        onOpenChange={setIsOnboardingModalOpen}
+      />
     </CoachLayout>
   );
 }

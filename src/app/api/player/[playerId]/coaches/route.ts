@@ -81,18 +81,52 @@ export async function GET(
           ...reservation.coach,
           sessionsCount: 0,
           types: new Set(),
+          lastSessionDate: null as Date | null,
+          discordChannelId: null as string | null,
         });
       }
       const coachData = coachesMap.get(coachId);
       coachData.sessionsCount++;
       coachData.types.add(reservation.announcement.type);
+
+      const reservationStartDate = reservation.startDate;
+      if (!coachData.lastSessionDate || reservationStartDate > coachData.lastSessionDate) {
+        coachData.lastSessionDate = reservationStartDate;
+        coachData.discordChannelId = reservation.discordChannelId ?? coachData.discordChannelId;
+      }
     });
 
     // Convertir en tableau et formater
-    const coaches = Array.from(coachesMap.values()).map((coach) => ({
-      ...coach,
-      types: Array.from(coach.types),
-    }));
+    const coachIds = Array.from(coachesMap.keys());
+    const coachPlayerChannels = coachIds.length === 0
+      ? []
+      : await prisma.coachPlayerChannel.findMany({
+          where: {
+            playerId: session.user.id,
+            coachId: { in: coachIds },
+          },
+          select: {
+            coachId: true,
+            discordChannelId: true,
+          },
+        });
+
+    const channelByCoach = new Map<string, string>();
+    coachPlayerChannels.forEach((channel) => {
+      if (channel.discordChannelId) {
+        channelByCoach.set(channel.coachId, channel.discordChannelId);
+      }
+    });
+
+    const coaches = Array.from(coachesMap.values()).map((coach) => {
+      const persistedChannelId = channelByCoach.get(coach.id);
+      return {
+        ...coach,
+        types: Array.from(coach.types),
+        lastSessionDate: coach.lastSessionDate ? coach.lastSessionDate.toISOString() : null,
+        discordChannelId: persistedChannelId ?? coach.discordChannelId,
+      };
+    });
 
     // Trier par nombre de sessions décroissant
     coaches.sort((a, b) => b.sessionsCount - a.sessionsCount);

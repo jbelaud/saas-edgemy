@@ -37,17 +37,17 @@ export function OnboardingStep5({ onComplete, onBack, isLoading }: Props) {
     }
   };
 
-  const monthlyPrice = 29.90;
-  const yearlyPrice = 299;
-  const yearlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(2);
+  const monthlyPrice = 39;
+  const yearlyPrice = 399;
+  const yearlySavings = (monthlyPrice * 12 - yearlyPrice).toFixed(0);
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-white mb-2">
           Choisissez votre abonnement
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-300">
           Débloquez toutes les fonctionnalités pour développer votre activité de coaching
         </p>
       </div>
@@ -58,45 +58,45 @@ export function OnboardingStep5({ onComplete, onBack, isLoading }: Props) {
         <div
           className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all ${
             selectedPlan === 'monthly'
-              ? 'border-primary bg-primary/5'
-              : 'border-gray-200 hover:border-gray-300'
+              ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/20'
+              : 'border-white/20 hover:border-white/40 bg-white/5'
           }`}
           onClick={() => setSelectedPlan('monthly')}
         >
           {selectedPlan === 'monthly' && (
             <div className="absolute top-4 right-4">
-              <Check className="h-6 w-6 text-primary" />
+              <Check className="h-6 w-6 text-amber-400" />
             </div>
           )}
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Zap className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-blue-500/20 rounded-lg">
+              <Zap className="h-6 w-6 text-blue-400" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900">Mensuel</h3>
-              <p className="text-sm text-gray-600">Flexible</p>
+              <h3 className="font-bold text-white">Mensuel</h3>
+              <p className="text-sm text-gray-400">Flexible</p>
             </div>
           </div>
           <div className="mb-4">
-            <span className="text-4xl font-bold text-gray-900">{monthlyPrice}€</span>
-            <span className="text-gray-600">/mois</span>
+            <span className="text-4xl font-bold text-white">{monthlyPrice}€</span>
+            <span className="text-gray-400">/mois</span>
           </div>
           <ul className="space-y-2 text-sm">
             <li className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Annonces illimitées</span>
+              <Check className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-gray-300">Annonces illimitées</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Calendrier intelligent</span>
+              <Check className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-gray-300">Calendrier intelligent</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Statistiques détaillées</span>
+              <Check className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-gray-300">Statistiques détaillées</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Support prioritaire</span>
+              <Check className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-gray-300">Support prioritaire</span>
             </li>
           </ul>
         </div>
@@ -105,55 +105,55 @@ export function OnboardingStep5({ onComplete, onBack, isLoading }: Props) {
         <div
           className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all ${
             selectedPlan === 'yearly'
-              ? 'border-primary bg-primary/5'
-              : 'border-gray-200 hover:border-gray-300'
+              ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/20'
+              : 'border-white/20 hover:border-white/40 bg-white/5'
           }`}
           onClick={() => setSelectedPlan('yearly')}
         >
-          <div className="absolute -top-3 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+          <div className="absolute -top-3 right-4 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             Économisez {yearlySavings}€
           </div>
           {selectedPlan === 'yearly' && (
             <div className="absolute top-4 right-4">
-              <Check className="h-6 w-6 text-primary" />
+              <Check className="h-6 w-6 text-amber-400" />
             </div>
           )}
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Crown className="h-6 w-6 text-purple-600" />
+            <div className="p-2 bg-purple-500/20 rounded-lg">
+              <Crown className="h-6 w-6 text-purple-400" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900">Annuel</h3>
-              <p className="text-sm text-gray-600">Meilleur prix</p>
+              <h3 className="font-bold text-white">Annuel</h3>
+              <p className="text-sm text-gray-400">Meilleur prix</p>
             </div>
           </div>
           <div className="mb-4">
-            <span className="text-4xl font-bold text-gray-900">{yearlyPrice}€</span>
-            <span className="text-gray-600">/an</span>
-            <p className="text-sm text-green-600 font-medium mt-1">
+            <span className="text-4xl font-bold text-white">{yearlyPrice}€</span>
+            <span className="text-gray-400">/an</span>
+            <p className="text-sm text-emerald-400 font-medium mt-1">
               Soit {(yearlyPrice / 12).toFixed(2)}€/mois
             </p>
           </div>
           <ul className="space-y-2 text-sm">
             <li className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Annonces illimitées</span>
+              <Check className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-gray-300">Annonces illimitées</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Calendrier intelligent</span>
+              <Check className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-gray-300">Calendrier intelligent</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Statistiques détaillées</span>
+              <Check className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-gray-300">Statistiques détaillées</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span>Support prioritaire</span>
+              <Check className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-gray-300">Support prioritaire</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span className="font-medium text-green-600">2 mois offerts</span>
+              <Check className="h-4 w-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="font-medium text-emerald-400">2 mois offerts</span>
             </li>
           </ul>
         </div>
@@ -161,7 +161,7 @@ export function OnboardingStep5({ onComplete, onBack, isLoading }: Props) {
 
       {/* Actions */}
       <div className="flex justify-between pt-4">
-        <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
+        <Button type="button" variant="outline" onClick={onBack} disabled={isLoading} className="bg-white/90 border-white/20 text-gray-900 hover:bg-white hover:text-black">
           Retour
         </Button>
         <Button
@@ -169,6 +169,7 @@ export function OnboardingStep5({ onComplete, onBack, isLoading }: Props) {
           size="lg"
           onClick={handleSubscribe}
           disabled={isLoading}
+          className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold shadow-lg shadow-emerald-500/30"
         >
           {isLoading ? (
             <>

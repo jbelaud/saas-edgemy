@@ -56,5 +56,132 @@
       "totalRevenue": "Revenu total",
       "activeStudents": "Élèves actifs"
     }
+  },
+  "discoverCoaches": {
+    "hero": {
+      "title": "Découvrez nos coachs poker d’exception",
+      "subtitle": "Accédez aux meilleurs coachs actifs sur Edgemy, disponibles pour des sessions personnalisées.",
+      "ctaPrimary": "Explorer les coachs",
+      "ctaSecondary": "Devenir coach Edgemy",
+      "stat1": {
+        "label": "Coachs actifs abonnés"
+      },
+      "stat2": {
+        "value": "MTT • Cash Game • Spin & Go",
+        "label": "Formats couverts"
+      },
+      "stat3": {
+        "value": "Stratégie • Outils • Mental • Review",
+        "label": "Types de coaching disponibles"
+      }
+    },
+    "filters": {
+      "title": "Affinez votre recherche",
+      "searchPlaceholder": "Rechercher un coach ou un format...",
+      "typesTitle": "Catégories de coaching",
+      "formatsTitle": "Formats de jeu",
+      "languagesTitle": "Langues",
+      "reset": "Réinitialiser"
+    },
+    "states": {
+      "loading": "Chargement des coachs...",
+      "error": "Impossible de charger les coachs pour le moment.",
+      "empty": {
+        "title": "Aucun coach ne correspond à votre recherche",
+        "description": "Modifiez vos filtres ou revenez plus tard, de nouveaux coachs rejoignent Edgemy chaque semaine."
+      }
+    },
+    "card": {
+      "topCoach": "Top Coach",
+      "experience": "{count, plural, one {# an d'expérience} other {# ans d'expérience}}",
+      "priceFrom": "À partir de",
+      "perHour": " /heure",
+      "languages": "Langues",
+      "formats": "Formats",
+      "viewProfile": "Voir le profil",
+      "book": "Réserver"
+    },
+    "badges": {
+      "STRATEGY": "Stratégie",
+      "REVIEW": "Review",
+      "TOOL": "Outils",
+      "MENTAL": "Mental"
+    }
+  },
+  "player": {
+    "coaches": {
+      "loading": {
+        "title": "Chargement de tes coachs",
+        "subtitle": "Nous préparons ton historique de sessions et les informations liées à tes coachs."
+      },
+      "errors": {
+        "title": "Impossible de charger tes coachs",
+        "default": "Une erreur inattendue est survenue."
+      },
+      "section": {
+        "badge": "Coaching personnalisé",
+        "title": "Mes coachs",
+        "subtitle": "Accède à l'historique de tes sessions, retrouve les canaux privés et recontacte facilement tes coachs."
+      },
+      "actions": {
+        "find": "Trouver un nouveau coach",
+        "retry": "Réessayer",
+        "discover": "Explorer les coachs",
+        "backToDashboard": "Retour au tableau de bord"
+      },
+      "metrics": {
+        "totalSessions": "Sessions réalisées",
+        "totalSessionsHint": "Toutes les sessions effectuées avec tes coachs",
+        "lastSession": "Dernière session",
+        "lastSessionHint": "Date de ta session la plus récente",
+        "noSession": "Aucune session enregistrée"
+      },
+      "empty": {
+        "title": "Tu n'as pas encore collaboré avec un coach",
+        "description": "Explore notre catalogue d'experts pour organiser ta première session et accélérer ta progression.",
+        "highlight1": "Profite d'un suivi personnalisé adapté à ton niveau et à tes objectifs.",
+        "highlight2": "Analyse tes mains clés avec des coachs spécialisés en MTT, Cash Game ou Spin & Go.",
+        "highlight3": "Reçois un plan d'entraînement clair après chaque session.",
+        "highlight4": "Accède à des ressources exclusives partagées par les coachs.",
+        "guide": {
+          "badge": "Comment démarrer ?",
+          "title": "Plan d'action recommandé",
+          "description": "Suis ces étapes pour trouver le coach adapté et réserver ta première session.",
+          "step1": {
+            "title": "Explore les coachs",
+            "description": "Filtre par format de jeu, limites et spécialités pour identifier les profils pertinents."
+          },
+          "step2": {
+            "title": "Réserve une session",
+            "description": "Choisis un créneau disponible et confirme ta réservation en quelques clics."
+          },
+          "step3": {
+            "title": "Prépare-toi",
+            "description": "Partage tes objectifs et mains à analyser pour maximiser l'impact de la session."
+          }
+        }
+      },
+      "card": {
+        "status": {
+          "ACTIVE": "Actif",
+          "PENDING_REVIEW": "En validation",
+          "INACTIVE": "Inactif",
+          "SUSPENDED": "Suspendu"
+        },
+        "sessionsCount": "{count, plural, one {# session réalisée} other {# sessions réalisées}}",
+        "lastSession": "Dernière session : {date}",
+        "noSession": "Pas encore de session enregistrée",
+        "bio": "Profil du coach",
+        "types": "Types de session",
+        "formats": "Formats travaillés",
+        "languages": "Langues",
+        "channel": {
+          "openDiscord": "Ouvrir le salon Discord",
+          "unavailable": "Salon non disponible",
+          "tooltip": "Accède à votre salon Discord pour poursuivre vos échanges et partager des ressources."
+        },
+        "profile": "Voir le profil"
+      }
+    }
   }
 }

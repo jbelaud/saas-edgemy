@@ -209,12 +209,8 @@ export function AppHeader() {
         context={signupContext}
         onSwitchToSignup={() => {
           setShowLoginModal(false);
-          if (signupContext === 'coach') {
-            setShowCoachSignUpModal(true);
-          } else {
-            // Pour player, on redirige vers /signup avec le contexte
-            window.location.href = '/signup?context=player';
-          }
+          setSignupContext('coach');
+          setShowCoachSignUpModal(true);
         }}
       />
       <CoachSignUpModal 
