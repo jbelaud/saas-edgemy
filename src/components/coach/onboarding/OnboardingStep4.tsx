@@ -34,12 +34,20 @@ export function OnboardingStep4({ data, onNext, onBack }: Props) {
       // Stocker l'accountId localement
       setStripeAccountId(accountId);
 
-      // Rediriger vers Stripe pour compléter l'onboarding
-      window.location.href = url;
+      // Si c'est un mode mock (URL contient stripe_mock), passer directement à l'étape suivante
+      if (url.includes('stripe_mock=true')) {
+        console.log('Mode développement : Stripe Connect simulé');
+        // Passer directement à l'étape suivante
+        setTimeout(() => {
+          setIsConnecting(false);
+        }, 500);
+      } else {
+        // Rediriger vers Stripe pour compléter l'onboarding
+        window.location.href = url;
+      }
     } catch (error) {
       console.error('Erreur Stripe Connect:', error);
       alert(error instanceof Error ? error.message : 'Erreur lors de la connexion à Stripe');
-    } finally {
       setIsConnecting(false);
     }
   };

@@ -38,6 +38,32 @@ export async function POST(req: Request) {
 
     const { refresh } = await req.json().catch(() => ({ refresh: false }));
 
+    // Mode développement : bypasser Stripe Connect si non activé
+    const isStripeConnectEnabled = process.env.STRIPE_CONNECT_ENABLED === 'true';
+
+    if (!isStripeConnectEnabled) {
+      console.log('ℹ️ Stripe Connect désactivé - Mode développement');
+
+      // Créer ou utiliser un compte mock
+      let mockAccountId = coach.stripeAccountId;
+      if (!mockAccountId || !mockAccountId.startsWith('acct_mock_')) {
+        mockAccountId = `acct_mock_${Date.now()}`;
+
+        await prisma.coach.update({
+          where: { id: coach.id },
+          data: { stripeAccountId: mockAccountId },
+        });
+
+        console.log(`✅ Compte Stripe mock créé: ${mockAccountId}`);
+      }
+
+      // Retourner une URL de redirection vers les settings
+      return NextResponse.json({
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/coach/settings?stripe_mock=true`,
+        accountId: mockAccountId,
+      });
+    }
+
     let accountId = coach.stripeAccountId;
     let needsNewAccount = false;
 
