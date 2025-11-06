@@ -42,7 +42,14 @@
       "Bash(cat:*)",
       "Bash(test:*)",
       "Bash(pnpm build:next:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(stripe:*)",
+      "Bash(winget install:*)",
+      "Bash(powershell.exe -Command \"winget install stripe.stripe-cli --accept-source-agreements --accept-package-agreements\")",
+      "Bash(powershell.exe -Command \"winget search stripe\")",
+      "Bash(powershell.exe -Command \"winget install Stripe.StripeCli --accept-source-agreements --accept-package-agreements\")",
+      "Bash(powershell.exe -Command \"stripe --version\")",
+      "Bash(powershell.exe:*)"
     ],
     "deny": [],
     "ask": []

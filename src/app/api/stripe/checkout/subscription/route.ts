@@ -112,6 +112,13 @@ export async function POST(req: Request) {
         userId: session.user.id,
         plan,
       },
+      subscription_data: {
+        metadata: {
+          coachId: coach.id,
+          userId: session.user.id,
+          plan,
+        },
+      },
     });
 
     console.log(`✅ Session d'abonnement créée pour coach ${coach.id} (${plan})`);
