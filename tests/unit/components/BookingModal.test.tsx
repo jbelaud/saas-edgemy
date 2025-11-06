@@ -69,7 +69,7 @@ describe('BookingModal Component', () => {
       />
     );
 
-    expect(screen.getByText(/50/)).toBeInTheDocument();
+    expect(screen.getByText('50€')).toBeInTheDocument();
   });
 
   it('devrait afficher la durée de la session', () => {
@@ -82,7 +82,7 @@ describe('BookingModal Component', () => {
       />
     );
 
-    expect(screen.getByText(/60/)).toBeInTheDocument();
+    expect(screen.getByText('60 min')).toBeInTheDocument();
   });
 
   it.skip('devrait permettre de sélectionner un créneau', async () => {

@@ -4,17 +4,39 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  test: {
-    // Environnement happy-dom pour simuler un navigateur (plus léger que jsdom)
-    environment: 'happy-dom',
+  
+  // Configuration des alias pour les imports
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
 
+  // Configuration spécifique pour les tests
+  test: {
+    // Utiliser le fichier de configuration TypeScript pour les tests
+    typecheck: {
+      tsconfig: './tsconfig.test.json',
+    },
+    
+    // Environnement de test (simulation de navigateur)
+    environment: 'happy-dom',
+    
     // Fichiers de setup
     setupFiles: ['./tests/setup.ts'],
-
-    // Globals (describe, it, expect, etc. disponibles sans import)
+    
+    // Activer les variables globales (describe, it, expect, etc.)
     globals: true,
-
-    // Coverage
+    
+    // Configuration MSW
+    server: {
+      deps: {
+        // Activer l'inline deps pour MSW
+        inline: ['msw', '@mswjs/interceptors'],
+      },
+    },
+    
+    // Configuration de la couverture de code
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -26,16 +48,11 @@ export default defineConfig({
         '**/.next/**',
       ],
     },
-
+    
     // Inclure ces fichiers de test
     include: [
       'tests/unit/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       'tests/integration/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
   },
 });

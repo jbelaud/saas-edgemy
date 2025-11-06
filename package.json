@@ -64,6 +64,8 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@mswjs/data": "^0.16.2",
+    "@mswjs/http-middleware": "^0.10.3",
     "@node-rs/bcrypt": "^1.10.7",
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4",
