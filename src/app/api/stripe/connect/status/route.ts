@@ -35,6 +35,8 @@ export async function GET() {
       );
     }
 
+    const hasActiveSubscription = coach.subscriptionStatus === 'ACTIVE';
+
     // Si pas de compte Stripe Connect
     if (!coach.stripeAccountId) {
       return NextResponse.json({
@@ -43,6 +45,7 @@ export async function GET() {
         detailsSubmitted: false,
         chargesEnabled: false,
         payoutsEnabled: false,
+        hasActiveSubscription,
       });
     }
 
@@ -55,6 +58,7 @@ export async function GET() {
       detailsSubmitted: account.details_submitted,
       chargesEnabled: account.charges_enabled,
       payoutsEnabled: account.payouts_enabled,
+      hasActiveSubscription,
       requirements: {
         currentlyDue: account.requirements?.currently_due || [],
         eventuallyDue: account.requirements?.eventually_due || [],

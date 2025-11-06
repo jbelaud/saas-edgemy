@@ -11,9 +11,10 @@ interface Props {
   data: Partial<OnboardingData>;
   onNext: (data: Partial<OnboardingData>) => void;
   onBack: () => void;
+  isLoading?: boolean;
 }
 
-export function OnboardingStep3({ data, onNext, onBack }: Props) {
+export function OnboardingStep3({ data, onNext, onBack, isLoading = false }: Props) {
   const [avatarUrl, setAvatarUrl] = useState(data.avatarUrl || '');
   const [bannerUrl, setBannerUrl] = useState(data.bannerUrl || '');
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -208,17 +209,30 @@ export function OnboardingStep3({ data, onNext, onBack }: Props) {
 
       {/* Actions */}
       <div className="flex justify-between pt-4">
-        <Button type="button" variant="outline" onClick={onBack} className="bg-white/90 border-white/20 text-gray-900 hover:bg-white hover:text-black">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          disabled={isLoading}
+          className="bg-white/90 border-white/20 text-gray-900 hover:bg-white hover:text-black"
+        >
           Retour
         </Button>
         <Button
           type="button"
           size="lg"
           onClick={handleNext}
-          disabled={isUploadingAvatar || isUploadingBanner}
+          disabled={isUploadingAvatar || isUploadingBanner || isLoading}
           className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg shadow-amber-500/30"
         >
-          Continuer
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Création du profil...
+            </>
+          ) : (
+            'Terminer'
+          )}
         </Button>
       </div>
     </div>

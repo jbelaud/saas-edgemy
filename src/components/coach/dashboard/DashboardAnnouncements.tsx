@@ -37,7 +37,6 @@ import type { CoachWithRelations } from '@/types/dashboard';
 
 interface DashboardAnnouncementsProps {
   coach: CoachWithRelations;
-  onOpenOnboarding?: () => void;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -63,7 +62,7 @@ const FORMAT_LABELS: Record<string, string> = {
   MIXED: 'Mixed',
 };
 
-export function DashboardAnnouncements({ coach, onOpenOnboarding }: DashboardAnnouncementsProps) {
+export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const hasActiveSubscription = coach.subscriptionStatus === 'ACTIVE';
@@ -134,7 +133,6 @@ export function DashboardAnnouncements({ coach, onOpenOnboarding }: DashboardAnn
   return (
     <SubscriptionGate
       isActive={hasActiveSubscription}
-      onOpenOnboarding={onOpenOnboarding}
     >
       {announcements.length === 0 ? (
         <GlassCard>

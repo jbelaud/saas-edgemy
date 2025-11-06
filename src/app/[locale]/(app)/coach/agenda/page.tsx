@@ -11,7 +11,6 @@ import { GradientText, GlassCard } from '@/components/ui';
 import { Clock, Loader2, Package } from 'lucide-react';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
-import { CoachOnboardingModal } from '@/components/coach/onboarding/CoachOnboardingModal';
 
 interface Availability {
   id: string;
@@ -28,7 +27,6 @@ export default function CoachAgendaPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isPackModalOpen, setIsPackModalOpen] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
-  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   const fetchAvailabilities = useCallback(async (id: string) => {
     try {
@@ -91,7 +89,6 @@ export default function CoachAgendaPage() {
     <CoachLayout>
       <SubscriptionGate
         isActive={subscriptionStatus === 'ACTIVE'}
-        onOpenOnboarding={() => setIsOnboardingModalOpen(true)}
       >
         <div className="space-y-6">
           {/* Header */}
@@ -170,12 +167,6 @@ export default function CoachAgendaPage() {
         isOpen={isPackModalOpen}
         onClose={() => setIsPackModalOpen(false)}
         onSuccess={handleRefresh}
-      />
-
-      {/* Onboarding Modal */}
-      <CoachOnboardingModal
-        open={isOnboardingModalOpen}
-        onOpenChange={setIsOnboardingModalOpen}
       />
     </CoachLayout>
   );

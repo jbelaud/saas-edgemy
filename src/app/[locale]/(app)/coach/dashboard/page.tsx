@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { useLocale } from 'next-intl';
-import { Loader2, TrendingUp, Users, Clock, Euro, ExternalLink, Sparkles, CheckCircle2, Zap, BarChart3, UserCircle2, Megaphone } from 'lucide-react';
-import { GlassCard, GradientButton, GradientText } from '@/components/ui';
+import { Loader2, TrendingUp, Users, Clock, Euro, ExternalLink, BarChart3, UserCircle2, Megaphone } from 'lucide-react';
+import { GlassCard, GradientText } from '@/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardStats } from '@/components/coach/dashboard/DashboardStats';
 import { DashboardProfile } from '@/components/coach/dashboard/DashboardProfile';
@@ -15,7 +15,9 @@ import Link from 'next/link';
 import { useCoachRoleSetup } from '@/hooks/useCoachRoleSetup';
 import { useSearchParams } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
-import { CoachOnboardingModal } from '@/components/coach/onboarding/CoachOnboardingModal';
+import { OnboardingChecklist } from '@/components/coach/onboarding/OnboardingChecklist';
+import { useCoachAccess } from '@/hooks/useCoachAccess';
+import { CoachAccessGuard } from '@/components/coach/guards/CoachAccessGuard';
 
 export default function CoachDashboardPage() {
   const router = useRouter();
@@ -26,11 +28,20 @@ export default function CoachDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSettingUp, setIsSettingUp] = useState(false);
-  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
-  
+
   // Hook pour créer le profil coach lors de la première connexion Google
   useCoachRoleSetup();
-  
+
+  // Hook pour gérer les accès coach
+  const {
+    hasActiveSubscription,
+    isStripeConnected,
+    isDiscordConnected,
+    blockReason,
+    isGuardOpen,
+    closeGuard,
+  } = useCoachAccess(data?.coach ?? null);
+
   // Vérifier si on est en mode setup (côté client uniquement)
   useEffect(() => {
     const setupFromUrl = searchParams.get('setupCoach') === 'true';
@@ -94,9 +105,34 @@ export default function CoachDashboardPage() {
     return null;
   }
 
-  // Vérifier le statut d'abonnement du coach
   const { coach, stats } = data;
-  const hasActiveSubscription = coach.subscriptionStatus === 'ACTIVE';
+
+  const handleConnectStripe = async () => {
+    try {
+      const response = await fetch('/api/stripe/connect/account-link', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la création du lien Stripe');
+      }
+
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert('Erreur lors de la connexion à Stripe');
+    }
+  };
+
+  const handleConnectDiscord = () => {
+    // TODO: Implémenter OAuth Discord
+    alert('Connexion Discord - À implémenter');
+  };
+
+  const handleCreateAnnouncement = () => {
+    router.push(`/${locale}/coach/announcements/new`);
+  };
 
   return (
     <CoachLayout>
@@ -112,69 +148,25 @@ export default function CoachDashboardPage() {
           </p>
         </div>
         {hasActiveSubscription && (
-          <Link href={`/${locale}/coach/${coach.slug}`} target="_blank">
-            <GradientButton variant="ghost" size="lg">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Voir mon profil public
-            </GradientButton>
+          <Link href={`/${locale}/coach/${coach.slug}`} target="_blank" className="text-blue-400 hover:text-blue-300 flex items-center gap-2">
+            <ExternalLink className="h-4 w-4" />
+            Voir mon profil public
           </Link>
         )}
       </div>
 
-      {/* Status Alerts */}
-      {!hasActiveSubscription && (
-        <GlassCard className="mb-6 border-amber-500/20 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
-          <div className="mb-6">
-            <h2 className="text-white flex items-center gap-2 text-2xl font-bold mb-3">
-              <Sparkles className="h-6 w-6 text-amber-400" />
-              Activez votre abonnement coach
-            </h2>
-            <p className="text-gray-300 text-base">
-              Votre profil est créé mais pas encore actif. Activez votre abonnement pour débloquer tous les avantages :
-            </p>
-          </div>
-          <div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-white">Profil public visible</p>
-                  <p className="text-sm text-gray-400">Apparaissez dans les résultats de recherche</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-white">Réservations illimitées</p>
-                  <p className="text-sm text-gray-400">Recevez autant de réservations que vous le souhaitez</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-white">Gestion des disponibilités</p>
-                  <p className="text-sm text-gray-400">Calendrier intelligent et synchronisation</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-white">Paiements sécurisés</p>
-                  <p className="text-sm text-gray-400">Recevez vos paiements directement</p>
-                </div>
-              </div>
-            </div>
-            <GradientButton
-              size="lg"
-              variant="amber"
-              className="w-full md:w-auto"
-              onClick={() => setIsOnboardingModalOpen(true)}
-            >
-              <Zap className="mr-2 h-5 w-5" />
-              Activer mon abonnement maintenant
-            </GradientButton>
-          </div>
-        </GlassCard>
+      {/* Checklist d'onboarding */}
+      {(!hasActiveSubscription || !isStripeConnected || !isDiscordConnected) && (
+        <div className="mb-8">
+          <OnboardingChecklist
+            hasActiveSubscription={hasActiveSubscription ?? false}
+            isStripeConnected={isStripeConnected ?? false}
+            isDiscordConnected={isDiscordConnected ?? false}
+            onConnectStripe={handleConnectStripe}
+            onConnectDiscord={handleConnectDiscord}
+            onCreateAnnouncement={handleCreateAnnouncement}
+          />
+        </div>
       )}
 
       {/* Quick Stats */}
@@ -252,15 +244,18 @@ export default function CoachDashboardPage() {
         <TabsContent value="announcements">
           <DashboardAnnouncements
             coach={coach}
-            onOpenOnboarding={() => setIsOnboardingModalOpen(true)}
+            onOpenOnboarding={() => {}}
           />
         </TabsContent>
       </Tabs>
 
-      {/* Onboarding Modal */}
-      <CoachOnboardingModal
-        open={isOnboardingModalOpen}
-        onOpenChange={setIsOnboardingModalOpen}
+      {/* Guard pour les accès bloqués */}
+      <CoachAccessGuard
+        reason={blockReason}
+        open={isGuardOpen}
+        onOpenChange={closeGuard}
+        onConnectStripe={handleConnectStripe}
+        onConnectDiscord={handleConnectDiscord}
       />
     </CoachLayout>
   );

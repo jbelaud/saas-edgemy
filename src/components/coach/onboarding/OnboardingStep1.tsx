@@ -149,27 +149,18 @@ export function OnboardingStep1({ data, onNext }: Props) {
         </p>
       </div>
 
-      {/* ROI et Expérience */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="roi">ROI (%)</Label>
-          <Input
-            id="roi"
-            type="number"
-            step="0.1"
-            {...register('roi', { valueAsNumber: true })}
-            placeholder="15.5"
-          />
-        </div>
-        <div>
-          <Label htmlFor="experience">Années d&apos;expérience</Label>
-          <Input
-            id="experience"
-            type="number"
-            {...register('experience', { valueAsNumber: true })}
-            placeholder="5"
-          />
-        </div>
+      {/* Expérience */}
+      <div>
+        <Label htmlFor="experience">Années d&apos;expérience</Label>
+        <Input
+          id="experience"
+          type="number"
+          {...register('experience', { valueAsNumber: true })}
+          placeholder="5"
+        />
+        <p className="text-sm text-gray-500 mt-1">
+          Optionnel - Votre expérience en tant que joueur de poker
+        </p>
       </div>
 
       {/* Langues */}

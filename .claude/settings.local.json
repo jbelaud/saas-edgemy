@@ -37,7 +37,12 @@
       "Bash(cmd //c taskkill //PID 12836 //F)",
       "Bash(npx tsc:*)",
       "Bash(npx eslint:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(nul)",
+      "Bash(cat:*)",
+      "Bash(test:*)",
+      "Bash(pnpm build:next:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []

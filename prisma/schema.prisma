@@ -53,6 +53,8 @@ model coach {
   subscriptionStatus     SubscriptionStatus? // Statut abonnement
   subscriptionPlan       SubscriptionPlan? // Plan (MONTHLY/YEARLY)
   currentPeriodEnd       DateTime?         // Fin période abonnement
+  isOnboarded            Boolean           @default(false) // Stripe Connect complété
+  isDiscordConnected     Boolean           @default(false) // OAuth Discord validé
   badges                 String[]
   formats                String[]
   stakes                 String?

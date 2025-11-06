@@ -12,7 +12,6 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from 'next/link';
 import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
-import { CoachOnboardingModal } from '@/components/coach/onboarding/CoachOnboardingModal';
 
 interface CoachPackage {
   id: string;
@@ -49,7 +48,6 @@ export default function CoachPacksPage() {
   const [stats, setStats] = useState({ total: 0, active: 0, completed: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
-  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
@@ -124,10 +122,7 @@ export default function CoachPacksPage() {
 
   return (
     <CoachLayout>
-      <SubscriptionGate
-        isActive={subscriptionStatus === 'ACTIVE'}
-        onOpenOnboarding={() => setIsOnboardingModalOpen(true)}
-      >
+      <SubscriptionGate isActive={subscriptionStatus === 'ACTIVE'}>
         <div className="container mx-auto px-4 py-8 max-w-7xl">
           {/* Header */}
           <div className="mb-8">
@@ -314,12 +309,6 @@ export default function CoachPacksPage() {
         )}
         </div>
       </SubscriptionGate>
-
-      {/* Onboarding Modal */}
-      <CoachOnboardingModal
-        open={isOnboardingModalOpen}
-        onOpenChange={setIsOnboardingModalOpen}
-      />
     </CoachLayout>
   );
 }

@@ -7,8 +7,6 @@ import { Progress } from '@/components/ui/progress';
 import { OnboardingStep1 } from './OnboardingStep1';
 import { OnboardingStep2 } from './OnboardingStep2';
 import { OnboardingStep3 } from './OnboardingStep3';
-import { OnboardingStep4 } from './OnboardingStep4';
-import { OnboardingStep5 } from './OnboardingStep5';
 import {
   Dialog,
   DialogContent,
@@ -106,10 +104,10 @@ export function CoachOnboardingModal({
     setCurrentStep(currentStep - 1);
   };
 
-  const handleComplete = async (finalData: Partial<OnboardingData>) => {
+  const handleComplete = async (stepData: Partial<OnboardingData>) => {
     setIsLoading(true);
     try {
-      const completeData = { ...formData, ...finalData };
+      const completeData = { ...formData, ...stepData };
 
       const response = await fetch('/api/coach/onboard', {
         method: 'POST',
@@ -141,7 +139,7 @@ export function CoachOnboardingModal({
     onOpenChange(newOpen);
   };
 
-  const progress = (currentStep / 5) * 100;
+  const progress = (currentStep / 3) * 100;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -151,10 +149,10 @@ export function CoachOnboardingModal({
       >
         <DialogHeader>
           <DialogTitle className="text-3xl bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-            Devenir Coach Edgemy
+            Complétez votre profil coach
           </DialogTitle>
           <DialogDescription className="text-base">
-            Étape {currentStep} sur 5 • Créez votre profil de coach professionnel
+            Étape {currentStep} sur 3 • Créez votre profil de coach professionnel
           </DialogDescription>
         </DialogHeader>
 
@@ -182,21 +180,7 @@ export function CoachOnboardingModal({
           {currentStep === 3 && (
             <OnboardingStep3
               data={formData}
-              onNext={handleNext}
-              onBack={handleBack}
-            />
-          )}
-          {currentStep === 4 && (
-            <OnboardingStep4
-              data={formData}
-              onNext={handleNext}
-              onBack={handleBack}
-            />
-          )}
-          {currentStep === 5 && (
-            <OnboardingStep5
-              data={formData}
-              onComplete={handleComplete}
+              onNext={handleComplete}
               onBack={handleBack}
               isLoading={isLoading}
             />

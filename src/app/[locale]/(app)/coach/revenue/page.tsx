@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
-import { CoachOnboardingModal } from '@/components/coach/onboarding/CoachOnboardingModal';
 
 interface CoachDashboardResponse {
   coach: {
@@ -45,7 +44,7 @@ export default function CoachRevenuePage() {
 
   const [dashboardData, setDashboardData] = useState<CoachDashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -56,6 +55,7 @@ export default function CoachRevenuePage() {
         }
         const data = await response.json();
         setDashboardData(data);
+        setSubscriptionStatus(data.coach?.subscriptionStatus || null);
       } catch (error) {
         console.error('Erreur récupération dashboard coach:', error);
       } finally {
@@ -69,7 +69,6 @@ export default function CoachRevenuePage() {
   }, [session]);
 
   const stats = dashboardData?.stats;
-  const hasActiveSubscription = dashboardData?.coach.subscriptionStatus === 'ACTIVE';
 
   const revenuePerHour = useMemo(() => {
     if (!stats || stats.totalHours === 0) return 0;
@@ -103,10 +102,7 @@ export default function CoachRevenuePage() {
 
   return (
     <CoachLayout>
-      <SubscriptionGate
-        isActive={hasActiveSubscription}
-        onOpenOnboarding={() => setIsOnboardingModalOpen(true)}
-      >
+      <SubscriptionGate isActive={subscriptionStatus === 'ACTIVE'}>
         <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
         <header className="flex flex-col gap-3">
           <div className="inline-flex items-center gap-3">
@@ -311,12 +307,6 @@ export default function CoachRevenuePage() {
         </div>
         </div>
       </SubscriptionGate>
-
-      {/* Onboarding Modal */}
-      <CoachOnboardingModal
-        open={isOnboardingModalOpen}
-        onOpenChange={setIsOnboardingModalOpen}
-      />
     </CoachLayout>
   );
 }

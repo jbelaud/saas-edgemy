@@ -12,7 +12,6 @@ import { Users, Calendar, Loader2, StickyNote, Save, Clock, CheckCircle } from '
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
-import { CoachOnboardingModal } from '@/components/coach/onboarding/CoachOnboardingModal';
 
 interface Note {
   id: string;
@@ -55,7 +54,6 @@ export default function CoachStudentsPage() {
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [isGoalsModalOpen, setIsGoalsModalOpen] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
-  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
@@ -151,7 +149,6 @@ export default function CoachStudentsPage() {
     <CoachLayout>
       <SubscriptionGate
         isActive={subscriptionStatus === 'ACTIVE'}
-        onOpenOnboarding={() => setIsOnboardingModalOpen(true)}
       >
         <div className="container mx-auto px-4 py-8 max-w-7xl">
           {/* Header */}
@@ -506,12 +503,6 @@ export default function CoachStudentsPage() {
           </div>
         </Modal>
       )}
-
-      {/* Onboarding Modal */}
-      <CoachOnboardingModal
-        open={isOnboardingModalOpen}
-        onOpenChange={setIsOnboardingModalOpen}
-      />
     </CoachLayout>
   );
 }
