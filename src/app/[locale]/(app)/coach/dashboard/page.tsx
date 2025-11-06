@@ -55,10 +55,10 @@ export default function CoachDashboardPage() {
       if (isSettingUp) {
         return;
       }
-      
+
       try {
         const response = await fetch('/api/coach/dashboard');
-        
+
         if (!response.ok) {
           throw new Error('Erreur lors du chargement du dashboard');
         }
@@ -76,6 +76,23 @@ export default function CoachDashboardPage() {
       fetchDashboard();
     }
   }, [session, router, isSettingUp]);
+
+  // Rafraîchir les données après un paiement réussi
+  useEffect(() => {
+    const subscriptionStatus = searchParams.get('subscription');
+
+    if (subscriptionStatus === 'success' && !isLoading) {
+      // Nettoyer l'URL pour éviter les rechargements en boucle
+      const url = new URL(window.location.href);
+      url.searchParams.delete('subscription');
+      window.history.replaceState({}, '', url.toString());
+
+      // Attendre un peu pour que le webhook ait le temps de traiter, puis recharger une seule fois
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    }
+  }, [searchParams, isLoading]);
 
   if (isPending || isLoading) {
     return (

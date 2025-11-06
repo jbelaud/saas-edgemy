@@ -42,6 +42,8 @@ export async function POST(req: Request) {
         const coachId = session.metadata?.coachId;
         const reservationId = session.metadata?.reservationId;
 
+        console.log(`📋 Checkout session - mode: ${session.mode}, coachId: ${coachId}, reservationId: ${reservationId}`);
+
         // Cas 1: C'est un abonnement coach
         if (coachId && session.mode === 'subscription') {
           console.log(`✅ Checkout session complétée pour abonnement coach ${coachId}`);
