@@ -261,7 +261,6 @@ export default function CoachDashboardPage() {
         <TabsContent value="announcements">
           <DashboardAnnouncements
             coach={coach}
-            onOpenOnboarding={() => {}}
           />
         </TabsContent>
       </Tabs>
