@@ -39,52 +39,61 @@ export async function POST(req: Request) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
+        const coachId = session.metadata?.coachId;
         const reservationId = session.metadata?.reservationId;
-        const reservationType = (session.metadata?.type || 'SINGLE') as ReservationType;
 
-        if (!reservationId) {
-          console.error('Webhook error: Missing reservationId in metadata');
-          return new Response('Missing reservationId', { status: 400 });
+        // Cas 1: C'est un abonnement coach
+        if (coachId && session.mode === 'subscription') {
+          console.log(`✅ Checkout session complétée pour abonnement coach ${coachId}`);
+          // L'abonnement sera géré par customer.subscription.created/updated
+          break;
         }
 
-        console.log(`✅ Checkout session complétée pour la réservation ${reservationId} (${reservationType})`);
+        // Cas 2: C'est une réservation
+        if (reservationId) {
+          const reservationType = (session.metadata?.type || 'SINGLE') as ReservationType;
 
-        // Récupérer la réservation pour obtenir le montant
-        const reservation = await prisma.reservation.findUnique({
-          where: { id: reservationId },
-        });
+          console.log(`✅ Checkout session complétée pour la réservation ${reservationId} (${reservationType})`);
 
-        if (!reservation) {
-          console.error(`❌ Réservation ${reservationId} introuvable`);
-          return new Response('Reservation not found', { status: 404 });
+          // Récupérer la réservation pour obtenir le montant
+          const reservation = await prisma.reservation.findUnique({
+            where: { id: reservationId },
+          });
+
+          if (!reservation) {
+            console.error(`❌ Réservation ${reservationId} introuvable`);
+            return new Response('Reservation not found', { status: 404 });
+          }
+
+          // Calculer les commissions selon Phase 1
+          const playerAmountEuros = centsToEuros(reservation.priceCents);
+          const commission = calculateCommission(playerAmountEuros, reservationType);
+
+          console.log(`💰 Calcul commission:
+            - Joueur paie: ${playerAmountEuros}€
+            - Commission Edgemy: ${centsToEuros(commission.commission)}€
+            - Coach reçoit: ${centsToEuros(commission.coachEarnings)}€
+          `);
+
+          // Mettre à jour la réservation avec paiement et commissions
+          await prisma.reservation.update({
+            where: { id: reservationId },
+            data: {
+              paymentStatus: 'PAID',
+              status: 'CONFIRMED',
+              stripePaymentId: session.payment_intent as string,
+              commissionCents: commission.commission,
+              coachEarningsCents: commission.coachEarnings,
+            },
+          });
+
+          console.log(`✅ Réservation ${reservationId} marquée comme PAID et CONFIRMED avec commissions calculées`);
+
+          // TODO: Envoyer notification Discord au coach et au joueur
+          // TODO: Créer le canal Discord privé si pas encore créé
+        } else {
+          console.log(`ℹ️ Checkout session complétée sans reservationId ni coachId`);
         }
-
-        // Calculer les commissions selon Phase 1
-        const playerAmountEuros = centsToEuros(reservation.priceCents);
-        const commission = calculateCommission(playerAmountEuros, reservationType);
-
-        console.log(`💰 Calcul commission:
-          - Joueur paie: ${playerAmountEuros}€
-          - Commission Edgemy: ${centsToEuros(commission.commission)}€
-          - Coach reçoit: ${centsToEuros(commission.coachEarnings)}€
-        `);
-
-        // Mettre à jour la réservation avec paiement et commissions
-        await prisma.reservation.update({
-          where: { id: reservationId },
-          data: {
-            paymentStatus: 'PAID',
-            status: 'CONFIRMED',
-            stripePaymentId: session.payment_intent as string,
-            commissionCents: commission.commission,
-            coachEarningsCents: commission.coachEarnings,
-          },
-        });
-
-        console.log(`✅ Réservation ${reservationId} marquée comme PAID et CONFIRMED avec commissions calculées`);
-
-        // TODO: Envoyer notification Discord au coach et au joueur
-        // TODO: Créer le canal Discord privé si pas encore créé
 
         break;
       }
