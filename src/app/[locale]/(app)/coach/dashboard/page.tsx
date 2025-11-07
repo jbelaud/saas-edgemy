@@ -81,18 +81,54 @@ export default function CoachDashboardPage() {
   useEffect(() => {
     const subscriptionStatus = searchParams.get('subscription');
 
-    if (subscriptionStatus === 'success' && !isLoading) {
-      // Nettoyer l'URL pour éviter les rechargements en boucle
+    if (subscriptionStatus === 'success' && !isLoading && data) {
+      // Nettoyer l'URL immédiatement
       const url = new URL(window.location.href);
       url.searchParams.delete('subscription');
       window.history.replaceState({}, '', url.toString());
 
-      // Attendre un peu pour que le webhook ait le temps de traiter, puis recharger une seule fois
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // Vérifier périodiquement si l'abonnement est activé (max 10 secondes)
+      let attempts = 0;
+      const maxAttempts = 20; // 20 tentatives x 500ms = 10 secondes max
+
+      const checkSubscription = async () => {
+        try {
+          const response = await fetch('/api/coach/dashboard');
+          if (response.ok) {
+            const dashboardData = await response.json();
+
+            // Si l'abonnement est maintenant actif, recharger une seule fois
+            if (dashboardData.coach.subscriptionStatus === 'ACTIVE') {
+              window.location.reload();
+              return true;
+            }
+          }
+          return false;
+        } catch (error) {
+          console.error('Erreur vérification abonnement:', error);
+          return false;
+        }
+      };
+
+      const intervalId = setInterval(async () => {
+        attempts++;
+
+        const isActive = await checkSubscription();
+
+        if (isActive || attempts >= maxAttempts) {
+          clearInterval(intervalId);
+
+          // Si après 10 secondes l'abonnement n'est toujours pas actif, recharger quand même
+          if (attempts >= maxAttempts && !isActive) {
+            window.location.reload();
+          }
+        }
+      }, 500);
+
+      // Cleanup au démontage du composant
+      return () => clearInterval(intervalId);
     }
-  }, [searchParams, isLoading]);
+  }, [searchParams, isLoading, data]);
 
   if (isPending || isLoading) {
     return (
