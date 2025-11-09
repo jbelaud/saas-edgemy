@@ -41,12 +41,25 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         const coachId = session.metadata?.coachId;
         const reservationId = session.metadata?.reservationId;
+        const sessionType = session.metadata?.type;
 
-        console.log(`📋 Checkout session - mode: ${session.mode}, coachId: ${coachId}, reservationId: ${reservationId}`);
+        console.log(`📋 Checkout session - mode: ${session.mode}, coachId: ${coachId}, reservationId: ${reservationId}, type: ${sessionType}`);
 
         // Cas 1: C'est un abonnement coach
         if (coachId && session.mode === 'subscription') {
           console.log(`✅ Checkout session complétée pour abonnement coach ${coachId}`);
+
+          // Si c'est un changement de plan, annuler l'ancien abonnement
+          if (sessionType === 'plan_change' && session.metadata?.oldSubscriptionId) {
+            const oldSubscriptionId = session.metadata.oldSubscriptionId;
+            try {
+              await stripe.subscriptions.cancel(oldSubscriptionId);
+              console.log(`✅ Ancien abonnement ${oldSubscriptionId} annulé suite au changement de plan`);
+            } catch (error) {
+              console.error(`❌ Erreur lors de l'annulation de l'ancien abonnement ${oldSubscriptionId}:`, error);
+            }
+          }
+
           // L'abonnement sera géré par customer.subscription.created/updated
           break;
         }
@@ -250,9 +263,27 @@ export async function POST(req: Request) {
         const invoice = event.data.object as Stripe.Invoice;
         const subscriptionId = (invoice as Stripe.Invoice & { subscription?: string }).subscription;
 
-        if (subscriptionId && invoice.customer_email) {
+        if (subscriptionId) {
           console.error(`❌ Échec paiement facture abonnement: ${subscriptionId}`);
-          // TODO: Envoyer email au coach pour mettre à jour son moyen de paiement
+
+          // Récupérer le coach concerné
+          const coach = await prisma.coach.findFirst({
+            where: { subscriptionId: subscriptionId as string },
+          });
+
+          if (coach) {
+            // Mettre à jour le statut à PAST_DUE
+            await prisma.coach.update({
+              where: { id: coach.id },
+              data: {
+                subscriptionStatus: 'PAST_DUE',
+              },
+            });
+
+            console.log(`⚠️ Coach ${coach.id} mis en statut PAST_DUE suite à l'échec de paiement`);
+            // TODO: Envoyer email au coach pour mettre à jour son moyen de paiement
+            // TODO: Créer workflow Stripe pour rappels automatiques
+          }
         }
         break;
       }

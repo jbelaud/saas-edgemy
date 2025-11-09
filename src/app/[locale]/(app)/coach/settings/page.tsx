@@ -7,9 +7,10 @@ import { GlassCard, GradientText } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Bell, Shield } from 'lucide-react';
+import { User, Bell, Shield, CreditCard, CheckCircle2, XCircle } from 'lucide-react';
 import { ConnectDiscordButton } from '@/components/discord/ConnectDiscordButton';
 import { StripeConnectSettings } from '@/components/coach/settings/StripeConnectSettings';
+import { SubscriptionSettings } from '@/components/coach/settings/SubscriptionSettings';
 import {
   Select,
   SelectContent,
@@ -18,15 +19,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useSearchParams } from 'next/navigation';
 
 export default function CoachSettingsPage() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showCancelMessage, setShowCancelMessage] = useState(false);
   const [coachData, setCoachData] = useState<{
     firstName: string;
     lastName: string;
     timezone: string;
   } | null>(null);
+
+  // Vérifier les paramètres de retour Stripe
+  useEffect(() => {
+    if (searchParams.get('plan_changed') === 'true') {
+      setShowSuccessMessage(true);
+      // Masquer le message après 5 secondes
+      setTimeout(() => setShowSuccessMessage(false), 5000);
+      // Nettoyer l'URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    if (searchParams.get('plan_change_cancelled') === 'true') {
+      setShowCancelMessage(true);
+      // Masquer le message après 5 secondes
+      setTimeout(() => setShowCancelMessage(false), 5000);
+      // Nettoyer l'URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchCoachData = async () => {
@@ -116,6 +139,29 @@ export default function CoachSettingsPage() {
           </p>
         </div>
 
+        {/* Messages de retour Stripe */}
+        {showSuccessMessage && (
+          <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-green-400" />
+              <p className="text-green-300 font-semibold">
+                Votre changement de plan a été effectué avec succès !
+              </p>
+            </div>
+          </div>
+        )}
+
+        {showCancelMessage && (
+          <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              <XCircle className="w-5 h-5 text-orange-400" />
+              <p className="text-orange-300 font-semibold">
+                Le changement de plan a été annulé.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-6">
           {/* Informations personnelles */}
           <GlassCard className="p-6">
@@ -203,6 +249,42 @@ export default function CoachSettingsPage() {
             </div>
           </GlassCard>
 
+          {/* Gestion de l'abonnement */}
+          <GlassCard className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-purple-500/20 rounded-lg">
+                <CreditCard className="h-5 w-5 text-purple-400" />
+              </div>
+              <h2 className="text-xl font-bold text-white">
+                Mon abonnement
+              </h2>
+            </div>
+
+            <SubscriptionSettings />
+          </GlassCard>
+
+          {/* Stripe Professionnel */}
+          <GlassCard className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-sky-500/20 rounded-lg">
+                <svg
+                  className="h-5 w-5 text-sky-300"
+                  viewBox="0 0 32 32"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M27.87 9.08C26.4 8.43 24.3 7.84 21.38 7.84c-4.68 0-7.85 2.03-7.85 6.2 0 4.44 3.84 4.49 7.02 4.9 2.35.3 3.2.74 3.2 1.81 0 1.5-1.88 1.73-3.4 1.73-2.26 0-3.46-.35-5.31-1.17l-.75-.35-.79 4.8c1.33.61 3.77 1.14 6.31 1.17 5.32 0 8.14-2.05 8.14-6.35 0-4.88-3.98-4.56-7.05-4.91-2.37-.26-3.2-.73-3.2-1.78 0-.97.98-1.68 3.12-1.68 1.88 0 3.49.32 4.63.83l.55.26.78-4.64z" />
+                  <path d="M12.18 8.22H7.68L3.9 23.4h4.5l3.78-15.18z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-white">
+                Compte professionnel Stripe
+              </h2>
+            </div>
+
+            <StripeConnectSettings />
+          </GlassCard>
+
           {/* Connexion Discord */}
           <GlassCard className="p-6">
             <div className="flex items-center gap-3 mb-6">
@@ -251,28 +333,6 @@ export default function CoachSettingsPage() {
                 💡 Nécessaire pour créer automatiquement les salons Discord avec vos élèves
               </p>
             </div>
-          </GlassCard>
-
-          {/* Stripe Professionnel */}
-          <GlassCard className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-sky-500/20 rounded-lg">
-                <svg
-                  className="h-5 w-5 text-sky-300"
-                  viewBox="0 0 32 32"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path d="M27.87 9.08C26.4 8.43 24.3 7.84 21.38 7.84c-4.68 0-7.85 2.03-7.85 6.2 0 4.44 3.84 4.49 7.02 4.9 2.35.3 3.2.74 3.2 1.81 0 1.5-1.88 1.73-3.4 1.73-2.26 0-3.46-.35-5.31-1.17l-.75-.35-.79 4.8c1.33.61 3.77 1.14 6.31 1.17 5.32 0 8.14-2.05 8.14-6.35 0-4.88-3.98-4.56-7.05-4.91-2.37-.26-3.2-.73-3.2-1.78 0-.97.98-1.68 3.12-1.68 1.88 0 3.49.32 4.63.83l.55.26.78-4.64z" />
-                  <path d="M12.18 8.22H7.68L3.9 23.4h4.5l3.78-15.18z" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-bold text-white">
-                Compte professionnel Stripe
-              </h2>
-            </div>
-
-            <StripeConnectSettings />
           </GlassCard>
 
           {/* Notifications */}
