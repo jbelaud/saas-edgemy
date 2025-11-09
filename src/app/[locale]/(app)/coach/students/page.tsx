@@ -147,20 +147,20 @@ export default function CoachStudentsPage() {
 
   return (
     <CoachLayout>
-      <SubscriptionGate
-        isActive={subscriptionStatus === 'ACTIVE'}
-      >
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          {/* Header */}
-          <div className="mb-8">
-            <GradientText className="text-4xl font-bold mb-2">
-              Mes Élèves
-            </GradientText>
-            <p className="text-gray-400">
-              Gérez vos élèves et suivez leur progression
-            </p>
-          </div>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="mb-8">
+          <GradientText className="text-4xl font-bold mb-2">
+            Mes Élèves
+          </GradientText>
+          <p className="text-gray-400">
+            Gérez vos élèves et suivez leur progression
+          </p>
+        </div>
 
+        <SubscriptionGate
+          isActive={subscriptionStatus === 'ACTIVE'}
+        >
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <GlassCard className="p-4">
@@ -433,8 +433,8 @@ export default function CoachStudentsPage() {
             </div>
           </div>
         )}
-        </div>
-      </SubscriptionGate>
+        </SubscriptionGate>
+      </div>
 
       {selectedStudent && (
         <Modal

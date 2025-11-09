@@ -87,20 +87,19 @@ export default function CoachAgendaPage() {
 
   return (
     <CoachLayout>
+      {/* Header */}
+      <div className="mb-8">
+        <GradientText variant="amber" className="text-4xl font-bold mb-2">
+          📅 Mon Agenda
+        </GradientText>
+        <p className="text-gray-400 text-lg">
+          Gérez vos disponibilités et visualisez vos sessions réservées
+        </p>
+      </div>
+
       <SubscriptionGate
         isActive={subscriptionStatus === 'ACTIVE'}
       >
-        <div className="space-y-6">
-          {/* Header */}
-          <div>
-            <GradientText variant="amber" className="text-4xl font-bold mb-2">
-              📅 Mon Agenda
-            </GradientText>
-            <p className="text-gray-400 text-lg">
-              Gérez vos disponibilités et visualisez vos sessions réservées
-            </p>
-          </div>
-
         {/* Actions rapides */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <QuickAddAvailability coachId={coachId} onSuccess={handleRefresh} />
@@ -159,7 +158,6 @@ export default function CoachAgendaPage() {
             La liste de vos prochaines sessions sera affichée ici.
           </p>
         </GlassCard>
-        </div>
       </SubscriptionGate>
 
       {/* Modal de planification de pack */}

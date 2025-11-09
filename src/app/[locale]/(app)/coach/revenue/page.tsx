@@ -102,8 +102,7 @@ export default function CoachRevenuePage() {
 
   return (
     <CoachLayout>
-      <SubscriptionGate isActive={subscriptionStatus === 'ACTIVE'}>
-        <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
         <header className="flex flex-col gap-3">
           <div className="inline-flex items-center gap-3">
             <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/25">
@@ -118,6 +117,7 @@ export default function CoachRevenuePage() {
           </p>
         </header>
 
+        <SubscriptionGate isActive={subscriptionStatus === 'ACTIVE'}>
         {/* KPI cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <GlassCard className="p-6 border-emerald-500/20">
@@ -305,8 +305,8 @@ export default function CoachRevenuePage() {
             </div>
           </GlassCard>
         </div>
-        </div>
-      </SubscriptionGate>
+        </SubscriptionGate>
+      </div>
     </CoachLayout>
   );
 }

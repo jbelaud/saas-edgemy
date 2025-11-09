@@ -122,18 +122,18 @@ export default function CoachPacksPage() {
 
   return (
     <CoachLayout>
-      <SubscriptionGate isActive={subscriptionStatus === 'ACTIVE'}>
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          {/* Header */}
-          <div className="mb-8">
-            <GradientText className="text-4xl font-bold mb-2">
-              Mes Packs
-            </GradientText>
-            <p className="text-gray-400">
-              Gérez les packs d&apos;heures achetés par vos élèves
-            </p>
-          </div>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="mb-8">
+          <GradientText className="text-4xl font-bold mb-2">
+            Mes Packs
+          </GradientText>
+          <p className="text-gray-400">
+            Gérez les packs d&apos;heures achetés par vos élèves
+          </p>
+        </div>
 
+        <SubscriptionGate isActive={subscriptionStatus === 'ACTIVE'}>
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <GlassCard className="p-4">
@@ -307,8 +307,8 @@ export default function CoachPacksPage() {
             })}
           </div>
         )}
-        </div>
-      </SubscriptionGate>
+        </SubscriptionGate>
+      </div>
     </CoachLayout>
   );
 }
