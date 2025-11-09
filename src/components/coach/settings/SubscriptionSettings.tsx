@@ -408,12 +408,12 @@ export function SubscriptionSettings() {
         </div>
       )}
 
-      {/* Si pas d'abonnement */}
+      {/* Si pas d&apos;abonnement */}
       {!subscription?.subscriptionStatus || subscription.subscriptionStatus === 'CANCELED' &&
        subscription.currentPeriodEnd && new Date(subscription.currentPeriodEnd) < new Date() && (
         <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg text-center">
           <p className="text-sm text-gray-300 mb-3">
-            Vous n'avez pas d'abonnement actif. Souscrivez pour accéder à toutes les fonctionnalités coach.
+            Vous n&apos;avez pas d&apos;abonnement actif. Souscrivez pour accéder à toutes les fonctionnalités coach.
           </p>
           <Button
             onClick={() => window.location.href = '/fr/coach/dashboard'}
@@ -430,7 +430,7 @@ export function SubscriptionSettings() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Êtes-vous sûr de vouloir annuler ?</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-400">
-              Votre abonnement restera actif jusqu'à la fin de la période payée. Après cette date, vous n'aurez plus accès aux fonctionnalités suivantes :
+              Votre abonnement restera actif jusqu&apos;à la fin de la période payée. Après cette date, vous n&apos;aurez plus accès aux fonctionnalités suivantes :
               <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
                 <li>Création et gestion des annonces</li>
                 <li>Gestion de l'agenda et des disponibilités</li>
@@ -465,7 +465,7 @@ export function SubscriptionSettings() {
             <AlertDialogDescription className="text-gray-400">
               {targetPlan === 'YEARLY' ? (
                 <>
-                  En passant à l'abonnement annuel, vous bénéficierez de :
+                  En passant à l&apos;abonnement annuel, vous bénéficierez de :
                   <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
                     <li>399€/an au lieu de 468€/an (soit 2 mois offerts)</li>
                     <li>Un seul paiement par an</li>
@@ -477,14 +477,14 @@ export function SubscriptionSettings() {
                 </>
               ) : (
                 <>
-                  En passant à l'abonnement mensuel, vous bénéficierez de :
+                  En passant à l&apos;abonnement mensuel, vous bénéficierez de :
                   <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
                     <li>Plus de flexibilité avec un engagement mensuel</li>
                     <li>39€/mois</li>
                     <li>Possibilité d'annuler à tout moment</li>
                   </ul>
                   <p className="mt-2 text-sm font-semibold text-orange-300">
-                    Le changement prendra effet à la fin de votre période annuelle en cours. Vous continuerez à bénéficier de votre accès annuel jusqu'à cette date.
+                    Le changement prendra effet à la fin de votre période annuelle en cours. Vous continuerez à bénéficier de votre accès annuel jusqu&apos;à cette date.
                   </p>
                 </>
               )}
