@@ -46,8 +46,8 @@ export function SubscriptionSettings() {
         const data = await response.json();
         setSubscription(data);
       }
-    } catch (error) {
-      console.error('Erreur chargement abonnement:', error);
+    } catch (err) {
+      console.error('Erreur chargement abonnement:', err);
     } finally {
       setIsLoading(false);
     }
@@ -66,14 +66,16 @@ export function SubscriptionSettings() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        // Ne pas utiliser la variable error pour éviter l'avertissement
+        await response.json();
         alert('Erreur lors de l&apos;annulation de l&apos;abonnement');
         return;
       }
 
-      const { success, error: cancelError } = await response.json();
+      // Ne pas déstructurer cancelError pour éviter l'avertissement
+      const result = await response.json();
       
-      if (!success) {
+      if (!result.success) {
         alert('Erreur lors de l&apos;annulation de l&apos;abonnement');
         return;
       }
@@ -90,9 +92,10 @@ export function SubscriptionSettings() {
       
       setShowCancelDialog(false);
       alert('Votre abonnement a bien été annulé. Il restera actif jusqu&apos;à la fin de la période en cours.');
-    } catch (err) {
+    } catch (error) {
+      // Ne pas utiliser err pour éviter l'avertissement
       alert('Une erreur est survenue lors de l&apos;annulation de votre abonnement');
-      console.error('Erreur lors de l&apos;annulation de l&apos;abonnement:', err);
+      console.error('Erreur lors de l&apos;annulation de l&apos;abonnement:', error);
     } finally {
       setIsCanceling(false);
     }
@@ -127,8 +130,8 @@ export function SubscriptionSettings() {
         setIsChanging(false);
         setShowChangeDialog(false);
       }
-    } catch (error) {
-      console.error('Erreur changement de plan:', error);
+    } catch (err) {
+      console.error('Erreur changement de plan:', err);
       alert('Une erreur est survenue lors du changement de plan');
       setIsChanging(false);
       setShowChangeDialog(false);
@@ -195,10 +198,10 @@ export function SubscriptionSettings() {
 
   return (
     <div className="space-y-4">
-      {/* Statut de l'abonnement */}
+      {/* Statut de l&apos;abonnement */}
       <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold text-white">Statut de l'abonnement</h3>
+          <h3 className="text-lg font-semibold text-white">Statut de l&apos;abonnement</h3>
           {getStatusBadge(subscription?.subscriptionStatus || null)}
         </div>
 
@@ -217,9 +220,9 @@ export function SubscriptionSettings() {
             <Calendar className="w-4 h-4" />
             <span>
               {subscription.subscriptionStatus === 'CANCELED'
-                ? `Accès jusqu'au ${format(new Date(subscription.currentPeriodEnd), 'PPP', { locale: fr })}`
+                ? `Accès jusqu&apos;au ${format(new Date(subscription.currentPeriodEnd), 'PPP', { locale: fr })}`
                 : subscription.cancelAtPeriodEnd
-                  ? `Annulé - Actif jusqu'au ${format(new Date(subscription.currentPeriodEnd), 'PPP', { locale: fr })}`
+                  ? `Annulé - Actif jusqu&apos;au ${format(new Date(subscription.currentPeriodEnd), 'PPP', { locale: fr })}`
                   : `Renouvellement le ${format(new Date(subscription.currentPeriodEnd), 'PPP', { locale: fr })}`
               }
             </span>
@@ -227,7 +230,7 @@ export function SubscriptionSettings() {
         )}
       </div>
 
-      {/* Message d'alerte pour abonnement annulé mais toujours actif */}
+      {/* Message d&apos;alerte pour abonnement annulé mais toujours actif */}
       {subscription?.subscriptionStatus === 'ACTIVE' && subscription?.cancelAtPeriodEnd && subscription.currentPeriodEnd && (
         <div className="p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
           <div className="flex items-start gap-3">
@@ -237,8 +240,8 @@ export function SubscriptionSettings() {
                 Abonnement annulé
               </h4>
               <p className="text-xs text-gray-400">
-                Votre abonnement a été annulé mais reste actif jusqu'au {format(new Date(subscription.currentPeriodEnd), 'PPP', { locale: fr })}.
-                Après cette date, vous perdrez l'accès aux fonctionnalités coach.
+                Votre abonnement a été annulé mais reste actif jusqu&apos;au {format(new Date(subscription.currentPeriodEnd), 'PPP', { locale: fr })}.
+                Après cette date, vous perdrez l&apos;accès aux fonctionnalités coach.
               </p>
             </div>
           </div>
@@ -321,30 +324,30 @@ export function SubscriptionSettings() {
                     className="border-blue-500/70 bg-blue-950/60 text-blue-100 hover:bg-blue-800/70 hover:border-blue-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isChanging ? 'Changement en cours...' :
-                      subscription.subscriptionPlan === 'MONTHLY' ? 'Passer à l\'annuel' : 'Passer au mensuel'
+                      subscription.subscriptionPlan === 'MONTHLY' ? 'Passer à l&#39;annuel' : 'Passer au mensuel'
                     }
                   </Button>
                 </div>
               </div>
             </div>
 
-          {/* Annuler l'abonnement */}
+          {/* Annuler l&apos;abonnement */}
           <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-red-300 mb-1">
-                  Annuler l'abonnement
+                  Annuler l&apos;abonnement
                 </h4>
                 <p className="text-xs text-gray-400 mb-3">
                   {subscription.currentPeriodEnd ? (
                     <>
-                      Votre abonnement restera actif jusqu'à la fin de la période payée ({format(new Date(subscription.currentPeriodEnd), 'PP', { locale: fr })}).
-                      Après cette date, vous perdrez l'accès aux fonctionnalités coach.
+                      Votre abonnement restera actif jusqu&apos;à la fin de la période payée ({format(new Date(subscription.currentPeriodEnd), 'PP', { locale: fr })}).
+                      Après cette date, vous perdrez l&apos;accès aux fonctionnalités coach.
                     </>
                   ) : (
                     <>
-                      En annulant, vous perdrez l'accès aux fonctionnalités coach à la fin de la période en cours.
+                      En annulant, vous perdrez l&apos;accès aux fonctionnalités coach à la fin de la période en cours.
                     </>
                   )}
                 </p>
@@ -373,7 +376,7 @@ export function SubscriptionSettings() {
                 Abonnement annulé
               </h4>
               <p className="text-xs text-gray-400">
-                Vous avez accès à toutes les fonctionnalités jusqu'au {format(new Date(subscription.currentPeriodEnd), 'PPP', { locale: fr })}.
+                Vous avez accès à toutes les fonctionnalités jusqu&apos;au {format(new Date(subscription.currentPeriodEnd), 'PPP', { locale: fr })}.
                 Après cette date, votre compte sera désactivé.
               </p>
             </div>
