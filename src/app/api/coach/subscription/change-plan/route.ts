@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     // Si c'est YEARLY → MONTHLY, planifier le changement pour la fin de période (pas de paiement immédiat)
     if (coach.subscriptionPlan === 'YEARLY' && newPlan === 'MONTHLY') {
       // Mettre à jour l'abonnement pour qu'il passe à MONTHLY à la fin de la période
-      const updatedSubscription = await stripe.subscriptions.update(coach.subscriptionId, {
+      await stripe.subscriptions.update(coach.subscriptionId, {
         items: [
           {
             id: (await stripe.subscriptions.retrieve(coach.subscriptionId)).items.data[0].id,

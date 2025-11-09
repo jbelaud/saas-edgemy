@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { GlassCard } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, AlertTriangle, CheckCircle2, Calendar, TrendingUp } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Calendar, TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import {
@@ -55,25 +54,47 @@ export function SubscriptionSettings() {
   };
 
   const handleCancelSubscription = async () => {
-    setIsCanceling(true);
+    if (!subscription) return;
+    
     try {
+      setIsCanceling(true);
       const response = await fetch('/api/coach/subscription/cancel', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
-      if (response.ok) {
-        alert('Votre abonnement a été annulé. Il restera actif jusqu\'à la fin de la période payée.');
-        await fetchSubscription();
-      } else {
+      if (!response.ok) {
         const error = await response.json();
-        alert(`Erreur: ${error.error || 'Impossible d\'annuler l\'abonnement'}`);
+        alert('Erreur lors de l&apos;annulation de l&apos;abonnement');
+        return;
       }
-    } catch (error) {
-      console.error('Erreur annulation:', error);
-      alert('Une erreur est survenue lors de l\'annulation');
+
+      const { success, error: cancelError } = await response.json();
+      
+      if (!success) {
+        alert('Erreur lors de l&apos;annulation de l&apos;abonnement');
+        return;
+      }
+
+      // Mettre à jour l'état local
+      if (subscription) {
+        setSubscription({
+          ...subscription,
+          subscriptionStatus: 'CANCELED',
+          cancelAtPeriodEnd: true,
+          cancelAt: new Date().toISOString(),
+        });
+      }
+      
+      setShowCancelDialog(false);
+      alert('Votre abonnement a bien été annulé. Il restera actif jusqu&apos;à la fin de la période en cours.');
+    } catch (err) {
+      alert('Une erreur est survenue lors de l&apos;annulation de votre abonnement');
+      console.error('Erreur lors de l&apos;annulation de l&apos;abonnement:', err);
     } finally {
       setIsCanceling(false);
-      setShowCancelDialog(false);
     }
   };
 

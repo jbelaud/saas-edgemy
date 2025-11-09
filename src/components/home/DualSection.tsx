@@ -7,7 +7,6 @@ export function DualSection() {
   const [isYearly, setIsYearly] = useState(false);
   const coachPrice = isYearly ? '399' : '39';
   const coachPeriod = isYearly ? 'an' : 'mois';
-  const coachDiscount = isYearly ? 'Économisez 15%' : '';
   const playerCommission = '5%';
   
   // Hauteur fixe pour les cartes
@@ -67,7 +66,7 @@ export function DualSection() {
               {/* Description */}
               <p className="text-gray-400 mb-6 leading-relaxed text-center">
                 Accès gratuit à tous les coachs. Payez uniquement les séances que vous réservez.
-                Bénéficiez de tarifs dégressifs sur les packs d'heures.
+                Bénéficiez de tarifs dégressifs sur les packs d&apos;heures.
               </p>
 
               {/* Features List */}
@@ -173,7 +172,7 @@ export function DualSection() {
               {/* Description */}
               <p className="text-gray-400 mb-6 leading-relaxed text-center">
                 Gère ton activité, tes paiements et ta visibilité en toute simplicité.
-                Concentre-toi sur le coaching, on s'occupe du reste avec nos outils professionnels.
+                Concentre-toi sur le coaching, on s&apos;occupe du reste avec nos outils professionnels.
               </p>
 
               {/* Features List */}
