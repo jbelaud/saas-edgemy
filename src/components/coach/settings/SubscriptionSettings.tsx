@@ -433,9 +433,9 @@ export function SubscriptionSettings() {
               Votre abonnement restera actif jusqu&apos;à la fin de la période payée. Après cette date, vous n&apos;aurez plus accès aux fonctionnalités suivantes :
               <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
                 <li>Création et gestion des annonces</li>
-                <li>Gestion de l'agenda et des disponibilités</li>
+                <li>Gestion de l&apos;agenda et des disponibilités</li>
                 <li>Suivi des élèves et de leurs progressions</li>
-                <li>Gestion des packs d'heures</li>
+                <li>Gestion des packs d&apos;heures</li>
                 <li>Accès aux statistiques de revenus</li>
               </ul>
             </AlertDialogDescription>
@@ -481,7 +481,7 @@ export function SubscriptionSettings() {
                   <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
                     <li>Plus de flexibilité avec un engagement mensuel</li>
                     <li>39€/mois</li>
-                    <li>Possibilité d'annuler à tout moment</li>
+                    <li>Possibilité d&apos;annuler à tout moment</li>
                   </ul>
                   <p className="mt-2 text-sm font-semibold text-orange-300">
                     Le changement prendra effet à la fin de votre période annuelle en cours. Vous continuerez à bénéficier de votre accès annuel jusqu&apos;à cette date.
