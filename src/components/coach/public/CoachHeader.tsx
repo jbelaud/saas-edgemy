@@ -2,16 +2,23 @@
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Star, Twitch, Youtube, Twitter, MessageCircle } from 'lucide-react';
+import { Star, Twitch, Youtube, Twitter, MessageCircle, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
+import { useSession } from '@/lib/auth-client';
+import { useLocale } from 'next-intl';
 
 interface CoachHeaderProps {
   coach: {
+    id: string;
     firstName: string;
     lastName: string;
     avatarUrl: string | null;
     status: string;
+    subscriptionStatus: string | null;
+    subscriptionPlan: string | null;
     experience: number | null;
     roi: number | null;
     formats: string[];
@@ -30,8 +37,13 @@ interface CoachHeaderProps {
 export function CoachHeader({ coach }: CoachHeaderProps) {
   const avatarUrl = coach.avatarUrl || coach.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(coach.firstName + ' ' + coach.lastName)}&size=200&background=f97316&color=fff&bold=true`;
   const isTopCoach = coach.badges?.includes('TOP_COACH');
-  
+  const isInactive = coach.subscriptionStatus !== 'ACTIVE';
+
   const [isSticky, setIsSticky] = useState(false);
+  const [isNotifying, setIsNotifying] = useState(false);
+  const { alertState, confirmState, showError, showSuccess, showConfirm, closeAlert, closeConfirm } = useAlertDialog();
+  const { data: session } = useSession();
+  const locale = useLocale();
 
   const rating = 4.9; // Mock - à remplacer par vraies données
   const reviewsCount = 127; // Mock
@@ -41,7 +53,62 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
     if (coach.discordUrl) {
       window.open(coach.discordUrl, '_blank');
     } else {
-      alert('Discord non configuré pour ce coach');
+      showError(
+        'Discord non configuré',
+        `Le coach ${coach.firstName} n'a pas encore configuré son compte Discord. Vous pouvez réserver une session directement via les offres ci-dessous.`
+      );
+    }
+  };
+
+  const handleNotifyCoach = async () => {
+    // Vérifier si le joueur est connecté
+    if (!session?.user) {
+      showConfirm(
+        'Connexion requise',
+        'Pour prévenir ce coach, tu dois d\'abord te connecter ou créer un compte.',
+        () => {
+          window.location.href = `/${locale}/?auth=signin&redirect=${encodeURIComponent(window.location.pathname)}`;
+        }
+      );
+      return;
+    }
+
+    setIsNotifying(true);
+    try {
+      const response = await fetch('/api/coach/notify-inactive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coachId: coach.id }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const successMessage = data.isFollowUp
+          ? `✅ Relance envoyée ! ${coach.firstName} a été notifié de ton intérêt renouvelé.\n\n💡 Tu pourras le relancer à nouveau dans 7 jours si aucune réponse.`
+          : `✅ ${coach.firstName} a été notifié de ton intérêt ! Il te recontactera dès que possible.\n\n💡 Tu pourras le relancer dans 7 jours si aucune réponse.`;
+
+        showSuccess(
+          'Notification envoyée',
+          successMessage
+        );
+      } else if (response.status === 429) {
+        // Cooldown period - notification too recent
+        const { daysSinceLastNotification, daysRemaining } = data;
+        showError(
+          'Notification déjà envoyée',
+          `⏰ Tu as déjà contacté ce coach il y a ${daysSinceLastNotification} jour(s).\n\nTu pourras le relancer dans ${daysRemaining} jour(s) si aucune réponse.`
+        );
+      } else {
+        throw new Error(data.error || 'Erreur lors de l\'envoi de la notification');
+      }
+    } catch (error) {
+      showError(
+        'Erreur',
+        'Impossible d\'envoyer la notification pour le moment. Réessaie plus tard.'
+      );
+    } finally {
+      setIsNotifying(false);
     }
   };
 
@@ -95,10 +162,22 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
 
             {/* Info principale */}
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-                {coach.firstName} {coach.lastName}
-              </h1>
-              
+              <div className="flex flex-col md:flex-row items-center md:items-center gap-3 mb-3">
+                <h1 className="text-4xl md:text-5xl font-bold text-white">
+                  {coach.firstName} {coach.lastName}
+                </h1>
+
+                {/* Badge statut inactif */}
+                {coach.subscriptionStatus !== 'ACTIVE' && (
+                  <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/40 rounded-full px-4 py-2">
+                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                    <span className="text-red-300 text-sm font-semibold">
+                      Compte inactif
+                    </span>
+                  </div>
+                )}
+              </div>
+
               {/* Formats */}
               {coach.formats && coach.formats.length > 0 && (
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-4">
@@ -151,24 +230,43 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3">
-                <Button
-                  size="lg"
-                  onClick={scrollToOffers}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold px-8 py-6 text-lg shadow-xl hover:shadow-2xl transition-all w-full sm:w-auto"
-                >
-                  Réserver une session
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={handleDiscordContact}
-                  className="border-2 border-white bg-white/90 text-blue-600 hover:bg-white hover:text-blue-700 px-8 py-6 text-lg font-semibold w-full sm:w-auto"
-                >
-                  <MessageCircle className="mr-2 h-5 w-5" />
-                  Message Discord
-                </Button>
-              </div>
+              {isInactive ? (
+                <div className="space-y-4">
+                  <div className="bg-amber-500/20 border border-amber-500/40 rounded-lg p-4">
+                    <p className="text-amber-200 text-sm mb-3">
+                      🔔 Ce coach n&apos;est pas disponible actuellement. Tu peux le notifier de ton intérêt et il te recontactera dès son retour !
+                    </p>
+                    <Button
+                      size="lg"
+                      onClick={handleNotifyCoach}
+                      disabled={isNotifying}
+                      className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold px-8 py-6 text-lg shadow-xl hover:shadow-2xl transition-all w-full sm:w-auto"
+                    >
+                      <Bell className="mr-2 h-5 w-5" />
+                      {isNotifying ? 'Envoi en cours...' : 'Prévenir ce coach'}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3">
+                  <Button
+                    size="lg"
+                    onClick={scrollToOffers}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold px-8 py-6 text-lg shadow-xl hover:shadow-2xl transition-all w-full sm:w-auto"
+                  >
+                    Réserver une session
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={handleDiscordContact}
+                    className="border-2 border-white bg-white/90 text-blue-600 hover:bg-white hover:text-blue-700 px-8 py-6 text-lg font-semibold w-full sm:w-auto"
+                  >
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Message Discord
+                  </Button>
+                </div>
+              )}
 
               {/* Social links */}
               {(coach.twitchUrl || coach.youtubeUrl || coach.twitterUrl) && (
@@ -245,6 +343,28 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
           </div>
         </div>
       )}
+
+      {/* Modal d'erreur */}
+      <AlertDialogCustom
+        open={alertState.open}
+        onOpenChange={closeAlert}
+        title={alertState.title}
+        description={alertState.description}
+        type={alertState.type}
+      />
+
+      {/* Modal de confirmation */}
+      <AlertDialogCustom
+        open={confirmState.open}
+        onOpenChange={closeConfirm}
+        title={confirmState.title}
+        description={confirmState.description}
+        type="warning"
+        confirmText="Se connecter"
+        cancelText="Annuler"
+        onConfirm={confirmState.onConfirm}
+        showCancel={true}
+      />
     </>
   );
 }

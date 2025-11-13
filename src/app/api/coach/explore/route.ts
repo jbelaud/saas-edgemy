@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normalizeFormats, normalizeLanguages } from "@/constants/poker";
 
 export async function GET(request: NextRequest) {
   try {
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Calculer des statistiques pour chaque coach
+    // Normaliser et formater les données des coachs
     const coachesWithStats = filteredCoaches.map((coach) => {
       const priceRange = coach.announcements.length > 0
         ? {
@@ -86,10 +87,17 @@ export async function GET(request: NextRequest) {
           }
         : null;
 
+      // Normaliser les formats et langues
+      const normalizedFormats = normalizeFormats(coach.formats);
+      const normalizedLanguages = normalizeLanguages(coach.languages);
+      const announcementTypes = [...new Set(coach.announcements.map((a) => a.type))];
+
       return {
         ...coach,
+        formats: normalizedFormats,
+        languages: normalizedLanguages,
         priceRange,
-        announcementTypes: [...new Set(coach.announcements.map((a) => a.type))],
+        announcementTypes,
       };
     });
 

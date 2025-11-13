@@ -9,6 +9,8 @@ import { GlassCard } from "@/components/ui";
 import { Info } from "lucide-react";
 import DeleteAvailabilityModal from "./DeleteAvailabilityModal";
 import ManageSessionModal from "./ManageSessionModal";
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
 
 interface CalendarEvent {
   id: string;
@@ -31,6 +33,7 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isManageSessionModalOpen, setIsManageSessionModalOpen] = useState(false);
+  const { alertState, confirmState, showSuccess, showError, closeAlert, closeConfirm } = useAlertDialog();
 
   const fetchAvailabilities = useCallback(async () => {
     try {
@@ -105,7 +108,7 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
   const handleSelectSlot = async ({ start, end }: SlotInfo) => {
     // Vérifier que c'est dans le futur
     if (start < new Date()) {
-      alert("❌ Vous ne pouvez pas ajouter de disponibilité dans le passé");
+      showError("Erreur de validation", "Vous ne pouvez pas ajouter de disponibilité dans le passé");
       return;
     }
 
@@ -115,19 +118,22 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ start, end }),
       });
-      
+
       if (res.ok) {
         await fetchAvailabilities();
         // Feedback visuel positif
         const duration = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
-        alert(`✅ Disponibilité ajoutée avec succès !\n📅 ${start.toLocaleDateString("fr-FR")} de ${start.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} à ${end.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}\n⏱️ Durée: ${duration} minutes`);
+        showSuccess(
+          "Disponibilité ajoutée",
+          `${start.toLocaleDateString("fr-FR")} de ${start.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} à ${end.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}\n\nDurée: ${duration} minutes`
+        );
       } else {
         const error = await res.json();
-        alert(`❌ ${error.error || "Erreur lors de l'ajout de la disponibilité"}`);
+        showError("Erreur d'ajout", error.error || "Erreur lors de l'ajout de la disponibilité");
       }
     } catch (error) {
       console.error("Erreur:", error);
-      alert("❌ Erreur lors de l'ajout de la disponibilité");
+      showError("Erreur d'ajout", "Une erreur est survenue lors de l'ajout de la disponibilité");
     }
   };
 
@@ -153,18 +159,18 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
       const res = await fetch(`/api/coach/${coachId}/availability/${realId}`, {
         method: "DELETE",
       });
-      
+
       if (res.ok) {
         await fetchAvailabilities();
         setIsDeleteModalOpen(false);
         setSelectedEvent(null);
-        alert("✅ Disponibilité supprimée avec succès");
+        showSuccess("Disponibilité supprimée", "La disponibilité a été supprimée avec succès");
       } else {
-        alert("❌ Erreur lors de la suppression");
+        showError("Erreur de suppression", "Impossible de supprimer cette disponibilité");
       }
     } catch (error) {
       console.error("Erreur:", error);
-      alert("❌ Erreur lors de la suppression");
+      showError("Erreur de suppression", "Une erreur est survenue lors de la suppression");
     }
   };
 
@@ -218,10 +224,10 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
       await fetchAvailabilities();
       setIsDeleteModalOpen(false);
       setSelectedEvent(null);
-      alert("✅ Disponibilité modifiée avec succès");
+      showSuccess("Disponibilité modifiée", "La disponibilité a été modifiée avec succès");
     } catch (error) {
       console.error("Erreur:", error);
-      alert("❌ Erreur lors de la modification");
+      showError("Erreur de modification", "Une erreur est survenue lors de la modification");
       // En cas d'erreur, recharger pour revenir à l'état cohérent
       await fetchAvailabilities();
     }
@@ -346,6 +352,27 @@ export default function CoachCalendar({ coachId }: CoachCalendarProps) {
           onSuccess={fetchAvailabilities}
         />
       )}
+
+      {/* Modals de notification */}
+      <AlertDialogCustom
+        open={alertState.open}
+        onOpenChange={closeAlert}
+        title={alertState.title}
+        description={alertState.description}
+        type={alertState.type}
+      />
+
+      <AlertDialogCustom
+        open={confirmState.open}
+        onOpenChange={closeConfirm}
+        title={confirmState.title}
+        description={confirmState.description}
+        type="warning"
+        confirmText="Confirmer"
+        cancelText="Annuler"
+        onConfirm={confirmState.onConfirm}
+        showCancel={true}
+      />
     </GlassCard>
   );
 }

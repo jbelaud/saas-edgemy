@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Shield, CheckCircle2, AlertTriangle, Loader2, ExternalLink, Zap } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { SubscriptionModalCoach } from '@/components/coach/subscription/SubscriptionModalCoach';
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
 
 interface StripeStatus {
   connected: boolean;
@@ -13,6 +15,10 @@ interface StripeStatus {
   chargesEnabled: boolean;
   payoutsEnabled: boolean;
   hasActiveSubscription: boolean;
+  canAccessStripeConnect: boolean;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: string | null;
+  subscriptionStatus: string | null;
   requirements?: {
     currentlyDue?: string[];
     eventuallyDue?: string[];
@@ -25,7 +31,10 @@ export function StripeConnectSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showRefreshMessage, setShowRefreshMessage] = useState(false);
   const searchParams = useSearchParams();
+  const { alertState, confirmState, showError, closeAlert, closeConfirm } = useAlertDialog();
 
   const fetchStatus = async () => {
     try {
@@ -49,11 +58,15 @@ export function StripeConnectSettings() {
     const stripeRefresh = searchParams.get('stripe_refresh');
 
     if (stripeSuccess) {
-      alert('✅ Votre compte Stripe a été configuré avec succès !');
+      setShowSuccessMessage(true);
+      // Masquer le message après 5 secondes
+      setTimeout(() => setShowSuccessMessage(false), 5000);
       // Nettoyer l'URL
       window.history.replaceState({}, '', window.location.pathname);
     } else if (stripeRefresh) {
-      alert('⚠️ Veuillez compléter la configuration de votre compte Stripe.');
+      setShowRefreshMessage(true);
+      // Masquer le message après 5 secondes
+      setTimeout(() => setShowRefreshMessage(false), 5000);
     }
   }, [searchParams]);
 
@@ -75,7 +88,10 @@ export function StripeConnectSettings() {
       window.location.href = url;
     } catch (error) {
       console.error('Erreur Stripe Connect:', error);
-      alert(error instanceof Error ? error.message : 'Erreur lors de la connexion à Stripe');
+      showError(
+        'Erreur de connexion',
+        error instanceof Error ? error.message : 'Erreur lors de la connexion à Stripe'
+      );
     } finally {
       setIsConnecting(false);
     }
@@ -101,8 +117,42 @@ export function StripeConnectSettings() {
 
   return (
     <div className="space-y-4">
+      {/* Message de succès Stripe */}
+      {showSuccessMessage && (
+        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-green-300 mb-1">
+                Compte Stripe configuré avec succès !
+              </p>
+              <p className="text-xs text-gray-400">
+                Vous pouvez maintenant recevoir des paiements directement sur votre compte bancaire.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Message de refresh Stripe */}
+      {showRefreshMessage && (
+        <div className="p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-orange-300 mb-1">
+                Configuration incomplète
+              </p>
+              <p className="text-xs text-gray-400">
+                Veuillez compléter la configuration de votre compte Stripe pour recevoir des paiements.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Alerte si pas d'abonnement */}
-      {!status?.hasActiveSubscription && (
+      {!status?.canAccessStripeConnect && (
         <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -126,7 +176,24 @@ export function StripeConnectSettings() {
         </div>
       )}
 
-      {status?.hasActiveSubscription && (
+      {/* Alerte si abonnement annulé mais encore actif */}
+      {status?.canAccessStripeConnect && status?.cancelAtPeriodEnd && status?.currentPeriodEnd && (
+        <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-blue-300 mb-1">
+                Abonnement annulé - Actif jusqu&apos;au {new Date(status.currentPeriodEnd).toLocaleDateString('fr-FR')}
+              </p>
+              <p className="text-xs text-gray-400">
+                Votre abonnement a été annulé mais reste actif jusqu&apos;à la fin de la période payée. Vous pouvez toujours configurer Stripe.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {status?.canAccessStripeConnect && (
         <>
           <div className="p-4 bg-sky-500/10 border border-sky-500/30 rounded-lg">
             <p className="text-sm text-sky-300 mb-2 font-semibold">
@@ -142,7 +209,7 @@ export function StripeConnectSettings() {
         </>
       )}
 
-      {status?.hasActiveSubscription && (
+      {status?.canAccessStripeConnect && (
         <>
           <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-start gap-3">
             <Shield className="h-5 w-5 text-emerald-300 flex-shrink-0 mt-0.5" />
@@ -214,6 +281,7 @@ export function StripeConnectSettings() {
           <Button
             onClick={() => handleConnect(false)}
             disabled={isConnecting}
+            size="sm"
             className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 shadow-lg shadow-sky-500/30"
           >
             {isConnecting ? (
@@ -230,8 +298,9 @@ export function StripeConnectSettings() {
           </Button>
         ) : !isFullyConnected ? (
           <Button
-            onClick={() => handleConnect(true)}
+            onClick={() => handleConnect(false)}
             disabled={isConnecting}
+            size="sm"
             className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-lg shadow-amber-500/30"
           >
             {isConnecting ? (
@@ -250,8 +319,8 @@ export function StripeConnectSettings() {
           <Button
             onClick={() => handleConnect(true)}
             disabled={isConnecting}
-            variant="outline"
-            className="w-full border-white/20 text-gray-300 hover:bg-white/10"
+            size="sm"
+            className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold shadow-lg shadow-emerald-500/30"
           >
             {isConnecting ? (
               <>
@@ -260,7 +329,7 @@ export function StripeConnectSettings() {
               </>
             ) : (
               <>
-                Gérer mon compte Stripe
+                Accéder au tableau de bord Stripe
                 <ExternalLink className="ml-2 h-4 w-4" />
               </>
             )}
@@ -278,6 +347,27 @@ export function StripeConnectSettings() {
       <SubscriptionModalCoach
         open={isSubscriptionModalOpen}
         onOpenChange={setIsSubscriptionModalOpen}
+      />
+
+      {/* Modals de notification */}
+      <AlertDialogCustom
+        open={alertState.open}
+        onOpenChange={closeAlert}
+        title={alertState.title}
+        description={alertState.description}
+        type={alertState.type}
+      />
+
+      <AlertDialogCustom
+        open={confirmState.open}
+        onOpenChange={closeConfirm}
+        title={confirmState.title}
+        description={confirmState.description}
+        type="warning"
+        confirmText="Confirmer"
+        cancelText="Annuler"
+        onConfirm={confirmState.onConfirm}
+        showCancel={true}
       />
     </div>
   );

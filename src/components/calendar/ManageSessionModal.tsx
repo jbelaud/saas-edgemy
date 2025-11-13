@@ -4,6 +4,8 @@ import { useState } from "react";
 import { X, Edit2, Trash2, User, Calendar as CalendarIcon, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
 
 interface ManageSessionModalProps {
   isOpen: boolean;
@@ -29,6 +31,7 @@ export default function ManageSessionModal({
   const [startDate, setStartDate] = useState(format(session.start, "yyyy-MM-dd'T'HH:mm"));
   const [endDate, setEndDate] = useState(format(session.end, "yyyy-MM-dd'T'HH:mm"));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { alertState, confirmState, showSuccess, showError, showConfirm, closeAlert, closeConfirm } = useAlertDialog();
 
   if (!isOpen) return null;
 
@@ -41,7 +44,7 @@ export default function ManageSessionModal({
       const end = new Date(endDate);
 
       if (end <= start) {
-        alert("❌ L'heure de fin doit être après l'heure de début");
+        showError("Erreur de validation", "L'heure de fin doit être après l'heure de début");
         setIsSubmitting(false);
         return;
       }
@@ -53,47 +56,52 @@ export default function ManageSessionModal({
       });
 
       if (res.ok) {
-        alert("✅ Session modifiée avec succès");
+        showSuccess("Session modifiée", "La session a été modifiée avec succès");
         onSuccess();
         onClose();
       } else {
         const error = await res.json();
-        alert(`❌ ${error.error || "Erreur lors de la modification"}`);
+        showError("Erreur de modification", error.error || "Erreur lors de la modification");
       }
     } catch (error) {
       console.error("Erreur:", error);
-      alert("❌ Erreur lors de la modification");
+      showError("Erreur de modification", "Une erreur est survenue lors de la modification");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm(`🗑️ Annuler cette session ?\n\nLes heures seront recréditées au pack du joueur.`)) {
-      return;
-    }
+    showConfirm(
+      "Annuler cette session",
+      "Êtes-vous sûr de vouloir annuler cette session ? Les heures seront recréditées au pack du joueur.",
+      async () => {
+        setIsSubmitting(true);
+        try {
+          const res = await fetch(`/api/coach/sessions/${session.sessionId}`, {
+            method: "DELETE",
+          });
 
-    setIsSubmitting(true);
-    try {
-      const res = await fetch(`/api/coach/sessions/${session.sessionId}`, {
-        method: "DELETE",
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        alert(`✅ ${data.message}\n\n⏱️ Heures recréditées: ${data.creditedHours}h`);
-        onSuccess();
-        onClose();
-      } else {
-        const error = await res.json();
-        alert(`❌ ${error.error || "Erreur lors de l'annulation"}`);
+          if (res.ok) {
+            const data = await res.json();
+            showSuccess(
+              "Session annulée",
+              `${data.message}\n\nHeures recréditées: ${data.creditedHours}h`
+            );
+            onSuccess();
+            onClose();
+          } else {
+            const error = await res.json();
+            showError("Erreur d'annulation", error.error || "Erreur lors de l'annulation");
+          }
+        } catch (error) {
+          console.error("Erreur:", error);
+          showError("Erreur d'annulation", "Une erreur est survenue lors de l'annulation");
+        } finally {
+          setIsSubmitting(false);
+        }
       }
-    } catch (error) {
-      console.error("Erreur:", error);
-      alert("❌ Erreur lors de l'annulation");
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
 
   const handleClose = () => {
@@ -236,6 +244,27 @@ export default function ManageSessionModal({
           </div>
         )}
       </div>
+
+      {/* Modals de notification */}
+      <AlertDialogCustom
+        open={alertState.open}
+        onOpenChange={closeAlert}
+        title={alertState.title}
+        description={alertState.description}
+        type={alertState.type}
+      />
+
+      <AlertDialogCustom
+        open={confirmState.open}
+        onOpenChange={closeConfirm}
+        title={confirmState.title}
+        description={confirmState.description}
+        type="warning"
+        confirmText="Confirmer"
+        cancelText="Annuler"
+        onConfirm={confirmState.onConfirm}
+        showCancel={true}
+      />
     </div>
   );
 }

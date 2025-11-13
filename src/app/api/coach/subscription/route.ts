@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
     const coach = await prisma.coach.findUnique({
       where: { userId: session.user.id },
       select: {
+        id: true,
         subscriptionStatus: true,
         subscriptionPlan: true,
         currentPeriodEnd: true,
@@ -39,12 +40,17 @@ export async function GET(req: NextRequest) {
     if (coach.subscriptionId && coach.subscriptionStatus === 'ACTIVE') {
       try {
         const stripeSubscription = await stripe.subscriptions.retrieve(coach.subscriptionId);
-        cancelAtPeriodEnd = stripeSubscription.cancel_at_period_end || false;
-        cancelAt = stripeSubscription.cancel_at ? new Date(stripeSubscription.cancel_at * 1000) : null;
+        const subscriptionData = stripeSubscription as unknown as {
+          cancel_at_period_end?: boolean;
+          cancel_at?: number;
+          current_period_end?: number;
+        };
+        cancelAtPeriodEnd = subscriptionData.cancel_at_period_end || false;
+        cancelAt = subscriptionData.cancel_at ? new Date(subscriptionData.cancel_at * 1000) : null;
 
         // Si currentPeriodEnd est null en BDD, on le synchronise depuis Stripe
-        if (!currentPeriodEnd && stripeSubscription.current_period_end) {
-          currentPeriodEnd = new Date(stripeSubscription.current_period_end * 1000);
+        if (!currentPeriodEnd && subscriptionData.current_period_end) {
+          currentPeriodEnd = new Date(subscriptionData.current_period_end * 1000);
 
           // Mettre à jour la BDD
           await prisma.coach.update({

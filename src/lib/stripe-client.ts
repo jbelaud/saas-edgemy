@@ -6,6 +6,7 @@ export const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHAB
 
 interface PaymentSessionParams {
   reservationId: string;
+  coachId: string;
   coachName: string;
   playerEmail: string;
   price: number;

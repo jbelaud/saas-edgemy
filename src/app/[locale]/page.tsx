@@ -5,7 +5,8 @@ import { HeroSection } from '@/components/home/HeroSection'
 import { HowItWorksSection } from '@/components/home/HowItWorksSection'
 import { FeaturesSection } from '@/components/home/FeaturesSection'
 import { DualSection } from '@/components/home/DualSection'
-import { TestimonialsSection } from '@/components/home/TestimonialsSection'
+// Section temporairement masquée en attente de vrais témoignages
+// import { TestimonialsSection } from '@/components/home/TestimonialsSection'
 import { MissionSection } from '@/components/home/MissionSection'
 import { CTASection } from '@/components/home/CTASection'
 
@@ -27,7 +28,8 @@ export default async function Home({
       <HowItWorksSection />
       <FeaturesSection />
       <DualSection />
-      <TestimonialsSection />
+      {/* Section temporairement masquée en attente de vrais témoignages */}
+      {/* <TestimonialsSection /> */}
       <MissionSection />
       <CTASection />
     </PublicLayout>

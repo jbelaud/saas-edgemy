@@ -35,7 +35,21 @@ export async function GET() {
       );
     }
 
+    // Vérifier si l'abonnement est actif OU s'il est annulé mais encore dans la période active
     const hasActiveSubscription = coach.subscriptionStatus === 'ACTIVE';
+    const isInActivePeriod = coach.currentPeriodEnd ? new Date() < coach.currentPeriodEnd : false;
+    const canAccessStripeConnect = hasActiveSubscription || isInActivePeriod;
+
+    // Récupérer les informations d'annulation depuis Stripe si l'abonnement existe
+    let cancelAtPeriodEnd = false;
+    if (coach.subscriptionId && hasActiveSubscription) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(coach.subscriptionId);
+        cancelAtPeriodEnd = subscription.cancel_at_period_end;
+      } catch (error) {
+        console.error('Erreur récupération subscription Stripe:', error);
+      }
+    }
 
     // Si pas de compte Stripe Connect
     if (!coach.stripeAccountId) {
@@ -46,6 +60,27 @@ export async function GET() {
         chargesEnabled: false,
         payoutsEnabled: false,
         hasActiveSubscription,
+        canAccessStripeConnect,
+        cancelAtPeriodEnd,
+        currentPeriodEnd: coach.currentPeriodEnd?.toISOString() || null,
+        subscriptionStatus: coach.subscriptionStatus,
+      });
+    }
+
+    // Si c'est un compte mock, retourner un statut non connecté
+    if (coach.stripeAccountId.startsWith('acct_mock_')) {
+      console.log(`ℹ️ Compte mock détecté: ${coach.stripeAccountId}, retour statut non connecté`);
+      return NextResponse.json({
+        connected: false,
+        accountId: null,
+        detailsSubmitted: false,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        hasActiveSubscription,
+        canAccessStripeConnect,
+        cancelAtPeriodEnd,
+        currentPeriodEnd: coach.currentPeriodEnd?.toISOString() || null,
+        subscriptionStatus: coach.subscriptionStatus,
       });
     }
 
@@ -59,6 +94,10 @@ export async function GET() {
       chargesEnabled: account.charges_enabled,
       payoutsEnabled: account.payouts_enabled,
       hasActiveSubscription,
+      canAccessStripeConnect,
+      cancelAtPeriodEnd,
+      currentPeriodEnd: coach.currentPeriodEnd?.toISOString() || null,
+      subscriptionStatus: coach.subscriptionStatus,
       requirements: {
         currentlyDue: account.requirements?.currently_due || [],
         eventuallyDue: account.requirements?.eventually_due || [],

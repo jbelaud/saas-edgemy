@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useLocale } from 'next-intl';
-import { Check, Zap, Loader2 } from 'lucide-react';
+import { Check, Zap, Loader2, Gift, CheckCircle2, AlertCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { GradientButton, GlassCard } from '@/components/ui';
+import { Input } from '@/components/ui/input';
 
 interface SubscriptionModalCoachProps {
   open: boolean;
@@ -36,11 +37,52 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
   const locale = useLocale();
   const [isLoading, setIsLoading] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<'MONTHLY' | 'YEARLY'>('YEARLY');
+  const [promoCode, setPromoCode] = useState('');
+  const [promoMessage, setPromoMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const currentPrice = billingPeriod === 'MONTHLY' ? MONTHLY_PRICE : YEARLY_PRICE;
   const currentPeriod = billingPeriod === 'MONTHLY' ? 'mois' : 'an';
 
+  const handlePromoActivation = async () => {
+    if (!promoCode.trim()) return;
+
+    setIsLoading(true);
+    setPromoMessage(null);
+
+    try {
+      const response = await fetch('/api/subscription/activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode.toUpperCase() }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Code promo invalide');
+      }
+
+      setPromoMessage({
+        type: 'success',
+        text: '30 jours gratuits activés ! Redirection...'
+      });
+
+      // Rediriger vers le dashboard après 1.5 secondes
+      setTimeout(() => {
+        window.location.href = `/${locale}/coach/dashboard?subscription=success`;
+      }, 1500);
+
+    } catch (error) {
+      setPromoMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Code promo invalide'
+      });
+      setIsLoading(false);
+    }
+  };
+
   const handleSubscribe = async () => {
+    // Continuer vers Stripe pour le paiement
     setIsLoading(true);
     try {
       const response = await fetch('/api/stripe/checkout/subscription', {
@@ -133,6 +175,68 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
               ))}
             </ul>
 
+            {/* Champ code promo */}
+            <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <Gift className="w-5 h-5 text-emerald-400" />
+                <label htmlFor="promo-code" className="text-sm font-semibold text-emerald-300">
+                  Code promo
+                </label>
+              </div>
+              <div className="flex gap-2 mb-2">
+                <Input
+                  id="promo-code"
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  placeholder="EDGEMY-FREE1MONTH"
+                  className="text-center font-semibold tracking-wider uppercase flex-1"
+                  disabled={isLoading}
+                />
+                <button
+                  onClick={handlePromoActivation}
+                  disabled={isLoading || !promoCode.trim()}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all whitespace-nowrap"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    'Valider'
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 text-center">
+                Tu as reçu un code pour 30 jours gratuits ? Entre-le ici
+              </p>
+              {promoMessage && (
+                <div className={`mt-3 p-3 rounded-lg border ${
+                  promoMessage.type === 'success'
+                    ? 'bg-emerald-500/10 border-emerald-500/30'
+                    : 'bg-red-500/10 border-red-500/30'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    {promoMessage.type === 'success' ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                    )}
+                    <p className={`text-xs font-semibold ${
+                      promoMessage.type === 'success' ? 'text-emerald-300' : 'text-red-300'
+                    }`}>
+                      {promoMessage.text}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Séparateur OU */}
+            <div className="flex items-center gap-4 my-6">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent" />
+              <span className="text-sm font-semibold text-gray-400">OU</span>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent" />
+            </div>
+
             <GradientButton
               variant="amber"
               size="lg"
@@ -143,12 +247,14 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Redirection...
+                  Redirection vers le paiement...
                 </>
               ) : (
                 <>
                   <Zap className="mr-2 h-5 w-5" />
-                  S&apos;abonner - {currentPrice}€/{currentPeriod}
+                  {billingPeriod === 'MONTHLY'
+                    ? 'S\'abonner - 39€/mois'
+                    : 'S\'abonner - 399€/an'}
                 </>
               )}
             </GradientButton>

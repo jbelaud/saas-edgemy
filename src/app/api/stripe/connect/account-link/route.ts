@@ -59,7 +59,7 @@ export async function POST(req: Request) {
 
       // Retourner une URL de redirection vers les settings
       return NextResponse.json({
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/coach/settings?stripe_mock=true`,
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/fr/coach/settings?stripe_mock=true`,
         accountId: mockAccountId,
       });
     }
@@ -131,12 +131,24 @@ export async function POST(req: Request) {
       );
     }
 
+    // Récupérer l'état du compte pour déterminer le type de lien approprié
+    const account = await stripe.accounts.retrieve(accountId);
+    const isOnboardingComplete = account.details_submitted === true;
+    const isPayoutsEnabled = account.payouts_enabled === true;
+    const isChargesEnabled = account.charges_enabled === true;
+
+    // Déterminer le type de lien - Toujours utiliser 'account_onboarding'
+    // car 'account_update' nécessite que payouts_enabled et charges_enabled soient true
+    const linkType = 'account_onboarding';
+
+    console.log(`ℹ️ Compte ${accountId}: details_submitted=${isOnboardingComplete}, payouts_enabled=${isPayoutsEnabled}, charges_enabled=${isChargesEnabled}, type de lien: ${linkType}`);
+
     // Créer l'Account Link pour l'onboarding
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/coach/settings?stripe_refresh=true`,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/coach/settings?stripe_success=true`,
-      type: refresh ? 'account_update' : 'account_onboarding',
+      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/fr/coach/settings?stripe_refresh=true`,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/fr/coach/settings?stripe_success=true`,
+      type: linkType,
     });
 
     console.log(`✅ Account Link créé pour coach ${coach.id}`);

@@ -14,6 +14,8 @@ import * as z from 'zod';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
 
 interface SchedulePackSessionModalProps {
   packId: string;
@@ -57,6 +59,7 @@ export function SchedulePackSessionModal({
   onSuccess,
 }: SchedulePackSessionModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { alertState, confirmState, showError, closeAlert, closeConfirm } = useAlertDialog();
 
   const form = useForm<ScheduleFormValues>({
     resolver: zodResolver(scheduleSchema),
@@ -96,7 +99,10 @@ export function SchedulePackSessionModal({
       form.reset();
     } catch (error) {
       console.error('Erreur:', error);
-      alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+      showError(
+        'Erreur de planification',
+        error instanceof Error ? error.message : 'Une erreur est survenue lors de la planification'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -229,6 +235,27 @@ export function SchedulePackSessionModal({
           </form>
         </Form>
       </DialogContent>
+
+      {/* Modals de notification */}
+      <AlertDialogCustom
+        open={alertState.open}
+        onOpenChange={closeAlert}
+        title={alertState.title}
+        description={alertState.description}
+        type={alertState.type}
+      />
+
+      <AlertDialogCustom
+        open={confirmState.open}
+        onOpenChange={closeConfirm}
+        title={confirmState.title}
+        description={confirmState.description}
+        type="warning"
+        confirmText="Confirmer"
+        cancelText="Annuler"
+        onConfirm={confirmState.onConfirm}
+        showCancel={true}
+      />
     </Dialog>
   );
 }

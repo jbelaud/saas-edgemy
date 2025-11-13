@@ -50,11 +50,60 @@ export async function POST(req: NextRequest) {
 
     // Si passage de YEARLY à MONTHLY, vérifier qu'on est dans le dernier mois
     if (coach.subscriptionPlan === 'YEARLY' && newPlan === 'MONTHLY') {
-      if (!coach.currentPeriodEnd) {
-        return NextResponse.json({ error: 'Impossible de déterminer la date de fin de période' }, { status: 400 });
+      let currentPeriodEnd = coach.currentPeriodEnd;
+
+      // Si currentPeriodEnd est null, le synchroniser depuis Stripe
+      if (!currentPeriodEnd) {
+        try {
+          console.log(`🔍 Tentative de récupération de l'abonnement Stripe: ${coach.subscriptionId}`);
+          const stripeSubscription = await stripe.subscriptions.retrieve(coach.subscriptionId, {
+            expand: ['items.data.price']
+          });
+
+          // Logger l'objet complet pour debug
+          console.log(`📊 Abonnement Stripe récupéré (COMPLET):`, JSON.stringify(stripeSubscription, null, 2));
+          const subscriptionData = stripeSubscription as unknown as {
+            id: string;
+            status: string;
+            current_period_end?: number;
+            current_period_start?: number;
+            items?: { data: Array<unknown> };
+          };
+          console.log(`📊 Propriétés clés:`, {
+            id: subscriptionData.id,
+            status: subscriptionData.status,
+            current_period_end: subscriptionData.current_period_end,
+            current_period_start: subscriptionData.current_period_start,
+            items_data: subscriptionData.items?.data[0],
+          });
+
+          // Vérifier current_period_end à différents endroits possibles
+          const periodEndTimestamp = subscriptionData.current_period_end;
+
+          console.log(`🔍 periodEndTimestamp trouvé:`, periodEndTimestamp);
+
+          if (periodEndTimestamp) {
+            currentPeriodEnd = new Date(periodEndTimestamp * 1000);
+
+            // Mettre à jour la BDD
+            await prisma.coach.update({
+              where: { id: coach.id },
+              data: { currentPeriodEnd },
+            });
+
+            console.log(`✅ currentPeriodEnd synchronisé depuis Stripe pour le coach ${coach.id}: ${currentPeriodEnd}`);
+          } else {
+            console.error(`❌ current_period_end absent dans l'abonnement Stripe ${coach.subscriptionId}`);
+            return NextResponse.json({ error: 'Impossible de déterminer la date de fin de période depuis Stripe' }, { status: 400 });
+          }
+        } catch (error) {
+          console.error('Erreur récupération currentPeriodEnd depuis Stripe:', error);
+          console.error('Détails erreur:', JSON.stringify(error, null, 2));
+          return NextResponse.json({ error: `Impossible de déterminer la date de fin de période: ${error instanceof Error ? error.message : 'Erreur inconnue'}` }, { status: 400 });
+        }
       }
 
-      const periodEnd = new Date(coach.currentPeriodEnd);
+      const periodEnd = new Date(currentPeriodEnd);
       const now = new Date();
       const oneMonthBeforeEnd = new Date(periodEnd);
       oneMonthBeforeEnd.setMonth(oneMonthBeforeEnd.getMonth() - 1);

@@ -23,6 +23,8 @@ import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate'
 interface CoachDashboardResponse {
   coach: {
     subscriptionStatus: string | null;
+    stripeAccountId: string | null;
+    isOnboarded: boolean;
   };
   stats: {
     totalRevenue: number;
@@ -69,6 +71,11 @@ export default function CoachRevenuePage() {
   }, [session]);
 
   const stats = dashboardData?.stats;
+  const coach = dashboardData?.coach;
+
+  const isStripeConnected = useMemo(() => {
+    return coach?.stripeAccountId && coach?.isOnboarded;
+  }, [coach]);
 
   const revenuePerHour = useMemo(() => {
     if (!stats || stats.totalHours === 0) return 0;
@@ -282,25 +289,61 @@ export default function CoachRevenuePage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white">Versements & paiements</h3>
-                <p className="text-sm text-gray-400">Paramétrez vos informations bancaires Stripe</p>
+                <p className="text-sm text-gray-400">
+                  {isStripeConnected ? 'Vos versements automatiques' : 'Paramétrez vos informations bancaires Stripe'}
+                </p>
               </div>
             </div>
             <div className="space-y-3 text-sm">
-              <div className="p-4 bg-white/5 border border-purple-500/20 rounded-lg">
-                <p className="text-white font-medium">Compte Stripe</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Finalisez la connexion pour recevoir vos futurs paiements.
-                </p>
-                <Button
-                  variant="outline"
-                  className="mt-4 border-purple-500/70 bg-purple-950/60 text-purple-100 hover:bg-purple-800/70 hover:border-purple-400 hover:text-white"
-                  onClick={() => router.push(`/${locale}/coach/settings?tab=payouts`)}
-                >
-                  Configurer mes versements
-                </Button>
-              </div>
+              {isStripeConnected ? (
+                <>
+                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                    <p className="text-white font-medium flex items-center gap-2">
+                      <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                      Compte Stripe connecté
+                    </p>
+                    <p className="text-xs text-gray-300 mt-2">
+                      Vos gains sont automatiquement versés sur votre compte bancaire après validation de chaque session.
+                    </p>
+                    <ul className="mt-3 space-y-1 text-xs text-gray-400">
+                      <li className="flex items-start gap-2">
+                        <span className="mt-1">•</span>
+                        <span>Sessions individuelles : paiement immédiat après la session</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="mt-1">•</span>
+                        <span>Packs : paiement après la première session du pack</span>
+                      </li>
+                    </ul>
+                    <Button
+                      variant="outline"
+                      className="mt-4 w-full border-emerald-500/70 bg-emerald-950/60 text-emerald-100 hover:bg-emerald-800/70 hover:border-emerald-400 hover:text-white"
+                      onClick={() => router.push(`/${locale}/coach/settings?tab=payouts`)}
+                    >
+                      Gérer mon compte Stripe
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="p-4 bg-white/5 border border-purple-500/20 rounded-lg">
+                  <p className="text-white font-medium">Compte Stripe</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Finalisez la connexion pour recevoir vos futurs paiements.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="mt-4 w-full border-purple-500/70 bg-purple-950/60 text-purple-100 hover:bg-purple-800/70 hover:border-purple-400 hover:text-white"
+                    onClick={() => router.push(`/${locale}/coach/settings?tab=payouts`)}
+                  >
+                    Configurer mes versements
+                  </Button>
+                </div>
+              )}
               <p className="text-xs text-gray-500">
-                Les versements sont traités automatiquement sous 7 jours ouvrés après validation des sessions.
+                {isStripeConnected
+                  ? 'Les versements sont traités automatiquement immédiatement après validation des sessions.'
+                  : 'Les versements sont traités automatiquement sous 7 jours ouvrés après validation des sessions.'
+                }
               </p>
             </div>
           </GlassCard>

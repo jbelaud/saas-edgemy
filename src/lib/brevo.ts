@@ -162,6 +162,81 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
 }
 
 
+// Fonction générique pour envoyer des emails
+export interface SendEmailParams {
+  to: Array<{ email: string; name?: string }>;
+  subject: string;
+  htmlContent: string;
+  sender?: { email: string; name: string };
+}
+
+export async function sendEmail(params: SendEmailParams) {
+  try {
+    console.log('📧 === DÉBUT ENVOI EMAIL ===');
+    console.log('📧 Destinataire(s):', JSON.stringify(params.to, null, 2));
+    console.log('📧 Sujet:', params.subject);
+
+    if (!process.env.BREVO_API_KEY) {
+      console.error('❌ BREVO_API_KEY not configured');
+      return { success: false, error: 'Email service not configured' };
+    }
+
+    console.log('✅ BREVO_API_KEY est configurée');
+    console.log('📧 Longueur de la clé API:', process.env.BREVO_API_KEY.length, 'caractères');
+    console.log('📧 Préfixe de la clé:', process.env.BREVO_API_KEY.substring(0, 15) + '...');
+
+    const client = getBrevoClient();
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+
+    sendSmtpEmail.subject = params.subject;
+    sendSmtpEmail.sender = params.sender || {
+      name: process.env.BREVO_SENDER_NAME || "Edgemy",
+      email: process.env.BREVO_SENDER_EMAIL || "contact@edgemy.fr"
+    };
+    sendSmtpEmail.to = params.to;
+    sendSmtpEmail.htmlContent = params.htmlContent;
+
+    console.log('📧 Configuration email:', {
+      sender: sendSmtpEmail.sender,
+      to: sendSmtpEmail.to,
+      subject: sendSmtpEmail.subject,
+      htmlContentLength: params.htmlContent.length
+    });
+
+    console.log('📧 Appel API Brevo en cours...');
+    const result = await client.sendTransacEmail(sendSmtpEmail);
+
+    console.log('✅ === RÉPONSE BREVO REÇUE ===');
+    console.log('✅ Status: SUCCESS');
+    console.log('✅ Message ID:', (result as { messageId?: string }).messageId || 'N/A');
+    console.log('✅ Résultat complet:', JSON.stringify(result, null, 2));
+    console.log('✅ === FIN ENVOI EMAIL ===');
+
+    return { success: true, result };
+
+  } catch (error) {
+    console.error('❌ === ERREUR ENVOI EMAIL ===');
+    console.error('❌ Type d\'erreur:', error instanceof Error ? error.constructor.name : typeof error);
+    console.error('❌ Message d\'erreur:', error instanceof Error ? error.message : String(error));
+
+    if (error && typeof error === 'object') {
+      console.error('❌ Détails de l\'erreur:', JSON.stringify(error, null, 2));
+
+      // Si c'est une erreur Axios, afficher plus de détails
+      if ('response' in error) {
+        const axiosError = error as { response?: { status?: number; statusText?: string; data?: unknown; headers?: unknown } };
+        console.error('❌ Status HTTP:', axiosError.response?.status);
+        console.error('❌ Status Text:', axiosError.response?.statusText);
+        console.error('❌ Response Data:', JSON.stringify(axiosError.response?.data, null, 2));
+        console.error('❌ Response Headers:', JSON.stringify(axiosError.response?.headers, null, 2));
+      }
+    }
+
+    console.error('❌ === FIN ERREUR EMAIL ===');
+    return { success: false, error };
+  }
+}
+
 // Email de notification interne pour l'équipe
 export async function sendInternalNotification(type: 'subscriber', data: { email: string; role: string; firstName?: string }) {
   try {

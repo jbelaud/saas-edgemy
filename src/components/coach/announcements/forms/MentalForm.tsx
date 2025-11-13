@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2 } from 'lucide-react';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
 
 const mentalSchema = z.object({
   title: z.string().min(5, 'Le titre doit contenir au moins 5 caractères'),
@@ -21,6 +23,7 @@ const mentalSchema = z.object({
       return !isNaN(num) && num >= 0 && num <= 9999 && Number.isInteger(parseFloat(val));
     }, 'Le prix doit être un nombre entier entre 0€ et 9999€'),
   description: z.string().min(20, 'La description doit contenir au moins 20 caractères'),
+  prerequisites: z.string().optional(),
   isActive: z.boolean(),
 });
 
@@ -50,6 +53,8 @@ const DURATIONS = [
 ];
 
 export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormProps) {
+  const [error, setError] = useState<string | null>(null);
+
   const form = useForm<MentalFormValues>({
     resolver: zodResolver(mentalSchema),
     defaultValues: {
@@ -58,12 +63,14 @@ export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormPro
       durationMin: '60',
       priceCents: '',
       description: '',
+      prerequisites: '',
       isActive: true,
     },
   });
 
   const onSubmit = async (data: MentalFormValues) => {
     setIsLoading(true);
+    setError(null);
     try {
       const payload = {
         type: 'MENTAL',
@@ -72,6 +79,7 @@ export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormPro
         durationMin: parseInt(data.durationMin, 10),
         priceCents: parseInt(data.priceCents, 10) * 100,
         description: data.description,
+        prerequisites: data.prerequisites || null,
         isActive: data.isActive,
       };
 
@@ -92,7 +100,7 @@ export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormPro
       onSuccess();
     } catch (error) {
       console.error('Erreur:', error);
-      alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+      setError(error instanceof Error ? error.message : 'Une erreur est survenue');
     } finally {
       setIsLoading(false);
     }
@@ -101,13 +109,24 @@ export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormPro
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {error && (
+          <Alert variant="destructive" className="border-red-500/50 bg-red-500/10">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-red-200">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Titre de l&apos;annonce *</FormLabel>
-              <Input placeholder="Ex: Coaching mental - Gestion du tilt" {...field} />
+              <FormControl>
+                <Input placeholder="Ex: Coaching mental - Gestion du tilt" {...field} className="bg-slate-800/50 border-slate-600 focus:border-orange-500" />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -120,9 +139,11 @@ export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormPro
             <FormItem>
               <FormLabel>Focus principal *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez" />
-                </SelectTrigger>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez" />
+                  </SelectTrigger>
+                </FormControl>
                 <SelectContent>
                   {FOCUS_AREAS.map((focus) => (
                     <SelectItem key={focus.value} value={focus.value}>
@@ -131,7 +152,7 @@ export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormPro
                   ))}
                 </SelectContent>
               </Select>
-              <FormDescription>
+              <FormDescription className="text-gray-400">
                 Domaine principal du coaching mental
               </FormDescription>
               <FormMessage />
@@ -147,9 +168,11 @@ export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormPro
               <FormItem>
                 <FormLabel>Durée *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     {DURATIONS.map((duration) => (
                       <SelectItem key={duration.value} value={duration.value}>
@@ -169,14 +192,17 @@ export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormPro
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Prix (€) *</FormLabel>
-                <Input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="9999"
-                  placeholder="80"
-                  {...field}
-                />
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="9999"
+                    placeholder="80"
+                    {...field}
+                    className="bg-slate-800/50 border-slate-600 focus:border-orange-500"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -189,11 +215,36 @@ export function MentalForm({ onSuccess, isLoading, setIsLoading }: MentalFormPro
           render={({ field }) => (
             <FormItem>
               <FormLabel>Description *</FormLabel>
-              <Textarea
-                placeholder="Décrivez votre approche du coaching mental..."
-                rows={5}
-                {...field}
-              />
+              <FormControl>
+                <Textarea
+                  placeholder="Décrivez votre approche du coaching mental..."
+                  rows={5}
+                  {...field}
+                  className="bg-slate-800/50 border-slate-600 focus:border-orange-500"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="prerequisites"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Prérequis (optionnel)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Ex: Avoir un compte PokerStars, connaissances de base..."
+                  rows={3}
+                  {...field}
+                  className="bg-slate-800/50 border-slate-600 focus:border-orange-500"
+                />
+              </FormControl>
+              <FormDescription className="text-gray-400">
+                Indiquez les prérequis nécessaires pour cette session
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

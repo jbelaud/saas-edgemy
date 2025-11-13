@@ -26,28 +26,40 @@ const ANNOUNCEMENT_TYPES = [
     title: 'Stratégie',
     description: 'Session centrée sur une approche stratégique spécifique',
     icon: Target,
-    color: 'bg-blue-50 hover:bg-blue-100 border-blue-200',
+    gradient: 'from-blue-500 to-blue-600',
+    borderColor: 'border-blue-500/50',
+    hoverBorder: 'hover:border-blue-400',
+    bgGlow: 'hover:shadow-blue-500/20',
   },
   {
     type: 'REVIEW' as const,
     title: 'Review',
     description: 'Review personnalisée de sessions, mains ou database',
     icon: Search,
-    color: 'bg-green-50 hover:bg-green-100 border-green-200',
+    gradient: 'from-green-500 to-green-600',
+    borderColor: 'border-green-500/50',
+    hoverBorder: 'hover:border-green-400',
+    bgGlow: 'hover:shadow-green-500/20',
   },
   {
     type: 'TOOL' as const,
     title: 'Outil / Prise en main',
     description: 'Enseignement de l\'utilisation d\'un logiciel',
     icon: Wrench,
-    color: 'bg-purple-50 hover:bg-purple-100 border-purple-200',
+    gradient: 'from-purple-500 to-purple-600',
+    borderColor: 'border-purple-500/50',
+    hoverBorder: 'hover:border-purple-400',
+    bgGlow: 'hover:shadow-purple-500/20',
   },
   {
     type: 'MENTAL' as const,
     title: 'Mental',
     description: 'Coaching mental et préparation psychologique',
     icon: Brain,
-    color: 'bg-pink-50 hover:bg-pink-100 border-pink-200',
+    gradient: 'from-pink-500 to-pink-600',
+    borderColor: 'border-pink-500/50',
+    hoverBorder: 'hover:border-pink-400',
+    bgGlow: 'hover:shadow-pink-500/20',
   },
 ];
 
@@ -77,15 +89,15 @@ export function CreateAnnouncementModalV2({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <DialogTitle>
+            <Sparkles className="h-5 w-5 text-orange-500" />
+            <DialogTitle className="text-white">
               {selectedType ? 'Créer une annonce' : 'Choisissez le type d\'annonce'}
             </DialogTitle>
           </div>
-          <DialogDescription>
+          <DialogDescription className="text-gray-400">
             {selectedType
               ? 'Remplissez les informations de votre annonce'
               : 'Sélectionnez le type d\'annonce que vous souhaitez créer'}
@@ -94,24 +106,28 @@ export function CreateAnnouncementModalV2({
 
         {!selectedType ? (
           // Étape 1 : Sélection du type
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             {ANNOUNCEMENT_TYPES.map((announcementType) => {
               const Icon = announcementType.icon;
               return (
                 <Card
                   key={announcementType.type}
-                  className={`cursor-pointer transition-all ${announcementType.color} border-2`}
+                  className={`cursor-pointer transition-all duration-200 bg-slate-800/50 border-2 ${announcementType.borderColor} ${announcementType.hoverBorder} hover:shadow-lg ${announcementType.bgGlow} hover:scale-[1.02]`}
                   onClick={() => setSelectedType(announcementType.type)}
                 >
                   <CardContent className="pt-6 text-center space-y-3">
                     <div className="flex justify-center">
-                      <div className="p-3 bg-white rounded-full">
-                        <Icon className="h-8 w-8" />
+                      <div className={`p-4 bg-gradient-to-r ${announcementType.gradient} rounded-full shadow-lg`}>
+                        <Icon className="h-8 w-8 text-white" />
                       </div>
                     </div>
-                    <h3 className="font-semibold text-lg">{announcementType.title}</h3>
-                    <p className="text-sm text-gray-600">{announcementType.description}</p>
-                    <Button variant="ghost" size="sm" className="mt-2">
+                    <h3 className="font-semibold text-lg text-white">{announcementType.title}</h3>
+                    <p className="text-sm text-gray-400">{announcementType.description}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`mt-2 bg-gradient-to-r ${announcementType.gradient} text-white hover:opacity-90 transition-opacity`}
+                    >
                       Choisir <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </CardContent>
@@ -126,7 +142,7 @@ export function CreateAnnouncementModalV2({
               variant="ghost"
               size="sm"
               onClick={handleReset}
-              className="mb-4"
+              className="mb-4 text-gray-400 hover:text-white hover:bg-slate-800"
             >
               ← Changer de type
             </Button>

@@ -1,4 +1,4 @@
-'use client';
+'use-client';
 
 import { useMemo } from 'react';
 import Link from 'next/link';
@@ -8,6 +8,7 @@ import { GlassCard } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, Languages, TrendingUp, Award, Clock } from 'lucide-react';
+import { formatFormatsList, formatCategoriesList, formatLanguagesList } from '@/lib/pokerUtils';
 
 interface Coach {
   id: string;
@@ -52,19 +53,29 @@ const TYPE_COLORS: Record<string, string> = {
 export function PlayerExploreCoaches({ coaches, searchQuery }: PlayerExploreCoachesProps) {
   const locale = useLocale();
 
+  // Normaliser et formater les données des coachs
+  const normalizedCoaches = useMemo(() => {
+    return coaches.map(coach => ({
+      ...coach,
+      formats: formatFormatsList(coach.formats),
+      announcementTypes: formatCategoriesList(coach.announcementTypes),
+      languages: formatLanguagesList(coach.languages)
+    }));
+  }, [coaches]);
+
   // Filtrer les coachs selon la recherche
   const filteredCoaches = useMemo(() => {
-    if (!searchQuery) return coaches;
+    if (!searchQuery) return normalizedCoaches;
 
     const query = searchQuery.toLowerCase();
-    return coaches.filter((coach) => {
+    return normalizedCoaches.filter((coach) => {
       const fullName = `${coach.firstName} ${coach.lastName}`.toLowerCase();
       const bio = coach.bio?.toLowerCase() || '';
       const formats = coach.formats.join(' ').toLowerCase();
       
       return fullName.includes(query) || bio.includes(query) || formats.includes(query);
     });
-  }, [coaches, searchQuery]);
+  }, [normalizedCoaches, searchQuery]);
 
   if (filteredCoaches.length === 0) {
     return (
@@ -150,12 +161,12 @@ export function PlayerExploreCoaches({ coaches, searchQuery }: PlayerExploreCoac
 
               {/* Types de coaching - Badges colorés */}
               <div className="flex flex-wrap gap-2">
-                {coach.announcementTypes.slice(0, 3).map((type) => (
+                {coach.announcementTypes.slice(0, 3).map((type, index) => (
                   <Badge 
-                    key={type} 
-                    className={`${TYPE_COLORS[type]} border-0`}
+                    key={`${type}-${index}`} 
+                    className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30"
                   >
-                    {TYPE_LABELS[type] || type}
+                    {type}
                   </Badge>
                 ))}
                 {coach.announcementTypes.length > 3 && (
@@ -174,8 +185,8 @@ export function PlayerExploreCoaches({ coaches, searchQuery }: PlayerExploreCoac
                     <div className="flex-1">
                       <p className="text-xs text-gray-400 mb-1">Formats</p>
                       <div className="flex flex-wrap gap-1">
-                        {coach.formats.slice(0, 3).map((format) => (
-                          <span key={format} className="text-xs text-gray-300 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                        {coach.formats.slice(0, 3).map((format, index) => (
+                          <span key={`${format}-${index}`} className="text-xs text-gray-300 bg-white/5 px-2 py-0.5 rounded border border-white/10">
                             {format}
                           </span>
                         ))}
@@ -194,7 +205,7 @@ export function PlayerExploreCoaches({ coaches, searchQuery }: PlayerExploreCoac
                   <div className="flex items-center gap-2">
                     <Languages className="h-4 w-4 text-gray-400" />
                     <span className="text-sm text-gray-300">
-                      {coach.languages.map(l => l.toUpperCase()).join(', ')}
+                      {coach.languages.join(', ')}
                     </span>
                   </div>
                 )}

@@ -3,16 +3,18 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from '@/lib/auth-client';
-import { useLocale } from 'next-intl';
+import { useParams } from 'next/navigation';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { CoachSignUpModal } from '@/components/auth/CoachSignUpModal';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/Logo';
 
 export function AppHeader() {
   const { data: session, isPending } = useSession();
-  const locale = useLocale();
+  const params = useParams();
+  const locale = (params?.locale as string) || 'fr';
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCoachSignUpModal, setShowCoachSignUpModal] = useState(false);
   const [signupContext, setSignupContext] = useState<'coach' | 'player'>('player');
@@ -30,28 +32,28 @@ export function AppHeader() {
       setShowCoachSignUpModal(true);
     };
 
+    const handleOpenSignupModal = () => {
+      setSignupContext('player');
+      setShowLoginModal(true);
+    };
+
     window.addEventListener('openLoginModal', handleOpenLoginModal);
     window.addEventListener('openCoachModal', handleOpenCoachModal);
+    window.addEventListener('openSignupModal', handleOpenSignupModal);
 
     return () => {
       window.removeEventListener('openLoginModal', handleOpenLoginModal);
       window.removeEventListener('openCoachModal', handleOpenCoachModal);
+      window.removeEventListener('openSignupModal', handleOpenSignupModal);
     };
   }, []);
 
   return (
     <>
       <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
-        <div className="container mx-auto px-6 flex h-20 items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 flex h-16 sm:h-20 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform">
-              <span className="text-slate-950 font-bold text-xl">E</span>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              Edgemy
-            </span>
-          </Link>
+          <Logo />
 
           {/* Navigation centrale */}
           <nav className="hidden lg:flex items-center gap-8">

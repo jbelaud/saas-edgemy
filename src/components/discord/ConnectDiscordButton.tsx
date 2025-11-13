@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/lib/auth-client';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader2, Unplug } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { JoinDiscordServerDialog } from '@/components/discord/JoinDiscordServerDialog';
+import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
 
 interface ConnectDiscordButtonProps {
   className?: string;
@@ -21,7 +22,19 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
   const [showError, setShowError] = useState<string | null>(null);
   const [showJoinServerDialog, setShowJoinServerDialog] = useState(false);
   const [isMemberOfServer, setIsMemberOfServer] = useState<boolean | null>(null);
-  
+  const [alertDialog, setAlertDialog] = useState<{
+    open: boolean;
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    description: string;
+  }>({
+    open: false,
+    type: 'info',
+    title: '',
+    description: '',
+  });
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+
   const DISCORD_INVITE_URL = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || 'https://discord.gg/2f3tJdJ3Q2';
 
   // Vérifier si l'utilisateur a déjà connecté Discord
@@ -90,11 +103,11 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
     window.location.href = '/api/discord/oauth/authorize';
   };
 
-  const handleDisconnect = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir déconnecter votre compte Discord ?')) {
-      return;
-    }
+  const handleDisconnect = () => {
+    setConfirmDisconnect(true);
+  };
 
+  const confirmDisconnectAction = async () => {
     try {
       const response = await fetch('/api/discord/disconnect', {
         method: 'POST',
@@ -105,15 +118,30 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
         setIsMemberOfServer(null);
         setShowSuccess(false);
         // Afficher un message de succès
-        alert('Discord déconnecté avec succès');
-        // Recharger la page pour mettre à jour l'état
-        window.location.reload();
+        setAlertDialog({
+          open: true,
+          type: 'success',
+          title: 'Discord déconnecté',
+          description: 'Votre compte Discord a été déconnecté avec succès.',
+        });
+        // Recharger la page après fermeture de la modal
+        setTimeout(() => window.location.reload(), 2000);
       } else {
-        alert('Erreur lors de la déconnexion');
+        setAlertDialog({
+          open: true,
+          type: 'error',
+          title: 'Erreur',
+          description: 'Une erreur est survenue lors de la déconnexion.',
+        });
       }
     } catch (error) {
       console.error('Erreur déconnexion Discord:', error);
-      alert('Erreur lors de la déconnexion');
+      setAlertDialog({
+        open: true,
+        type: 'error',
+        title: 'Erreur',
+        description: 'Une erreur est survenue lors de la déconnexion.',
+      });
     }
   };
 
@@ -173,15 +201,17 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
             onClick={handleDisconnect}
             variant="outline"
             size="sm"
-            className="border-red-500/30 text-red-500 hover:bg-red-500/10 hover:border-red-500/50"
+            className="w-full border-red-500/30 text-red-500 hover:bg-red-500/10 hover:border-red-500/50"
           >
+            <Unplug className="h-4 w-4" />
             Déconnecter Discord
           </Button>
         </div>
       ) : (
         <Button
           onClick={handleConnect}
-          className={`bg-[#5865F2] hover:bg-[#4752C4] text-white ${className}`}
+          size="sm"
+          className={`w-full bg-[#5865F2] hover:bg-[#4752C4] text-white ${className}`}
         >
           <svg
             className="mr-2 h-5 w-5"
@@ -199,6 +229,28 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
         open={showJoinServerDialog}
         onOpenChange={setShowJoinServerDialog}
         inviteUrl={DISCORD_INVITE_URL}
+      />
+
+      {/* Modal de confirmation de déconnexion */}
+      <AlertDialogCustom
+        open={confirmDisconnect}
+        onOpenChange={setConfirmDisconnect}
+        title="Déconnecter Discord ?"
+        description="Êtes-vous sûr de vouloir déconnecter votre compte Discord ? Vous ne pourrez plus recevoir de notifications ni accéder aux salons privés."
+        type="warning"
+        confirmText="Oui, déconnecter"
+        cancelText="Annuler"
+        onConfirm={confirmDisconnectAction}
+        showCancel={true}
+      />
+
+      {/* Modal d'alerte */}
+      <AlertDialogCustom
+        open={alertDialog.open}
+        onOpenChange={(open) => setAlertDialog({ ...alertDialog, open })}
+        title={alertDialog.title}
+        description={alertDialog.description}
+        type={alertDialog.type}
       />
     </div>
   );

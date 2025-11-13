@@ -298,11 +298,15 @@ export function CreateAnnouncementModal({
                     variant="outline"
                     onClick={() => onOpenChange(false)}
                     disabled={isLoading}
-                    className="flex-1"
+                    className="flex-1 border-slate-600 bg-slate-800 text-white hover:bg-slate-700 hover:border-slate-500"
                   >
                     Annuler
                   </Button>
-                  <Button type="submit" disabled={isLoading} className="flex-1">
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
+                  >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

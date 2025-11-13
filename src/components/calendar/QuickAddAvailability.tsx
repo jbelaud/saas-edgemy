@@ -4,6 +4,8 @@ import { useState } from "react";
 import { GlassCard } from "@/components/ui";
 import { Plus, Clock, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
 
 interface QuickAddAvailabilityProps {
   coachId: string;
@@ -15,6 +17,7 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { alertState, confirmState, showError, closeAlert, closeConfirm } = useAlertDialog();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +28,7 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
       const end = new Date(`${date}T${endTime}`);
 
       if (end <= start) {
-        alert("L'heure de fin doit être après l'heure de début");
+        showError("Erreur de validation", "L'heure de fin doit être après l'heure de début");
         setIsSubmitting(false);
         return;
       }
@@ -45,11 +48,11 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
         setEndTime(nextEnd);
       } else {
         const error = await res.json();
-        alert(error.error || "Erreur lors de l'ajout de la disponibilité");
+        showError("Erreur d'ajout", error.error || "Erreur lors de l'ajout de la disponibilité");
       }
     } catch (error) {
       console.error("Erreur:", error);
-      alert("Erreur lors de l'ajout de la disponibilité");
+      showError("Erreur d'ajout", "Une erreur est survenue lors de l'ajout de la disponibilité");
     } finally {
       setIsSubmitting(false);
     }
@@ -139,6 +142,27 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
           <span className="font-medium text-blue-400">💡 Astuce :</span> Après l&apos;ajout, les horaires s&apos;ajustent automatiquement pour enchaîner rapidement plusieurs créneaux.
         </p>
       </div>
+
+      {/* Modals de notification */}
+      <AlertDialogCustom
+        open={alertState.open}
+        onOpenChange={closeAlert}
+        title={alertState.title}
+        description={alertState.description}
+        type={alertState.type}
+      />
+
+      <AlertDialogCustom
+        open={confirmState.open}
+        onOpenChange={closeConfirm}
+        title={confirmState.title}
+        description={confirmState.description}
+        type="warning"
+        confirmText="Confirmer"
+        cancelText="Annuler"
+        onConfirm={confirmState.onConfirm}
+        showCancel={true}
+      />
     </GlassCard>
   );
 }

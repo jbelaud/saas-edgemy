@@ -213,6 +213,7 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
       // Rediriger vers Stripe pour le paiement
       await redirectToCheckout({
         reservationId: data.id,
+        coachId,
         coachName,
         playerEmail: session.user.email,
         price: displayPrice,

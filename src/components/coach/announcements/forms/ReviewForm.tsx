@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2 } from 'lucide-react';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
 
 const reviewSchema = z.object({
   title: z.string().min(5, 'Le titre doit contenir au moins 5 caractères'),
@@ -23,6 +25,7 @@ const reviewSchema = z.object({
       return !isNaN(num) && num >= 0 && num <= 9999 && Number.isInteger(parseFloat(val));
     }, 'Le prix doit être un nombre entier entre 0€ et 9999€'),
   description: z.string().min(20, 'La description doit contenir au moins 20 caractères'),
+  prerequisites: z.string().optional(),
   isActive: z.boolean(),
 });
 
@@ -62,6 +65,8 @@ const DURATIONS = [
 ];
 
 export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormProps) {
+  const [error, setError] = useState<string | null>(null);
+
   const form = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewSchema),
     defaultValues: {
@@ -72,12 +77,14 @@ export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormPro
       durationMin: '60',
       priceCents: '',
       description: '',
+      prerequisites: '',
       isActive: true,
     },
   });
 
   const onSubmit = async (data: ReviewFormValues) => {
     setIsLoading(true);
+    setError(null);
     try {
       const payload = {
         type: 'REVIEW',
@@ -88,6 +95,7 @@ export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormPro
         durationMin: parseInt(data.durationMin, 10),
         priceCents: parseInt(data.priceCents, 10) * 100,
         description: data.description,
+        prerequisites: data.prerequisites || null,
         isActive: data.isActive,
       };
 
@@ -108,7 +116,7 @@ export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormPro
       onSuccess();
     } catch (error) {
       console.error('Erreur:', error);
-      alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+      setError(error instanceof Error ? error.message : 'Une erreur est survenue');
     } finally {
       setIsLoading(false);
     }
@@ -117,13 +125,24 @@ export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormPro
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {error && (
+          <Alert variant="destructive" className="border-red-500/50 bg-red-500/10">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-red-200">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Titre de l&apos;annonce *</FormLabel>
-              <Input placeholder="Ex: Review de session MTT" {...field} />
+              <FormControl>
+                <Input placeholder="Ex: Review de session MTT" {...field} className="bg-slate-800/50 border-slate-600 focus:border-orange-500" />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -137,9 +156,11 @@ export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormPro
               <FormItem>
                 <FormLabel>Type de review *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez" />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     {REVIEW_TYPES.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
@@ -160,9 +181,11 @@ export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormPro
               <FormItem>
                 <FormLabel>Format *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez" />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     {FORMATS.map((format) => (
                       <SelectItem key={format.value} value={format.value}>
@@ -184,9 +207,11 @@ export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormPro
             <FormItem>
               <FormLabel>Support de review *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez" />
-                </SelectTrigger>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez" />
+                  </SelectTrigger>
+                </FormControl>
                 <SelectContent>
                   {REVIEW_SUPPORTS.map((support) => (
                     <SelectItem key={support.value} value={support.value}>
@@ -208,9 +233,11 @@ export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormPro
               <FormItem>
                 <FormLabel>Durée *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     {DURATIONS.map((duration) => (
                       <SelectItem key={duration.value} value={duration.value}>
@@ -230,14 +257,17 @@ export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormPro
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Prix (€) *</FormLabel>
-                <Input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="9999"
-                  placeholder="100"
-                  {...field}
-                />
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="9999"
+                    placeholder="100"
+                    {...field}
+                    className="bg-slate-800/50 border-slate-600 focus:border-orange-500"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -250,11 +280,36 @@ export function ReviewForm({ onSuccess, isLoading, setIsLoading }: ReviewFormPro
           render={({ field }) => (
             <FormItem>
               <FormLabel>Description *</FormLabel>
-              <Textarea
-                placeholder="Détails sur le process de review..."
-                rows={5}
-                {...field}
-              />
+              <FormControl>
+                <Textarea
+                  placeholder="Détails sur le process de review..."
+                  rows={5}
+                  {...field}
+                  className="bg-slate-800/50 border-slate-600 focus:border-orange-500"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="prerequisites"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Prérequis (optionnel)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Ex: Avoir un compte PokerStars, connaissances de base..."
+                  rows={3}
+                  {...field}
+                  className="bg-slate-800/50 border-slate-600 focus:border-orange-500"
+                />
+              </FormControl>
+              <FormDescription className="text-gray-400">
+                Indiquez les prérequis nécessaires pour cette session
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

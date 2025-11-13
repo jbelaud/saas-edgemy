@@ -50,7 +50,18 @@
       "Bash(powershell.exe -Command \"winget install Stripe.StripeCli --accept-source-agreements --accept-package-agreements\")",
       "Bash(powershell.exe -Command \"stripe --version\")",
       "Bash(powershell.exe:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(npx tsx:*)",
+      "Bash(node:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(dir \"C:\\Users\\%USERNAME%\\AppData\\Local\\Temp\" /b /a-d /od)",
+      "Bash(dir /b /s \"src\\app\\[locale]\\(app)\\player\\*.tsx\" 2)",
+      "Bash(ls:*)",
+      "Bash(dir:*)",
+      "Bash(cmd //c taskkill //PID 7476 //F)",
+      "Bash(cmd //c taskkill //PID 14104 //F)",
+      "Bash(cmd /c taskkill /PID 6064 /F)",
+      "Bash(cmd /c taskkill /PID 22108 /F)"
     ],
     "deny": [],
     "ask": []

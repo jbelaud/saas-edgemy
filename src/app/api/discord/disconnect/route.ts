@@ -26,6 +26,19 @@ export async function POST() {
       data: { discordId: null },
     });
 
+    // Mettre à jour le profil coach si existant
+    const coach = await prisma.coach.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (coach) {
+      await prisma.coach.update({
+        where: { id: coach.id },
+        data: { isDiscordConnected: false },
+      });
+      console.log(`✅ Coach ${coach.id} Discord déconnecté`);
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Discord déconnecté avec succès',

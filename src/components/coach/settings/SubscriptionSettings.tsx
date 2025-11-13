@@ -34,6 +34,7 @@ export function SubscriptionSettings() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showChangeDialog, setShowChangeDialog] = useState(false);
   const [targetPlan, setTargetPlan] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY');
+  const [alertMessage, setAlertMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     fetchSubscription();
@@ -68,15 +69,23 @@ export function SubscriptionSettings() {
       if (!response.ok) {
         // Ne pas utiliser la variable error pour éviter l'avertissement
         await response.json();
-        alert('Erreur lors de l&apos;annulation de l&apos;abonnement');
+        setAlertMessage({
+          type: 'error',
+          message: 'Erreur lors de l\'annulation de l\'abonnement'
+        });
+        setTimeout(() => setAlertMessage(null), 5000);
         return;
       }
 
       // Ne pas déstructurer cancelError pour éviter l'avertissement
       const result = await response.json();
-      
+
       if (!result.success) {
-        alert('Erreur lors de l&apos;annulation de l&apos;abonnement');
+        setAlertMessage({
+          type: 'error',
+          message: 'Erreur lors de l\'annulation de l\'abonnement'
+        });
+        setTimeout(() => setAlertMessage(null), 5000);
         return;
       }
 
@@ -89,12 +98,20 @@ export function SubscriptionSettings() {
           cancelAt: new Date().toISOString(),
         });
       }
-      
+
       setShowCancelDialog(false);
-      alert('Votre abonnement a bien été annulé. Il restera actif jusqu&apos;à la fin de la période en cours.');
+      setAlertMessage({
+        type: 'success',
+        message: 'Votre abonnement a bien été annulé. Il restera actif jusqu\'à la fin de la période en cours.'
+      });
+      setTimeout(() => setAlertMessage(null), 5000);
     } catch (error) {
       // Ne pas utiliser err pour éviter l'avertissement
-      alert('Une erreur est survenue lors de l&apos;annulation de votre abonnement');
+      setAlertMessage({
+        type: 'error',
+        message: 'Une erreur est survenue lors de l\'annulation de votre abonnement'
+      });
+      setTimeout(() => setAlertMessage(null), 5000);
       console.error('Erreur lors de l&apos;annulation de l&apos;abonnement:', error);
     } finally {
       setIsCanceling(false);
@@ -119,22 +136,37 @@ export function SubscriptionSettings() {
           window.location.href = data.checkoutUrl;
         } else {
           // Cas YEARLY → MONTHLY : Changement planifié pour la fin de période
-          alert(data.message || 'Votre changement de plan a été planifié avec succès');
+          setAlertMessage({
+            type: 'success',
+            message: data.message || 'Votre changement de plan a été planifié avec succès'
+          });
           setIsChanging(false);
           setShowChangeDialog(false);
           await fetchSubscription();
+          // Masquer l'alerte après 5 secondes
+          setTimeout(() => setAlertMessage(null), 5000);
         }
       } else {
         const error = await response.json();
-        alert(`Erreur: ${error.error || 'Impossible de changer de plan'}`);
+        setAlertMessage({
+          type: 'error',
+          message: error.error || 'Impossible de changer de plan'
+        });
         setIsChanging(false);
         setShowChangeDialog(false);
+        // Masquer l'alerte après 5 secondes
+        setTimeout(() => setAlertMessage(null), 5000);
       }
     } catch (err) {
       console.error('Erreur changement de plan:', err);
-      alert('Une erreur est survenue lors du changement de plan');
+      setAlertMessage({
+        type: 'error',
+        message: 'Une erreur est survenue lors du changement de plan'
+      });
       setIsChanging(false);
       setShowChangeDialog(false);
+      // Masquer l'alerte après 5 secondes
+      setTimeout(() => setAlertMessage(null), 5000);
     }
   };
 
@@ -182,6 +214,8 @@ export function SubscriptionSettings() {
         return <Badge variant="outline" className="border-blue-500/50 text-blue-300">Mensuel</Badge>;
       case 'YEARLY':
         return <Badge variant="outline" className="border-purple-500/50 text-purple-300">Annuel</Badge>;
+      case 'FREE_TRIAL':
+        return <Badge variant="outline" className="border-emerald-500/50 text-emerald-300">Essai gratuit</Badge>;
       default:
         return null;
     }
@@ -198,6 +232,28 @@ export function SubscriptionSettings() {
 
   return (
     <div className="space-y-4">
+      {/* Alerte de changement de plan */}
+      {alertMessage && (
+        <div className={`p-4 rounded-lg border ${
+          alertMessage.type === 'success'
+            ? 'bg-green-500/10 border-green-500/30'
+            : 'bg-red-500/10 border-red-500/30'
+        }`}>
+          <div className="flex items-center gap-3">
+            {alertMessage.type === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
+            ) : (
+              <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
+            )}
+            <p className={`text-sm font-semibold ${
+              alertMessage.type === 'success' ? 'text-green-300' : 'text-red-300'
+            }`}>
+              {alertMessage.message}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Statut de l&apos;abonnement */}
       <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
         <div className="flex items-center justify-between mb-2">
@@ -209,9 +265,11 @@ export function SubscriptionSettings() {
           <div className="flex items-center gap-2 text-sm text-gray-400">
             <span>Plan actuel:</span>
             {getPlanBadge(subscription.subscriptionPlan)}
-            <span>
-              {subscription.subscriptionPlan === 'MONTHLY' ? '39€/mois' : '399€/an'}
-            </span>
+            {subscription.subscriptionPlan !== 'FREE_TRIAL' && (
+              <span>
+                {subscription.subscriptionPlan === 'MONTHLY' ? '39€/mois' : '399€/an'}
+              </span>
+            )}
           </div>
         )}
 
@@ -248,8 +306,38 @@ export function SubscriptionSettings() {
         </div>
       )}
 
-      {/* Informations de renouvellement automatique */}
-      {subscription?.subscriptionStatus === 'ACTIVE' && !subscription?.cancelAtPeriodEnd && subscription.currentPeriodEnd && (
+      {/* Message spécifique pour l'essai gratuit */}
+      {subscription?.subscriptionStatus === 'ACTIVE' && subscription?.subscriptionPlan === 'FREE_TRIAL' && subscription.currentPeriodEnd && (
+        <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-semibold text-emerald-300 mb-1">
+                Essai gratuit de 30 jours actif 🎉
+              </h4>
+              <p className="text-xs text-gray-400">
+                Votre essai gratuit se termine le{' '}
+                <span className="font-semibold text-white">
+                  {format(new Date(subscription.currentPeriodEnd), 'PPP', { locale: fr })}
+                </span>
+                .{' '}
+                <span className="font-semibold text-emerald-300">
+                  Aucun paiement ne sera prélevé automatiquement.
+                </span>
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                À la fin de votre essai, vous pourrez choisir de souscrire à un abonnement mensuel (39€/mois) ou annuel (399€/an) pour continuer à profiter de toutes les fonctionnalités coach.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Informations de renouvellement automatique (pour les abonnements payants) */}
+      {subscription?.subscriptionStatus === 'ACTIVE' &&
+       subscription?.subscriptionPlan !== 'FREE_TRIAL' &&
+       !subscription?.cancelAtPeriodEnd &&
+       subscription.currentPeriodEnd && (
         <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
@@ -273,8 +361,10 @@ export function SubscriptionSettings() {
         </div>
       )}
 
-      {/* Actions selon le statut */}
-      {subscription?.subscriptionStatus === 'ACTIVE' && !subscription?.cancelAtPeriodEnd && (() => {
+      {/* Actions selon le statut (uniquement pour les abonnements payants) */}
+      {subscription?.subscriptionStatus === 'ACTIVE' &&
+       subscription?.subscriptionPlan !== 'FREE_TRIAL' &&
+       !subscription?.cancelAtPeriodEnd && (() => {
         // Calculer si on peut passer de YEARLY à MONTHLY (seulement dans le dernier mois)
         const canDowngradeToMonthly = subscription.subscriptionPlan === 'YEARLY' && subscription.currentPeriodEnd
           ? (() => {
@@ -321,6 +411,7 @@ export function SubscriptionSettings() {
                     }}
                     disabled={isChanging || !canDowngradeToMonthly}
                     variant="outline"
+                    size="sm"
                     className="border-blue-500/70 bg-blue-950/60 text-blue-100 hover:bg-blue-800/70 hover:border-blue-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isChanging ? 'Changement en cours...' :
@@ -355,6 +446,7 @@ export function SubscriptionSettings() {
                   onClick={() => setShowCancelDialog(true)}
                   disabled={isCanceling}
                   variant="outline"
+                  size="sm"
                   className="border-red-500/70 bg-red-950/60 text-red-100 hover:bg-red-800/70 hover:border-red-400 hover:text-white"
                 >
                   {isCanceling ? 'Annulation...' : 'Annuler mon abonnement'}
@@ -399,6 +491,7 @@ export function SubscriptionSettings() {
               <Button
                 onClick={() => window.open('https://billing.stripe.com/p/login/test_YOUR_PORTAL_ID', '_blank')}
                 variant="outline"
+                size="sm"
                 className="border-red-500/70 bg-red-950/60 text-red-100 hover:bg-red-800/70 hover:border-red-400 hover:text-white"
               >
                 Mettre à jour mon moyen de paiement
@@ -417,6 +510,7 @@ export function SubscriptionSettings() {
           </p>
           <Button
             onClick={() => window.location.href = '/fr/coach/dashboard'}
+            size="sm"
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
           >
             Souscrire à un abonnement

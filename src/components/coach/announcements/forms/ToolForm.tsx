@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Loader2 } from 'lucide-react';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
 
 const toolSchema = z.object({
   title: z.string().min(5, 'Le titre doit contenir au moins 5 caractères'),
@@ -58,6 +60,8 @@ const DURATIONS = [
 ];
 
 export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) {
+  const [error, setError] = useState<string | null>(null);
+
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(toolSchema),
     defaultValues: {
@@ -74,6 +78,7 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
 
   const onSubmit = async (data: ToolFormValues) => {
     setIsLoading(true);
+    setError(null);
     try {
       const payload = {
         type: 'TOOL',
@@ -104,7 +109,7 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
       onSuccess();
     } catch (error) {
       console.error('Erreur:', error);
-      alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+      setError(error instanceof Error ? error.message : 'Une erreur est survenue');
     } finally {
       setIsLoading(false);
     }
@@ -113,13 +118,24 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {error && (
+          <Alert variant="destructive" className="border-red-500/50 bg-red-500/10">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-red-200">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Titre de l&apos;annonce *</FormLabel>
-              <Input placeholder="Ex: Prise en main GTO Wizard" {...field} />
+              <FormControl>
+                <Input placeholder="Ex: Prise en main GTO Wizard" {...field} className="bg-slate-800/50 border-slate-600 focus:border-orange-500" />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -133,9 +149,11 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
               <FormItem>
                 <FormLabel>Nom de l&apos;outil *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez" />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     {TOOLS.map((tool) => (
                       <SelectItem key={tool.value} value={tool.value}>
@@ -156,9 +174,11 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
               <FormItem>
                 <FormLabel>Objectif *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez" />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     {OBJECTIVES.map((obj) => (
                       <SelectItem key={obj.value} value={obj.value}>
@@ -181,9 +201,11 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
               <FormItem>
                 <FormLabel>Durée *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     {DURATIONS.map((duration) => (
                       <SelectItem key={duration.value} value={duration.value}>
@@ -203,14 +225,17 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Prix (€) *</FormLabel>
-                <Input
-                  type="number"
-                  step="1"
-                  min="0"
-                  max="9999"
-                  placeholder="70"
-                  {...field}
-                />
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="9999"
+                    placeholder="70"
+                    {...field}
+                    className="bg-slate-800/50 border-slate-600 focus:border-orange-500"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -223,11 +248,14 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Description *</FormLabel>
-              <Textarea
-                placeholder="Détail du contenu..."
-                rows={5}
-                {...field}
-              />
+              <FormControl>
+                <Textarea
+                  placeholder="Détail du contenu..."
+                  rows={5}
+                  {...field}
+                  className="bg-slate-800/50 border-slate-600 focus:border-orange-500"
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -239,13 +267,16 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Prérequis (optionnel)</FormLabel>
-              <Textarea
-                placeholder="Ce que le joueur doit avoir (licence, etc.)"
-                rows={3}
-                {...field}
-              />
-              <FormDescription>
-                Indiquez si le joueur doit posséder une licence ou des connaissances préalables
+              <FormControl>
+                <Textarea
+                  placeholder="Ex: Avoir un compte PokerStars, connaissances de base..."
+                  rows={3}
+                  {...field}
+                  className="bg-slate-800/50 border-slate-600 focus:border-orange-500"
+                />
+              </FormControl>
+              <FormDescription className="text-gray-400">
+                Indiquez les prérequis nécessaires pour cette session
               </FormDescription>
               <FormMessage />
             </FormItem>

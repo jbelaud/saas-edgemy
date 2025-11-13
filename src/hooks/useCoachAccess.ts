@@ -15,7 +15,12 @@ export function useCoachAccess(coach: CoachData | null) {
   const [isGuardOpen, setIsGuardOpen] = useState(false);
 
   const hasActiveSubscription = coach?.subscriptionStatus === 'ACTIVE';
-  const isStripeConnected = Boolean(coach?.stripeAccountId) && coach?.isOnboarded;
+  // Un coach est considéré comme connecté à Stripe s'il a un compte Stripe (même en cours de configuration)
+  // Les comptes mock (mode dev) ne comptent pas
+  const isStripeConnected = Boolean(
+    coach?.stripeAccountId &&
+    !coach.stripeAccountId.startsWith('acct_mock_')
+  );
   const isDiscordConnected = coach?.isDiscordConnected ?? false;
 
   const checkAccess = useCallback(

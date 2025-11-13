@@ -4,20 +4,21 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { useLocale } from 'next-intl';
-import { Loader2, TrendingUp, Users, Clock, Euro, ExternalLink, BarChart3, UserCircle2, Megaphone } from 'lucide-react';
+import { Loader2, TrendingUp, Users, Clock, Euro, Eye, BarChart3, UserCircle2, Megaphone, Plus } from 'lucide-react';
 import { GlassCard, GradientText } from '@/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardStats } from '@/components/coach/dashboard/DashboardStats';
 import { DashboardProfile } from '@/components/coach/dashboard/DashboardProfile';
 import { DashboardAnnouncements } from '@/components/coach/dashboard/DashboardAnnouncements';
+import { FreeTrialBanner } from '@/components/coach/dashboard/FreeTrialBanner';
 import type { CoachDashboardData } from '@/types/dashboard';
-import Link from 'next/link';
 import { useCoachRoleSetup } from '@/hooks/useCoachRoleSetup';
 import { useSearchParams } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { OnboardingChecklist } from '@/components/coach/onboarding/OnboardingChecklist';
 import { useCoachAccess } from '@/hooks/useCoachAccess';
 import { CoachAccessGuard } from '@/components/coach/guards/CoachAccessGuard';
+import { CreateAnnouncementModalV2 } from '@/components/coach/announcements/CreateAnnouncementModalV2';
 
 export default function CoachDashboardPage() {
   const router = useRouter();
@@ -28,6 +29,8 @@ export default function CoachDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSettingUp, setIsSettingUp] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Hook pour créer le profil coach lors de la première connexion Google
   useCoachRoleSetup();
@@ -179,18 +182,20 @@ export default function CoachDashboardPage() {
   };
 
   const handleConnectDiscord = () => {
-    // TODO: Implémenter OAuth Discord
-    alert('Connexion Discord - À implémenter');
+    window.location.href = `/${locale}/coach/settings`;
   };
 
   const handleCreateAnnouncement = () => {
-    router.push(`/${locale}/coach/announcements/new`);
+    // Vérifier l'accès avant d'ouvrir la modal
+    if (hasActiveSubscription && isStripeConnected && isDiscordConnected) {
+      setIsCreateModalOpen(true);
+    }
   };
 
   return (
     <CoachLayout>
       {/* Header simplifié */}
-      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold mb-2">
             <GradientText variant="white">Bienvenue,</GradientText>{' '}
@@ -201,12 +206,31 @@ export default function CoachDashboardPage() {
           </p>
         </div>
         {hasActiveSubscription && (
-          <Link href={`/${locale}/coach/${coach.slug}`} target="_blank" className="text-blue-400 hover:text-blue-300 flex items-center gap-2">
-            <ExternalLink className="h-4 w-4" />
-            Voir mon profil public
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => window.open(`/${locale}/coach/${coach.slug}`, '_blank')}
+              className="px-6 py-3 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+            >
+              <Eye className="w-5 h-5" />
+              Voir mon profil public
+            </button>
+            <button
+              onClick={handleCreateAnnouncement}
+              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Créer une annonce
+            </button>
+          </div>
         )}
       </div>
+
+      {/* Free Trial Banner */}
+      <FreeTrialBanner
+        freeTrialEndDate={coach.freeTrialEndDate}
+        subscriptionPlan={coach.subscriptionPlan}
+        subscriptionStatus={coach.subscriptionStatus}
+      />
 
       {/* Checklist d'onboarding */}
       {(!hasActiveSubscription || !isStripeConnected || !isDiscordConnected) && (
@@ -297,9 +321,19 @@ export default function CoachDashboardPage() {
         <TabsContent value="announcements">
           <DashboardAnnouncements
             coach={coach}
+            key={refreshKey}
           />
         </TabsContent>
       </Tabs>
+
+      {/* Modal de création d'annonce */}
+      {hasActiveSubscription && isStripeConnected && isDiscordConnected && (
+        <CreateAnnouncementModalV2
+          open={isCreateModalOpen}
+          onOpenChange={setIsCreateModalOpen}
+          onSuccess={() => setRefreshKey(prev => prev + 1)}
+        />
+      )}
 
       {/* Guard pour les accès bloqués */}
       <CoachAccessGuard

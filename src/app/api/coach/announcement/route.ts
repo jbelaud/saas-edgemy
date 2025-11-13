@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { checkAndExpireFreeTrial } from '@/lib/checkTrialExpiration';
 
 function generateSlug(title: string): string {
   return title
@@ -78,8 +79,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Vérifier que le coach a un abonnement actif
-    if (coach.status !== 'ACTIVE') {
+    // Vérifier et expirer l'essai gratuit si nécessaire
+    const trialUpdate = await checkAndExpireFreeTrial(coach.id);
+    const currentStatus = trialUpdate?.subscriptionStatus || coach.subscriptionStatus;
+
+    // Vérifier que le coach a un abonnement actif (MONTHLY, YEARLY, ou FREE_TRIAL valide)
+    if (currentStatus !== 'ACTIVE') {
       return NextResponse.json(
         { error: 'Abonnement inactif. Activez votre abonnement pour créer des annonces.' },
         { status: 403 }
@@ -167,6 +172,7 @@ export async function POST(request: Request) {
         priceCents,
         durationMin,
         isActive: isActive ?? true,
+        prerequisites: prerequisites || null, // Commun à tous les types
         // Champs STRATEGY
         ...(type === 'STRATEGY' && {
           variant,
@@ -184,7 +190,6 @@ export async function POST(request: Request) {
         ...(type === 'TOOL' && {
           toolName,
           toolObjective,
-          prerequisites: prerequisites || null,
         }),
         // Champs MENTAL
         ...(type === 'MENTAL' && {

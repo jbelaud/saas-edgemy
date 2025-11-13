@@ -92,6 +92,13 @@ export async function GET(request: NextRequest) {
 
     const discordUser = await userResponse.json();
     const discordId = discordUser.id;
+    const discordUsername = discordUser.username;
+    const discordDiscriminator = discordUser.discriminator;
+
+    // Construire l'URL Discord (format pour ouvrir un DM ou afficher le tag)
+    const discordTag = discordDiscriminator && discordDiscriminator !== '0'
+      ? `${discordUsername}#${discordDiscriminator}`
+      : discordUsername;
 
     // Vérifier si ce Discord ID est déjà utilisé par un autre compte
     const existingUser = await prisma.user.findUnique({
@@ -110,9 +117,30 @@ export async function GET(request: NextRequest) {
       data: { discordId },
     });
 
+    // Mettre à jour le profil coach si existant
+    const coach = await prisma.coach.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (coach) {
+      await prisma.coach.update({
+        where: { id: coach.id },
+        data: {
+          isDiscordConnected: true,
+          discordUrl: `https://discord.com/users/${discordId}`,
+        },
+      });
+      console.log(`✅ Coach ${coach.id} Discord connecté - Tag: ${discordTag}`);
+    }
+
+    // Déterminer l'URL de redirection en fonction du rôle
+    const redirectUrl = coach
+      ? '/fr/coach/settings?discord_success=true'
+      : '/fr/player/settings?discord_success=true';
+
     // Rediriger vers le dashboard avec succès
     return NextResponse.redirect(
-      new URL('/fr/player/settings?discord_success=true', request.url)
+      new URL(redirectUrl, request.url)
     );
   } catch (error) {
     console.error('Erreur lors du callback OAuth Discord:', error);

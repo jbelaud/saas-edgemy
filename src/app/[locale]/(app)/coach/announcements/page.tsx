@@ -72,7 +72,8 @@ export default function CoachAnnouncementsPage() {
 
   const handleCreateAnnouncement = () => {
     // Vérifier l'accès avant d'ouvrir la modal
-    if (checkAccess({ subscription: true, stripe: true })) {
+    // Discord est requis pour créer les salons privés avec les élèves
+    if (checkAccess({ subscription: true, stripe: true, discord: true })) {
       setIsCreateModalOpen(true);
     }
   };
@@ -146,6 +147,7 @@ export default function CoachAnnouncementsPage() {
         open={isGuardOpen}
         onOpenChange={closeGuard}
         onConnectStripe={handleConnectStripe}
+        onConnectDiscord={() => window.location.href = `/${locale}/coach/settings`}
       />
     </CoachLayout>
   );

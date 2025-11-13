@@ -4,6 +4,7 @@ import { DashboardStats } from "@/components/admin/dashboard/DashboardStats";
 import { SessionsChart } from "@/components/admin/dashboard/SessionsChart";
 import { RecentReservations } from "@/components/admin/dashboard/RecentReservations";
 import { RevenueOverview } from "@/components/admin/dashboard/RevenueOverview";
+import { CoachNotifications } from "@/components/admin/dashboard/CoachNotifications";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ async function getDashboardData() {
     coaches,
     paidReservations,
     coachingPackages,
+    recentCoachNotifications,
   ] = await Promise.all([
     // Total coachs actifs
     prisma.coach.count({
@@ -120,6 +122,20 @@ async function getDashboardData() {
         priceCents: true,
       },
     }),
+
+    // 20 dernières notifications coach inactif
+    prisma.coachNotification.findMany({
+      take: 20,
+      orderBy: { createdAt: "desc" },
+      include: {
+        coach: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    }),
   ]);
 
   // Calculer les stats de revenus
@@ -156,6 +172,7 @@ async function getDashboardData() {
     pendingPayments,
     recentReservations,
     last14DaysReservations,
+    recentCoachNotifications,
     revenueData: {
       monthlySubscriptions,
       annualSubscriptions,
@@ -203,6 +220,11 @@ export default async function AdminDashboardPage() {
       <Suspense fallback={<Skeleton className="h-96 rounded-2xl" />}>
         <RecentReservationsWrapper />
       </Suspense>
+
+      {/* Notifications coachs inactifs */}
+      <Suspense fallback={<Skeleton className="h-96 rounded-2xl" />}>
+        <CoachNotificationsWrapper />
+      </Suspense>
     </div>
   );
 }
@@ -225,4 +247,9 @@ async function SessionsChartWrapper() {
 async function RecentReservationsWrapper() {
   const data = await getDashboardData();
   return <RecentReservations reservations={data.recentReservations} />;
+}
+
+async function CoachNotificationsWrapper() {
+  const data = await getDashboardData();
+  return <CoachNotifications notifications={data.recentCoachNotifications} />;
 }

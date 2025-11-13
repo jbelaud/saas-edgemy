@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { checkAndExpireFreeTrial } from '@/lib/checkTrialExpiration';
 
 export async function GET() {
   try {
@@ -49,6 +50,13 @@ export async function GET() {
         { error: 'Profil coach non trouvé' },
         { status: 404 }
       );
+    }
+
+    // Vérifier et expirer l'essai gratuit si nécessaire
+    const trialUpdate = await checkAndExpireFreeTrial(coach.id);
+    if (trialUpdate) {
+      // Mettre à jour l'objet coach en mémoire avec le nouveau statut
+      coach.subscriptionStatus = trialUpdate.subscriptionStatus;
     }
 
     console.log('Coach profile found:', coach.id, 'Status:', coach.status);

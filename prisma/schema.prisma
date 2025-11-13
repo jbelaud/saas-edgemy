@@ -51,10 +51,13 @@ model coach {
   stripeCustomerId       String?           // ID client Stripe pour abonnement
   subscriptionId         String?           // ID abonnement Stripe
   subscriptionStatus     SubscriptionStatus? // Statut abonnement
-  subscriptionPlan       SubscriptionPlan? // Plan (MONTHLY/YEARLY)
+  subscriptionPlan       SubscriptionPlan? // Plan (MONTHLY/YEARLY/FREE_TRIAL)
   currentPeriodEnd       DateTime?         // Fin période abonnement
   isOnboarded            Boolean           @default(false) // Stripe Connect complété
   isDiscordConnected     Boolean           @default(false) // OAuth Discord validé
+  freeTrialUsed          Boolean           @default(false) // Code promo déjà utilisé
+  freeTrialStartDate     DateTime?         // Date début essai gratuit
+  freeTrialEndDate       DateTime?         // Date fin essai gratuit
   badges                 String[]
   formats                String[]
   stakes                 String?
@@ -75,6 +78,7 @@ model coach {
   reservations           Reservation[]
   notes                  CoachNote[]
   channels               CoachPlayerChannel[]
+  notifications          CoachNotification[]
   user                   user              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -259,6 +263,26 @@ model CoachNote {
   @@index([coachId, playerId])
 }
 
+model CoachNotification {
+  id              String   @id @default(cuid())
+  coachId         String
+  playerId        String   // ID du joueur qui a notifié
+  playerEmail     String?  // Email du joueur (snapshot)
+  playerName      String?  // Nom du joueur (snapshot)
+  isFollowUp      Boolean  @default(false) // true si c'est une relance
+  emailSent       Boolean  @default(false)
+  discordSent     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  coach  coach @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  player user  @relation("CoachNotifications", fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([coachId])
+  @@index([playerId])
+  @@index([coachId, playerId])
+  @@index([createdAt])
+}
+
 model player {
   id        String   @id @default(cuid())
   userId    String   @unique
@@ -301,6 +325,7 @@ model user {
   reservations     Reservation[]
   coachNotes       CoachNote[]
   playerChannels   CoachPlayerChannel[] @relation("PlayerChannels")
+  coachNotifications CoachNotification[] @relation("CoachNotifications")
   adminLogs        AdminLog[]
   account          account[]
   coach            coach?
@@ -396,6 +421,7 @@ enum SubscriptionStatus {
 enum SubscriptionPlan {
   MONTHLY
   YEARLY
+  FREE_TRIAL
 }
 
 enum LogSeverity {

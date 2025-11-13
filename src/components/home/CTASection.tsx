@@ -5,8 +5,9 @@ import { useLocale } from 'next-intl';
 export function CTASection() {
   const locale = useLocale();
 
-  const handleCoachClick = () => {
-    window.location.href = `/${locale}/coachs`;
+  const handlePlayerSignup = () => {
+    const event = new CustomEvent('openSignupModal');
+    window.dispatchEvent(event);
   };
 
   return (
@@ -32,16 +33,16 @@ export function CTASection() {
 
           <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
             Que tu sois joueur ou coach, commence ton parcours vers l&apos;excellence. 
-            Rejoins des centaines de membres qui progressent déjà avec Edgemy.
+            Rejoins une communauté de joueurs qui progressent déjà avec Edgemy.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
             <button
-              onClick={handleCoachClick}
+              onClick={handlePlayerSignup}
               className="group relative px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-lg rounded-2xl transition-all transform hover:scale-105 shadow-2xl shadow-amber-500/25 w-full sm:w-auto"
             >
-              <span className="relative z-10">Découvrir les coachs</span>
+              <span className="relative z-10">Je m&apos;inscris gratuitement</span>
               <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity"></div>
             </button>
             <button
@@ -61,7 +62,7 @@ export function CTASection() {
               <svg className="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span>Inscription gratuite</span>
+              <span>Inscription rapide et gratuite</span>
             </div>
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">

@@ -5,6 +5,9 @@ import { GlassCard } from "@/components/ui";
 import { List, Trash2, Edit2, Calendar, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
+import DeleteAvailabilityModal from './DeleteAvailabilityModal';
 
 interface Availability {
   id: string;
@@ -23,6 +26,9 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editStart, setEditStart] = useState("");
   const [editEnd, setEditEnd] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedAvailability, setSelectedAvailability] = useState<Availability | null>(null);
+  const { alertState, confirmState, showError, showConfirm, closeAlert, closeConfirm } = useAlertDialog();
 
   // Trier par date croissante
   const sortedAvailabilities = [...availabilities].sort(
@@ -35,25 +41,73 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
     (av) => new Date(av.end) > now
   );
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cette disponibilité ?")) {
-      return;
-    }
+  const openDeleteModal = (availability: Availability) => {
+    setSelectedAvailability(availability);
+    setDeleteModalOpen(true);
+  };
 
-    setDeletingId(id);
+  const handleDeleteFull = async () => {
+    if (!selectedAvailability) return;
+
+    setDeletingId(selectedAvailability.id);
     try {
-      const res = await fetch(`/api/coach/${coachId}/availability/${id}`, {
+      const res = await fetch(`/api/coach/${coachId}/availability/${selectedAvailability.id}`, {
         method: "DELETE",
       });
 
       if (res.ok) {
+        setDeleteModalOpen(false);
+        setSelectedAvailability(null);
         onUpdate();
       } else {
-        alert("Erreur lors de la suppression");
+        showError("Erreur de suppression", "Impossible de supprimer cette disponibilité");
       }
     } catch (error) {
       console.error("Erreur:", error);
-      alert("Erreur lors de la suppression");
+      showError("Erreur de suppression", "Une erreur est survenue lors de la suppression");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDeletePartial = async (start: Date, end: Date) => {
+    if (!selectedAvailability) return;
+
+    setDeletingId(selectedAvailability.id);
+    try {
+      // 1. Supprimer l'ancienne dispo
+      await fetch(`/api/coach/${coachId}/availability/${selectedAvailability.id}`, {
+        method: "DELETE",
+      });
+
+      // 2. Recréer les parties conservées
+      const originalStart = new Date(selectedAvailability.start);
+      const originalEnd = new Date(selectedAvailability.end);
+
+      // Partie avant
+      if (start > originalStart) {
+        await fetch(`/api/coach/${coachId}/availability`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ start: originalStart, end: start }),
+        });
+      }
+
+      // Partie après
+      if (end < originalEnd) {
+        await fetch(`/api/coach/${coachId}/availability`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ start: end, end: originalEnd }),
+        });
+      }
+
+      setDeleteModalOpen(false);
+      setSelectedAvailability(null);
+      onUpdate();
+    } catch (error) {
+      console.error("Erreur:", error);
+      showError("Erreur de suppression", "Une erreur est survenue lors de la suppression partielle");
     } finally {
       setDeletingId(null);
     }
@@ -71,7 +125,7 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
       const end = new Date(editEnd);
 
       if (end <= start) {
-        alert("L'heure de fin doit être après l'heure de début");
+        showError("Erreur de validation", "L'heure de fin doit être après l'heure de début");
         return;
       }
 
@@ -90,11 +144,11 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
         setEditingId(null);
         onUpdate();
       } else {
-        alert("Erreur lors de la modification");
+        showError("Erreur de modification", "Impossible de modifier cette disponibilité");
       }
     } catch (error) {
       console.error("Erreur:", error);
-      alert("Erreur lors de la modification");
+      showError("Erreur de modification", "Une erreur est survenue lors de la modification");
     }
   };
 
@@ -193,7 +247,7 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
                       Modifier
                     </button>
                     <button
-                      onClick={() => handleDelete(availability.id)}
+                      onClick={() => openDeleteModal(availability)}
                       disabled={deletingId === availability.id}
                       className="w-full sm:flex-1 px-3 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
@@ -230,6 +284,41 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
           background: rgba(168, 85, 247, 0.6);
         }
       `}</style>
+
+      {/* Modal de suppression */}
+      {selectedAvailability && (
+        <DeleteAvailabilityModal
+          isOpen={deleteModalOpen}
+          onClose={() => {
+            setDeleteModalOpen(false);
+            setSelectedAvailability(null);
+          }}
+          availability={selectedAvailability}
+          onDeleteFull={handleDeleteFull}
+          onDeletePartial={handleDeletePartial}
+        />
+      )}
+
+      {/* Modals de notification */}
+      <AlertDialogCustom
+        open={alertState.open}
+        onOpenChange={closeAlert}
+        title={alertState.title}
+        description={alertState.description}
+        type={alertState.type}
+      />
+
+      <AlertDialogCustom
+        open={confirmState.open}
+        onOpenChange={closeConfirm}
+        title={confirmState.title}
+        description={confirmState.description}
+        type="warning"
+        confirmText="Confirmer"
+        cancelText="Annuler"
+        onConfirm={confirmState.onConfirm}
+        showCancel={true}
+      />
     </GlassCard>
   );
 }

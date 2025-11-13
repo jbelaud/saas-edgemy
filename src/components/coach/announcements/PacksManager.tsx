@@ -11,6 +11,8 @@ import { Package, Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
 
 interface AnnouncementPack {
   id: string;
@@ -39,6 +41,7 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPack, setEditingPack] = useState<AnnouncementPack | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const { alertState, confirmState, showError, showConfirm, closeAlert, closeConfirm } = useAlertDialog();
 
   const form = useForm<PackFormValues>({
     resolver: zodResolver(packSchema),
@@ -140,31 +143,38 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
       handleCloseModal();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Une erreur est survenue');
+      showError('Erreur', 'Une erreur est survenue lors de l\'enregistrement du pack');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async (packId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce pack ?')) return;
+    showConfirm(
+      'Supprimer ce pack',
+      'Êtes-vous sûr de vouloir supprimer ce pack ? Cette action est irréversible.',
+      async () => {
+        try {
+          const response = await fetch(
+            `/api/coach/announcement/${announcementId}/packs?packId=${packId}`,
+            { method: 'DELETE' }
+          );
 
-    try {
-      const response = await fetch(
-        `/api/coach/announcement/${announcementId}/packs?packId=${packId}`,
-        { method: 'DELETE' }
-      );
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Erreur lors de la suppression');
+          }
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Erreur lors de la suppression');
+          await fetchPacks();
+        } catch (error: unknown) {
+          console.error('Erreur:', error);
+          showError(
+            'Erreur de suppression',
+            error instanceof Error ? error.message : 'Une erreur est survenue'
+          );
+        }
       }
-
-      await fetchPacks();
-    } catch (error: unknown) {
-      console.error('Erreur:', error);
-      alert(error instanceof Error ? error.message : 'Une erreur est survenue');
-    }
+    );
   };
 
   if (isLoading) {
@@ -311,10 +321,19 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
               />
 
               <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={handleCloseModal}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCloseModal}
+                  className="border-slate-600 bg-slate-800 text-white hover:bg-slate-700 hover:border-slate-500"
+                >
                   Annuler
                 </Button>
-                <Button type="submit" disabled={isSaving}>
+                <Button
+                  type="submit"
+                  disabled={isSaving}
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+                >
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -329,6 +348,27 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Modals de notification */}
+      <AlertDialogCustom
+        open={alertState.open}
+        onOpenChange={closeAlert}
+        title={alertState.title}
+        description={alertState.description}
+        type={alertState.type}
+      />
+
+      <AlertDialogCustom
+        open={confirmState.open}
+        onOpenChange={closeConfirm}
+        title={confirmState.title}
+        description={confirmState.description}
+        type="warning"
+        confirmText="Confirmer"
+        cancelText="Annuler"
+        onConfirm={confirmState.onConfirm}
+        showCancel={true}
+      />
     </>
   );
 }
