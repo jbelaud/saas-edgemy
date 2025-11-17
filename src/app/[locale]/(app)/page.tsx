@@ -1,12 +1,10 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Trophy, TrendingUp } from 'lucide-react';
 
-export default function AppPage() {
-  const t = useTranslations();
+export default async function AppPage() {
+  const t = await getTranslations();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
