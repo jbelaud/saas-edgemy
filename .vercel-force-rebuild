@@ -1,0 +1,3 @@
+Force rebuild - clear cache
+Timestamp: 2025-11-17 08:40:00
+Reason: Clear Vercel build cache to fix ENOENT manifest issue after Server Component conversion
