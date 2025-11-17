@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Euro, Calendar, Bell, Package, Check, Sparkles } from 'lucide-react';
+import { Clock, Euro, Calendar, Package, Check, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { BookingModal } from './BookingModal';
@@ -75,27 +75,11 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
   const [selectedPacks, setSelectedPacks] = useState<Record<string, string | null>>({});
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [notifyEmail, setNotifyEmail] = useState('');
-  const [isNotifying, setIsNotifying] = useState(false);
 
   const handleBooking = (announcement: Announcement) => {
     if (isInactive) return;
     setSelectedAnnouncement(announcement);
     setIsBookingOpen(true);
-  };
-
-  const handleNotifyMe = async (announcementId: string) => {
-    if (!notifyEmail) return;
-    
-    setIsNotifying(true);
-    // TODO: Implémenter l'API pour enregistrer l'alerte
-    console.log('Notify me when available:', { announcementId, email: notifyEmail });
-    
-    setTimeout(() => {
-      setIsNotifying(false);
-      setNotifyEmail('');
-      alert('Vous serez notifié(e) quand ce coach sera à nouveau disponible !');
-    }, 1000);
   };
 
   if (announcements.length === 0) {
@@ -336,33 +320,8 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                         )}
                       </div>
                     )}
-                    
-                    {isInactive ? (
-                      <div className="space-y-2 pt-4 border-t border-gray-200">
-                        <div className="flex gap-2">
-                          <input
-                            type="email"
-                            placeholder="Votre email"
-                            value={notifyEmail}
-                            onChange={(e) => setNotifyEmail(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                          />
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleNotifyMe(announcement.id)}
-                            disabled={!notifyEmail || isNotifying}
-                            className="whitespace-nowrap"
-                          >
-                            <Bell className="h-4 w-4 mr-1" />
-                            {isNotifying ? 'Envoi...' : 'M\'alerter'}
-                          </Button>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          Soyez notifié quand ce coach sera disponible
-                        </p>
-                      </div>
-                    ) : (
+
+                    {!isInactive && (
                       <div className="pt-4 border-t border-gray-200">
                         <Button
                           size="lg"

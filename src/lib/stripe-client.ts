@@ -11,6 +11,7 @@ interface PaymentSessionParams {
   playerEmail: string;
   price: number;
   type?: ReservationType;
+  locale: string;
 }
 
 /**

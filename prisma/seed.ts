@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { PrismaClient } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { hashSync } from 'bcryptjs';

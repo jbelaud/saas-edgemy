@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { PrismaClient, Role, CoachStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { hashSync } from 'bcryptjs';
 

@@ -18,7 +18,25 @@ interface PageProps {
 async function getCoach(slug: string) {
   const coach = await prisma.coach.findUnique({
     where: { slug },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      firstName: true,
+      lastName: true,
+      avatarUrl: true,
+      status: true,
+      subscriptionStatus: true,
+      subscriptionPlan: true,
+      experience: true,
+      roi: true,
+      formats: true,
+      badges: true,
+      twitchUrl: true,
+      youtubeUrl: true,
+      twitterUrl: true,
+      discordUrl: true,
+      bio: true,
+      methodology: true,
       announcements: {
         where: { isActive: true },
         orderBy: { createdAt: 'desc' },
@@ -38,7 +56,7 @@ async function getCoach(slug: string) {
       },
     },
   });
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return coach as any;
 }
@@ -51,7 +69,7 @@ export default async function CoachPublicPage({ params }: PageProps) {
     notFound();
   }
 
-  const isInactive = coach.status === 'INACTIVE';
+  const isInactive = coach.subscriptionStatus !== 'ACTIVE';
 
   // Transformer les annonces pour le composant
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

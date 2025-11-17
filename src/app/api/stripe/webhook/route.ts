@@ -1,11 +1,68 @@
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import { calculateCommission, centsToEuros } from '@/lib/stripe/commission';
 import { ReservationType } from '@/lib/stripe/types';
+import { Prisma, type CoachingPackage } from '@prisma/client';
+import { createOrReuseDiscordChannel, DiscordChannelError } from '@/lib/discord/channel';
+import type { DiscordChannelReservation } from '@/lib/discord/channel';
+import { sendSessionReminderDM } from '@/lib/discord/messages';
+import { ensureMemberRole } from '@/lib/discord/roles';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
+});
+
+const reservationSelect = Prisma.validator<Prisma.ReservationSelect>()({
+  id: true,
+  type: true,
+  priceCents: true,
+  coachId: true,
+  playerId: true,
+  packId: true,
+  commissionCents: true,
+  coachNetCents: true,
+  stripeFeeCents: true,
+  edgemyFeeCents: true,
+  serviceFeeCents: true,
+  sessionsCount: true,
+  startDate: true,
+  endDate: true,
+  discordChannelId: true,
+  announcementId: true,
+  stripePaymentId: true,
+  status: true,
+  paymentStatus: true,
+  coach: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      user: {
+        select: {
+          id: true,
+          discordId: true,
+        },
+      },
+    },
+  },
+  player: {
+    select: {
+      id: true,
+      name: true,
+      discordId: true,
+    },
+  },
+  announcement: {
+    select: {
+      title: true,
+      durationMin: true,
+    },
+  },
+  pack: {
+    select: {
+      hours: true,
+    },
+  },
 });
 
 export async function POST(req: Request) {
@@ -36,7 +93,9 @@ export async function POST(req: Request) {
 
   // Traiter les événements Stripe
   try {
-    switch (event.type) {
+    const eventType = event.type as string;
+
+    switch (eventType) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const coachId = session.metadata?.coachId;
@@ -64,15 +123,17 @@ export async function POST(req: Request) {
           break;
         }
 
-        // Cas 2: C'est une réservation
+        // Cas 2: C'est une réservation (NOUVEAU SYSTÈME - Gel des fonds)
         if (reservationId) {
           const reservationType = (session.metadata?.type || 'SINGLE') as ReservationType;
 
           console.log(`✅ Checkout session complétée pour la réservation ${reservationId} (${reservationType})`);
+          console.log(`🔒 NOUVEAU SYSTÈME: Argent GELÉ - Pas de transfer immédiat`);
 
           // Récupérer la réservation pour obtenir le montant
           const reservation = await prisma.reservation.findUnique({
             where: { id: reservationId },
+            select: reservationSelect,
           });
 
           if (!reservation) {
@@ -80,32 +141,274 @@ export async function POST(req: Request) {
             return new Response('Reservation not found', { status: 404 });
           }
 
-          // Calculer les commissions selon Phase 1
-          const playerAmountEuros = centsToEuros(reservation.priceCents);
-          const commission = calculateCommission(playerAmountEuros, reservationType);
-
-          console.log(`💰 Calcul commission:
-            - Joueur paie: ${playerAmountEuros}€
-            - Commission Edgemy: ${centsToEuros(commission.commission)}€
-            - Coach reçoit: ${centsToEuros(commission.coachEarnings)}€
-          `);
-
-          // Mettre à jour la réservation avec paiement et commissions
-          await prisma.reservation.update({
-            where: { id: reservationId },
-            data: {
-              paymentStatus: 'PAID',
-              status: 'CONFIRMED',
-              stripePaymentId: session.payment_intent as string,
-              commissionCents: commission.commission,
-              coachEarningsCents: commission.coachEarnings,
+          const playerProfile = await prisma.player.findUnique({
+            where: { userId: reservation.playerId },
+            select: {
+              firstName: true,
+              lastName: true,
             },
           });
 
-          console.log(`✅ Réservation ${reservationId} marquée comme PAID et CONFIRMED avec commissions calculées`);
+          const metadata = session.metadata ?? {};
+          const parseMetadataInt = (key: string): number | null => {
+            const raw = metadata[key];
+            if (raw === undefined || raw === null || raw === '') {
+              return null;
+            }
+            const value = Number.parseInt(raw, 10);
+            return Number.isFinite(value) ? value : null;
+          };
 
-          // TODO: Envoyer notification Discord au coach et au joueur
-          // TODO: Créer le canal Discord privé si pas encore créé
+          const sessionsCountFallback = reservation.pack?.hours ?? 0;
+
+          const isPackageMetadata = metadata.isPackage === 'true' ? true : metadata.isPackage === 'false' ? false : undefined;
+          const isPackage = isPackageMetadata ?? reservation.type === 'PACK';
+
+          const reservationCoachNetCents = reservation.coachNetCents ?? reservation.priceCents;
+          const reservationStripeFeeCents = reservation.stripeFeeCents ?? 0;
+          const reservationEdgemyFeeCents = reservation.edgemyFeeCents ?? reservation.commissionCents ?? 0;
+          const reservationServiceFeeCents = reservation.serviceFeeCents ?? reservationStripeFeeCents + reservationEdgemyFeeCents;
+          const reservationSessionsCount = reservation.sessionsCount ?? sessionsCountFallback;
+
+          const coachNetCents = parseMetadataInt('coachNetCents') ?? reservationCoachNetCents;
+          const stripeFeeCents = parseMetadataInt('stripeFeeCents') ?? reservationStripeFeeCents;
+          const edgemyFeeCents = parseMetadataInt('edgemyFeeCents') ?? reservationEdgemyFeeCents;
+          const serviceFeeCents = parseMetadataInt('serviceFeeCents') ?? reservationServiceFeeCents;
+          const totalCustomerCents = parseMetadataInt('totalCustomerCents') ?? coachNetCents + serviceFeeCents;
+          const sessionsCountFromMetadata = parseMetadataInt('sessionsCount');
+          const sessionsCountValue = isPackage
+            ? (sessionsCountFromMetadata ?? reservationSessionsCount)
+            : 0;
+          const sessionPayoutCents = parseMetadataInt('sessionPayoutCents')
+            ?? (isPackage && sessionsCountValue > 0
+              ? Math.floor(coachNetCents / sessionsCountValue)
+              : coachNetCents);
+          const packMetadataId = metadata.packId && metadata.packId.length > 0 ? metadata.packId : null;
+
+          console.log('💰 Ventilation paiement:', {
+            coachNetCents,
+            stripeFeeCents,
+            edgemyFeeCents,
+            serviceFeeCents,
+            totalCustomerCents,
+            isPackage,
+            sessionsCountValue,
+            sessionPayoutCents,
+            packMetadataId,
+          });
+
+          const stripePaymentId =
+            typeof session.payment_intent === 'string'
+              ? session.payment_intent
+              : session.payment_intent?.id ?? null;
+
+          const reservationUpdateData: Prisma.ReservationUncheckedUpdateInput = {
+            paymentStatus: 'PAID',
+            status: 'CONFIRMED',
+            stripePaymentId: stripePaymentId ?? undefined,
+            stripeSessionId: session.id,
+            commissionCents: edgemyFeeCents,
+            coachEarningsCents: coachNetCents,
+            coachNetCents,
+            stripeFeeCents,
+            edgemyFeeCents,
+            serviceFeeCents,
+            isPackage,
+            sessionsCount: isPackage ? sessionsCountValue : null,
+            transferStatus: 'PENDING',
+          };
+
+          await prisma.reservation.update({
+            where: { id: reservationId },
+            data: reservationUpdateData,
+          });
+
+          console.log(`✅ Réservation ${reservationId} marquée comme PAID et CONFIRMED`);
+          console.log(`⏳ transferStatus: PENDING - Le transfer sera fait via /api/reservations/${reservationId}/complete`);
+
+          if (isPackage) {
+            const existingSession = await prisma.packageSession.findUnique({
+              where: { reservationId },
+              include: {
+                package: true,
+              },
+            });
+
+            const sessionsTotalCount = sessionsCountValue > 0
+              ? sessionsCountValue
+              : reservationSessionsCount;
+            const totalHours = reservation.pack?.hours ?? sessionsTotalCount;
+
+            let coachingPackage: CoachingPackage | null = existingSession?.package ?? null;
+            let shouldUpdateExistingPackage = Boolean(coachingPackage);
+
+            if (!coachingPackage && stripePaymentId) {
+              coachingPackage = await prisma.coachingPackage.findFirst({
+                where: { stripePaymentId },
+              });
+              shouldUpdateExistingPackage = Boolean(coachingPackage);
+            }
+
+            if (!coachingPackage) {
+              const coachingPackageCreateData: Prisma.CoachingPackageUncheckedCreateInput = {
+                playerId: reservation.playerId,
+                coachId: reservation.coachId,
+                announcementId: reservation.announcementId,
+                totalHours,
+                remainingHours: totalHours,
+                priceCents: reservation.priceCents,
+                stripePaymentId: stripePaymentId ?? undefined,
+                status: 'ACTIVE',
+                commissionCents: edgemyFeeCents,
+                coachEarningsCents: coachNetCents,
+                stripeFeeCents,
+                edgemyFeeCents,
+                serviceFeeCents,
+                coachNetCents,
+                sessionPayoutCents,
+                sessionsCompletedCount: 0,
+                sessionsTotalCount,
+              };
+
+              coachingPackage = await prisma.coachingPackage.create({
+                data: coachingPackageCreateData,
+              });
+              shouldUpdateExistingPackage = false;
+            }
+
+            if (!existingSession && coachingPackage) {
+              const durationMinutes = reservation.announcement?.durationMin
+                ?? Math.max(0, Math.round((reservation.endDate.getTime() - reservation.startDate.getTime()) / 60000));
+
+              await prisma.packageSession.create({
+                data: {
+                  packageId: coachingPackage.id,
+                  reservationId,
+                  startDate: reservation.startDate,
+                  endDate: reservation.endDate,
+                  durationMinutes,
+                  status: 'SCHEDULED',
+                },
+              });
+              console.log(`🗓️ PackageSession créée pour la réservation ${reservationId}`);
+            }
+
+            if (coachingPackage && shouldUpdateExistingPackage) {
+              const coachingPackageUpdateData: Prisma.CoachingPackageUncheckedUpdateInput = {
+                stripePaymentId: stripePaymentId ?? coachingPackage.stripePaymentId ?? undefined,
+                commissionCents: edgemyFeeCents,
+                coachEarningsCents: coachNetCents,
+                stripeFeeCents,
+                edgemyFeeCents,
+                serviceFeeCents,
+                coachNetCents,
+                sessionPayoutCents,
+                sessionsTotalCount,
+              };
+
+              await prisma.coachingPackage.update({
+                where: { id: coachingPackage.id },
+                data: coachingPackageUpdateData,
+              });
+            }
+          }
+
+          const hasCoachDiscord = Boolean(reservation.coach?.user?.discordId);
+          const hasPlayerDiscord = Boolean(reservation.player?.discordId);
+          let discordChannelId: string | null = reservation.discordChannelId ?? null;
+          let reservationSummary: DiscordChannelReservation = {
+            id: reservation.id,
+            startDate: reservation.startDate,
+            endDate: reservation.endDate,
+            coach: reservation.coach
+              ? {
+                  id: reservation.coach.id,
+                  firstName: reservation.coach.firstName,
+                  lastName: reservation.coach.lastName,
+                  user: reservation.coach.user
+                    ? {
+                        id: reservation.coach.user.id,
+                        discordId: reservation.coach.user.discordId,
+                      }
+                    : null,
+                }
+              : null,
+            player: reservation.player
+              ? {
+                  id: reservation.player.id,
+                  name: reservation.player.name,
+                  firstName: playerProfile?.firstName ?? null,
+                  lastName: playerProfile?.lastName ?? null,
+                  discordId: reservation.player.discordId,
+                }
+              : null,
+            announcement: reservation.announcement
+              ? { title: reservation.announcement.title ?? null }
+              : null,
+            pack: reservation.pack
+              ? { hours: reservation.pack.hours ?? null }
+              : null,
+          };
+
+          if (hasCoachDiscord && hasPlayerDiscord) {
+            try {
+              const channelResult = await createOrReuseDiscordChannel({
+                reservationId,
+                initiatedBy: 'stripe-webhook',
+              });
+              discordChannelId = channelResult.textChannelId;
+              reservationSummary = channelResult.reservation;
+              console.log('[Discord] Canal prêt pour la réservation', reservationId);
+            } catch (error) {
+              if (error instanceof DiscordChannelError) {
+                console.error('[Discord] Erreur création canal:', error.code, error.message);
+              } else {
+                console.error('[Discord] Erreur inattendue création canal:', error);
+              }
+            }
+          } else {
+            console.log('⚠️ Canal Discord non créé: comptes Discord manquants', {
+              coachHasDiscord: hasCoachDiscord,
+              playerHasDiscord: hasPlayerDiscord,
+            });
+          }
+
+          const notifyRoles: Array<{
+            role: 'player' | 'coach';
+            discordId: string | null | undefined;
+            assignRole: 'PLAYER' | 'COACH';
+          }> = [
+            { role: 'player', discordId: reservation.player?.discordId, assignRole: 'PLAYER' },
+            { role: 'coach', discordId: reservation.coach?.user?.discordId, assignRole: 'COACH' },
+          ];
+
+          await Promise.all(
+            notifyRoles.map(async ({ role, discordId, assignRole }) => {
+              if (!discordId) {
+                return;
+              }
+
+              try {
+                const [sent] = await Promise.all([
+                  sendSessionReminderDM({
+                    discordId,
+                    reservation: reservationSummary,
+                    channelId: discordChannelId,
+                    role,
+                  }),
+                  ensureMemberRole({ discordId, role: assignRole }),
+                ]);
+
+                if (sent) {
+                  console.log(`[Discord] DM ${role} envoyé pour la réservation ${reservationId}`);
+                } else {
+                  console.warn(`[Discord] DM ${role} non envoyé pour la réservation ${reservationId}`);
+                }
+              } catch (error) {
+                console.error(`[Discord] Erreur traitement notification ${role}:`, error);
+              }
+            }),
+          );
         } else {
           console.log(`ℹ️ Checkout session complétée sans reservationId ni coachId`);
         }
@@ -285,6 +588,67 @@ export async function POST(req: Request) {
             // TODO: Créer workflow Stripe pour rappels automatiques
           }
         }
+        break;
+      }
+
+      // ========================================
+      // ÉVÉNEMENTS DE TRANSFER (NOUVEAU SYSTÈME)
+      // ========================================
+
+      case 'transfer.created': {
+        const transfer = event.data.object as Stripe.Transfer;
+        console.log(`📤 Transfer créé: ${transfer.id} - ${transfer.amount / 100}€`);
+
+        // Le TransferLog est déjà créé par notre fonction createStripeTransfer()
+        // On log juste l'événement ici
+        break;
+      }
+
+      case 'transfer.paid': {
+        const transfer = event.data.object as Stripe.Transfer;
+        console.log(`✅ Transfer payé: ${transfer.id} - ${transfer.amount / 100}€`);
+
+        // Mettre à jour le statut du transfer dans nos logs
+        await prisma.transferLog.updateMany({
+          where: { stripeTransferId: transfer.id },
+          data: { status: 'paid' },
+        });
+
+        break;
+      }
+
+      case 'transfer.failed': {
+        const transfer = event.data.object as Stripe.Transfer;
+        console.error(`❌ Transfer échoué: ${transfer.id}`);
+
+        // Mettre à jour le statut
+        await prisma.transferLog.updateMany({
+          where: { stripeTransferId: transfer.id },
+          data: { status: 'failed' },
+        });
+
+        // Mettre à jour la réservation
+        const transferLog = await prisma.transferLog.findFirst({
+          where: { stripeTransferId: transfer.id },
+        });
+
+        if (transferLog) {
+          await prisma.reservation.update({
+            where: { id: transferLog.reservationId },
+            data: { transferStatus: 'FAILED' },
+          });
+        }
+
+        // TODO: Envoyer alerte admin
+        break;
+      }
+
+      case 'charge.refunded': {
+        const charge = event.data.object as Stripe.Charge;
+        console.log(`💸 Remboursement effectué: ${charge.id}`);
+
+        // Les RefundLog sont déjà créés par nos fonctions de remboursement
+        // On log juste l'événement ici pour confirmation
         break;
       }
 

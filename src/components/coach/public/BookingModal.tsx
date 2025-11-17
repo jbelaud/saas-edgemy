@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, Loader2, AlertCircle, CheckCircle, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Loader2, AlertCircle, CheckCircle, ChevronRight, Percent, Receipt, PiggyBank } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { redirectToCheckout } from '@/lib/stripe-client';
@@ -34,6 +34,26 @@ interface BookingModalProps {
     price: number;
     duration: number;
     packs?: AnnouncementPack[];
+    pricing?: {
+      session: {
+        coachNetCents: number;
+        serviceFeeCents: number;
+        stripeFeeCents: number;
+        edgemyFeeCents: number;
+        totalCustomerCents: number;
+        currency: string;
+      };
+      packs?: Record<string, {
+        coachNetCents: number;
+        serviceFeeCents: number;
+        stripeFeeCents: number;
+        edgemyFeeCents: number;
+        totalCustomerCents: number;
+        sessionPayoutCents: number;
+        sessionsCount: number;
+        currency: string;
+      }>;
+    };
   };
   coachId: string;
   selectedPackId?: string | null;
@@ -150,8 +170,47 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
     : null;
   
   // Calculer le prix et la durée selon si c'est un pack ou une session
-  const displayPrice = selectedPack ? selectedPack.totalPrice / 100 : announcement.price;
+  const sessionPricing = announcement.pricing?.session ?? null;
+  const packPricing = bookingType === 'pack' && selectedPackForBooking
+    ? announcement.pricing?.packs?.[selectedPackForBooking] ?? null
+    : null;
+  const selectedPricing = bookingType === 'pack' ? packPricing : sessionPricing;
+
+  const fallbackSinglePriceCents = Math.round(announcement.price * 100);
+  const fallbackPackPriceCents = selectedPack ? selectedPack.totalPrice : fallbackSinglePriceCents;
+  const fallbackTotalCustomerCents = bookingType === 'pack' ? fallbackPackPriceCents : fallbackSinglePriceCents;
+
+  const totalCustomerCents = selectedPricing?.totalCustomerCents ?? fallbackTotalCustomerCents;
+  const displayPrice = totalCustomerCents / 100;
   const displayDuration = announcement.duration;
+
+  const currencyCode = (selectedPricing?.currency ?? 'eur').toUpperCase();
+  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currencyCode,
+    minimumFractionDigits: 2,
+  }), [currencyCode, locale]);
+  const formatAmount = (value: number) => currencyFormatter.format(value);
+
+  const coachNetCents = selectedPricing?.coachNetCents
+    ?? (bookingType === 'pack' ? fallbackPackPriceCents : fallbackSinglePriceCents);
+  const serviceFeeCents = selectedPricing?.serviceFeeCents ?? 0;
+  const edgemyFeeCents = selectedPricing?.edgemyFeeCents ?? 0;
+  const stripeFeeCents = selectedPricing?.stripeFeeCents ?? 0;
+
+  const sessionsCount = bookingType === 'pack'
+    ? packPricing?.sessionsCount ?? selectedPack?.hours ?? 1
+    : 1;
+
+  const sessionPayoutCents = bookingType === 'pack'
+    ? (packPricing?.sessionPayoutCents ?? Math.floor(coachNetCents / Math.max(1, sessionsCount)))
+    : coachNetCents;
+
+  const coachNetEuros = coachNetCents / 100;
+  const serviceFeeEuros = serviceFeeCents / 100;
+  const edgemyFeeEuros = edgemyFeeCents / 100;
+  const stripeFeeEuros = stripeFeeCents / 100;
+  const sessionPayoutEuros = sessionPayoutCents / 100;
 
   const handleSubmit = async () => {
     if (!session?.user) {
@@ -217,6 +276,7 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
         coachName,
         playerEmail: session.user.email,
         price: displayPrice,
+        locale,
         type: bookingType === 'pack' ? 'PACK' : 'SINGLE',
       });
 
@@ -390,8 +450,8 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
               )}
             </div>
 
-            {/* Prix et durée */}
-            <div className="px-4 md:px-5 py-2 bg-gradient-to-r from-orange-50 to-amber-50 border-y">
+            {/* Prix, ventilation */}
+            <div className="px-4 md:px-5 py-3 bg-gradient-to-r from-orange-50 to-amber-50 border-y space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 md:gap-2">
                   <div className="p-1 md:p-1.5 bg-white rounded-lg shadow-sm">
@@ -403,16 +463,49 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] md:text-xs text-gray-600">Prix</p>
-                  <p className="text-lg md:text-lg font-bold text-orange-600">{displayPrice}€</p>
+                  <p className="text-[10px] md:text-xs text-gray-600">Total payé</p>
+                  <p className="text-lg md:text-lg font-bold text-orange-600">{formatAmount(displayPrice)}</p>
                 </div>
               </div>
-              {bookingType === 'pack' && selectedPack && (
-                <div className="mt-1.5 md:mt-2">
-                  <Badge className="bg-green-100 text-green-700 border-green-300 text-[10px] md:text-[10px]">
-                    Pack {selectedPack.hours}h - Économisez {selectedPack.discountPercent}%
-                  </Badge>
+
+              <div className="grid grid-cols-2 gap-2 text-[10px] md:text-xs">
+                <div className="rounded-lg bg-white/80 border border-white/40 p-2 flex items-start gap-1.5">
+                  <PiggyBank className="h-3.5 w-3.5 text-emerald-600 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-emerald-700">Coach</p>
+                    <p className="text-gray-600">Net reçu : <strong>{formatAmount(coachNetEuros)}</strong></p>
+                    {bookingType === 'pack' && selectedPack && (
+                      <p className="text-gray-500 text-[9px] md:text-[10px]">
+                        Paiement par session : {formatAmount(sessionPayoutEuros)} × {sessionsCount}
+                      </p>
+                    )}
+                  </div>
                 </div>
+                <div className="rounded-lg bg-white/80 border border-white/40 p-2 flex items-start gap-1.5">
+                  <Receipt className="h-3.5 w-3.5 text-orange-500 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-orange-600">Frais</p>
+                    <p className="text-gray-600">Service Edgemy : <strong>{formatAmount(edgemyFeeEuros)}</strong></p>
+                    <p className="text-gray-600">Frais Stripe estimés : <strong>{formatAmount(stripeFeeEuros)}</strong></p>
+                    <p className="text-gray-500 text-[9px] md:text-[10px]">Total frais : {formatAmount(serviceFeeEuros)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {bookingType === 'pack' && selectedPack && selectedPricing && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-2 text-[10px] md:text-xs flex items-start gap-1.5">
+                  <Percent className="h-3.5 w-3.5 text-blue-600 mt-0.5" />
+                  <div className="text-blue-900">
+                    <p className="font-semibold">Pack {selectedPack.hours}h</p>
+                    <p>Versement fractionné : 50% après la 1ère session puis le solde lors de la dernière.</p>
+                  </div>
+                </div>
+              )}
+
+              {bookingType === 'pack' && selectedPack?.discountPercent && selectedPack.discountPercent > 0 && (
+                <Badge className="bg-green-100 text-green-700 border-green-300 text-[10px] md:text-[10px]">
+                  Économie pack : -{selectedPack.discountPercent}% vs sessions à l&apos;unité
+                </Badge>
               )}
             </div>
 

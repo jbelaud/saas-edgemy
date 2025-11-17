@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { auth } from '../src/lib/auth';
 
 const prisma = new PrismaClient();

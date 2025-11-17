@@ -1,7 +1,10 @@
 import Stripe from 'stripe';
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { ReservationType } from '@/lib/stripe/types';
 import { prisma } from '@/lib/prisma';
+import { routing } from '@/i18n/routing';
+import { calculateForSession, calculateForPack } from '@/lib/stripe/pricing';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -9,22 +12,70 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: Request) {
   try {
-    const { reservationId, coachName, playerEmail, price, type, coachId } = await req.json();
+    const body = await req.json();
+    const { reservationId, coachName, playerEmail, type, coachId, locale: requestedLocale } = body;
 
-    // Validation
-    if (!reservationId || !playerEmail || !price || !coachId) {
+    console.log('📥 Requête create-session reçue:', { reservationId, coachName, playerEmail, type, coachId });
+
+    // Validation basique sur les champs request
+    if (!reservationId || !playerEmail || !coachId) {
+      console.error('❌ Champs manquants:', {
+        hasReservationId: !!reservationId,
+        hasPlayerEmail: !!playerEmail,
+        hasCoachId: !!coachId,
+      });
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        {
+          error: 'Missing required fields',
+          details: {
+            reservationId: !reservationId ? 'missing' : 'ok',
+            playerEmail: !playerEmail ? 'missing' : 'ok',
+            coachId: !coachId ? 'missing' : 'ok',
+          }
+        },
         { status: 400 }
       );
     }
 
     const reservationType: ReservationType = type || 'SINGLE';
+    const locale = routing.locales.includes(requestedLocale) ? requestedLocale : routing.defaultLocale;
+
+    // Récupérer la réservation pour fiabiliser les montants et le lien joueur/coach
+    const reservation = await prisma.reservation.findUnique({
+      where: { id: reservationId },
+      select: {
+        id: true,
+        type: true,
+        priceCents: true,
+        coachId: true,
+        playerId: true,
+        packId: true,
+      },
+    });
+
+    if (!reservation) {
+      return NextResponse.json({ error: 'Reservation not found' }, { status: 404 });
+    }
+
+    if (reservation.coachId !== coachId) {
+      console.error('❌ Incohérence coach/réservation', { reservationCoachId: reservation.coachId, providedCoachId: coachId });
+      return NextResponse.json({ error: 'Reservation does not belong to this coach' }, { status: 400 });
+    }
+
+    if (!reservation.priceCents || reservation.priceCents <= 0) {
+      console.error('❌ Prix invalide pour la réservation', { reservationId, priceCents: reservation.priceCents });
+      return NextResponse.json({ error: 'Invalid reservation price' }, { status: 400 });
+    }
 
     // Récupérer le compte Stripe Connect du coach
     const coach = await prisma.coach.findUnique({
       where: { id: coachId },
-      select: { stripeAccountId: true, id: true },
+      select: {
+        stripeAccountId: true,
+        id: true,
+        firstName: true,
+        lastName: true,
+      },
     });
 
     if (!coach) {
@@ -42,79 +93,131 @@ export async function POST(req: Request) {
       );
     }
 
+    // Utiliser coachName du paramètre ou construire à partir des données du coach
+    const finalCoachName = coachName || `${coach.firstName} ${coach.lastName}`;
+
     // Déterminer le nom du produit selon le type
     const productName = reservationType === 'PACK'
-      ? `Pack de coaching avec ${coachName}`
-      : `Session de coaching avec ${coachName}`;
+      ? `Pack de coaching avec ${finalCoachName}`
+      : `Session de coaching avec ${finalCoachName}`;
 
-    // Calculer les frais de plateforme selon le type
-    // Le prix reçu est le prix du COACH (ce qu'il doit toucher)
-    // On calcule le prix ÉLÈVE en ajoutant la commission Edgemy
+    // Calcul pricing centralisé
+    const isPackage = reservation.type === 'PACK';
+    let sessionsCount: number | null = null;
+    let sessionPayoutCents = 0;
+    const coachPriceCents = reservation.priceCents;
 
-    let playerPrice: number; // Prix payé par l'élève
-    let platformFee: number; // Commission Edgemy
+    const pricingBreakdown = await (async () => {
+      if (!isPackage) {
+        const breakdown = calculateForSession(coachPriceCents);
+        sessionPayoutCents = breakdown.coachNetCents;
+        return breakdown;
+      }
 
-    if (reservationType === 'PACK') {
-      // Pour les packs : 3€ + 2% du prix coach (configurable via env)
-      const fixedFee = parseFloat(process.env.STRIPE_PACK_FIXED_FEE || '3.00');
-      const percentFee = price * parseFloat(process.env.STRIPE_PACK_PERCENT_FEE || '0.02');
-      platformFee = fixedFee + percentFee;
-      playerPrice = price + platformFee;
-    } else {
-      // Pour les sessions uniques : 5% du prix coach (configurable via env)
-      const singleSessionFeePercent = parseFloat(process.env.STRIPE_SINGLE_SESSION_FEE_PERCENT || '0.05');
-      platformFee = price * singleSessionFeePercent;
-      playerPrice = price + platformFee;
-    }
+      if (!reservation.packId) {
+        throw new Error('Pack reservation missing packId');
+      }
 
-    // Convertir en centimes pour Stripe
-    const coachAmount = Math.round(price * 100); // Ce que touche le coach
-    const totalAmount = Math.round(playerPrice * 100); // Ce que paie l'élève
-    const applicationFeeAmount = Math.round(platformFee * 100); // Commission Edgemy
+      const announcementPack = await prisma.announcementPack.findUnique({
+        where: { id: reservation.packId },
+        select: { hours: true },
+      });
 
-    // Créer la session Stripe Checkout avec transfer vers le compte Connect du coach
+      if (!announcementPack || !announcementPack.hours || announcementPack.hours <= 0) {
+        throw new Error('Invalid pack configuration (missing hours)');
+      }
+
+      sessionsCount = announcementPack.hours;
+      const breakdown = calculateForPack(coachPriceCents, sessionsCount);
+      sessionPayoutCents = breakdown.sessionPayoutCents;
+      return breakdown;
+    })();
+
+    const sessionsCountValue = sessionsCount ?? 0;
+    const metadataBase = {
+      reservationId,
+      coachId: coach.id,
+      userId: reservation.playerId,
+      type: reservation.type,
+      coachStripeAccountId: coach.stripeAccountId,
+      coachNetCents: pricingBreakdown.coachNetCents.toString(),
+      stripeFeeCents: pricingBreakdown.stripeFeeCents.toString(),
+      edgemyFeeCents: pricingBreakdown.edgemyFeeCents.toString(),
+      serviceFeeCents: pricingBreakdown.serviceFeeCents.toString(),
+      totalCustomerCents: pricingBreakdown.totalCustomerCents.toString(),
+      isPackage: String(isPackage),
+      sessionsCount: sessionsCountValue.toString(),
+      sessionPayoutCents: sessionPayoutCents.toString(),
+      currency: pricingBreakdown.currency,
+      locale,
+      packId: reservation.packId ?? '',
+    } satisfies Record<string, string>;
+
+    // Créer la session Stripe Checkout SANS transfer immédiat (argent gelé)
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'link'], // Ajout de Stripe Link
       mode: 'payment',
       customer_email: playerEmail,
       line_items: [
         {
           price_data: {
-            currency: 'eur',
+            currency: pricingBreakdown.currency,
             product_data: {
               name: productName,
               description: reservationType === 'PACK'
                 ? 'Pack d\'heures de coaching personnalisé'
                 : 'Session individuelle de coaching',
             },
-            unit_amount: totalAmount, // Prix total en centimes
+            unit_amount: pricingBreakdown.totalCustomerCents,
           },
           quantity: 1,
         },
       ],
       payment_intent_data: {
-        application_fee_amount: applicationFeeAmount, // Commission plateforme
-        transfer_data: {
-          destination: coach.stripeAccountId, // Le reste va au coach
+        transfer_group: `reservation_${reservationId}`,
+        // ❌ Ne PAS utiliser application_fee_amount ici
+        // La commission sera retenue lors du transfer manuel (POST /reservations/[id]/complete)
+        metadata: {
+          ...metadataBase,
         },
       },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/session/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/session/cancel`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/${locale}/session/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/${locale}/session/cancel`,
       metadata: {
-        reservationId,
-        type: reservationType,
-        coachId: coach.id,
+        ...metadataBase,
       },
     });
 
-    console.log(`✅ Session Stripe créée: ${session.id} pour réservation ${reservationId} (${reservationType})`);
-    console.log(`💰 Prix coach: ${price.toFixed(2)}€ | Commission Edgemy: ${platformFee.toFixed(2)}€ | Prix élève: ${playerPrice.toFixed(2)}€`);
+    await prisma.reservation.update({
+      where: { id: reservationId },
+      data: {
+        coachEarningsCents: pricingBreakdown.coachNetCents,
+        coachNetCents: pricingBreakdown.coachNetCents,
+        stripeFeeCents: pricingBreakdown.stripeFeeCents,
+        edgemyFeeCents: pricingBreakdown.edgemyFeeCents,
+        serviceFeeCents: pricingBreakdown.serviceFeeCents,
+        commissionCents: pricingBreakdown.edgemyFeeCents,
+        isPackage,
+        sessionsCount: isPackage ? sessionsCountValue : null,
+      } as Prisma.ReservationUncheckedUpdateInput,
+    });
+
+    console.log(` Session Stripe créée: ${session.id} pour réservation ${reservationId} (${reservationType})`);
+    console.log(
+      ` Prix coach: ${(pricingBreakdown.coachNetCents / 100).toFixed(2)}€ | `
+      + `Commission Edgemy: ${(pricingBreakdown.edgemyFeeCents / 100).toFixed(2)}€ | `
+      + `Frais Stripe estimés: ${(pricingBreakdown.stripeFeeCents / 100).toFixed(2)}€ | `
+      + `Prix élève: ${(pricingBreakdown.totalCustomerCents / 100).toFixed(2)}€`,
+    );
     if (reservationType === 'PACK') {
-      console.log(`📦 Commission pack: 3€ fixe + 2% (${(price * 0.02).toFixed(2)}€) = ${platformFee.toFixed(2)}€`);
+      console.log(
+        `📦 Pack: ${sessionsCount} sessions prévues | Paiement par session: ${(sessionPayoutCents / 100).toFixed(2)}€`,
+      );
     } else {
-      console.log(`🎯 Commission session unique: 5% du prix coach`);
+      console.log('🎯 Session unique: commission et frais calculés via helper pricing.ts');
     }
-    console.log(`🔗 Paiement routé vers compte Stripe Connect: ${coach.stripeAccountId}`);
+    console.log(`🔒 NOUVEAU SYSTÈME: Argent GELÉ dans solde Edgemy (pas de transfer immédiat)`);
+    console.log(`⏳ Transfer au coach ${coach.stripeAccountId} effectué APRÈS la session`);
 
     return NextResponse.json({
       url: session.url,

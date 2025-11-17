@@ -28,7 +28,13 @@ export async function GET() {
           in: ['CONFIRMED', 'COMPLETED'],
         },
       },
-      include: {
+      select: {
+        id: true,
+        startDate: true,
+        endDate: true,
+        status: true,
+        packId: true,
+        discordChannelId: true,
         coach: {
           select: {
             id: true,
@@ -56,8 +62,10 @@ export async function GET() {
 
     // Séparer les sessions à venir et passées
     const now = new Date();
-    const upcoming = reservations.filter(r => new Date(r.startDate) > now);
-    const past = reservations.filter(r => new Date(r.startDate) <= now);
+    // Une session est "upcoming" si elle n'a pas encore commencé OU si elle est en cours
+    const upcoming = reservations.filter(r => new Date(r.endDate) > now);
+    // Une session est "past" si elle est terminée
+    const past = reservations.filter(r => new Date(r.endDate) <= now);
 
     return NextResponse.json({ 
       upcoming, 

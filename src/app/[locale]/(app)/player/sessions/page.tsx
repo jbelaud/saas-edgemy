@@ -6,7 +6,7 @@ import { useSession } from '@/lib/auth-client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Calendar, Clock, User, Loader2, Package } from 'lucide-react';
-import { DiscordSessionButton } from '@/components/discord/DiscordSessionButton';
+import { SessionActionsButtons } from '@/components/sessions/SessionActionsButtons';
 import Image from 'next/image';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 import { GlassCard, GradientText } from '@/components/ui';
@@ -228,15 +228,15 @@ export default function PlayerSessionsPage() {
                     
                     <div className="flex flex-col items-end gap-2">
                       <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                        reservation.status === 'CONFIRMED' 
-                          ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                        reservation.status === 'CONFIRMED'
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                           : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                       }`}>
                         {reservation.status === 'CONFIRMED' ? 'Confirmée' : 'En attente'}
                       </span>
-                      
-                      {/* Bouton Discord */}
-                      <DiscordSessionButton
+
+                      {/* Bouton Discord uniquement */}
+                      <SessionActionsButtons
                         discordChannelId={reservation.discordChannelId || null}
                         playerHasDiscord={!!playerDiscordId}
                       />

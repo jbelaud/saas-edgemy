@@ -13,10 +13,9 @@ export async function GET(request: NextRequest) {
     const maxPrice = searchParams.get('maxPrice');
     const language = searchParams.get('language');
 
-    // Récupérer les coachs actifs
+    // Récupérer tous les coachs avec filtres optionnels
     const coaches = await prisma.coach.findMany({
       where: {
-        status: 'ACTIVE',
         ...(format && { formats: { has: format } }),
         ...(language && { languages: { has: language } }),
         ...(type && {

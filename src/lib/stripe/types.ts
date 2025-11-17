@@ -67,3 +67,64 @@ export interface CommissionCalculation {
   commission: number; // Commission Edgemy (en centimes)
   coachEarnings: number; // Gains du coach (en centimes)
 }
+
+/**
+ * Statut du transfer
+ */
+export type TransferStatus = 'PENDING' | 'TRANSFERRED' | 'FAILED' | 'CANCELLED';
+
+/**
+ * Statut du remboursement
+ */
+export type RefundStatus = 'NONE' | 'PARTIAL' | 'FULL';
+
+/**
+ * Qui a annulé
+ */
+export type CancelledBy = 'COACH' | 'PLAYER';
+
+/**
+ * Statut du transfer pour les packs
+ */
+export type PackageTransferStatus = 'PENDING' | 'PARTIALLY_TRANSFERRED' | 'FULLY_TRANSFERRED';
+
+/**
+ * Paramètres pour annulation de réservation
+ */
+export interface CancelReservationParams {
+  reservationId: string;
+  cancelledBy: CancelledBy;
+  reason: string;
+  playerChoice?: 'reschedule' | 'refund'; // Si coach annule
+}
+
+/**
+ * Résultat d'une annulation
+ */
+export interface CancellationResult {
+  success: boolean;
+  refundAmount?: number;
+  compensationAmount?: number;
+  refundType?: 'FULL' | 'PARTIAL' | 'NONE';
+  transferId?: string;
+  refundId?: string;
+  error?: string;
+}
+
+/**
+ * Paramètres pour compléter une session
+ */
+export interface CompleteSessionParams {
+  reservationId: string;
+  completedBy?: string; // ID de l'utilisateur qui marque comme complété
+}
+
+/**
+ * Résultat de complétion de session
+ */
+export interface CompletionResult {
+  success: boolean;
+  transferId?: string;
+  amount?: number;
+  error?: string;
+}

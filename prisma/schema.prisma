@@ -178,12 +178,44 @@ model Reservation {
   priceCents       Int                                 // Prix payé par le joueur (en centimes)
   commissionCents  Int               @default(0)       // Commission Edgemy Phase 1 (en centimes)
   coachEarningsCents Int             @default(0)       // Gains du coach (en centimes)
-  stripePaymentId  String?
+  stripeFeeCents   Int               @default(0)
+  edgemyFeeCents   Int               @default(0)
+  serviceFeeCents  Int               @default(0)
+  coachNetCents    Int               @default(0)
+  isPackage        Boolean           @default(false)
+  sessionsCount    Int?
+
+  // Paiement Stripe
+  stripePaymentId  String?                             // ID du PaymentIntent Stripe
   stripeSessionId  String?                             // ID de la session Stripe Checkout
-  discordChannelId String?
+
+  // Transfert au coach (nouveau système)
+  stripeTransferId     String?           // ID du transfer Stripe vers le coach
+  transferStatus       TransferStatus    @default(PENDING) // Statut du transfer
+  transferredAt        DateTime?         // Date du transfer au coach
+
+  // Remboursements
+  refundStatus         RefundStatus      @default(NONE)
+  refundAmount         Int?              // Montant remboursé (centimes)
+  refundReason         String?           // Raison du remboursement
+  refundedAt           DateTime?         // Date du remboursement
+
+  // Annulation
+  cancelledBy          CancelledBy?      // COACH ou PLAYER
+  cancellationReason   String?           // Raison annulation
+  cancelledAt          DateTime?         // Date annulation
+
+  // Discord
+  discordChannelId String?                             // ID du salon Discord privé coach-joueur
+
+  // Dates
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+
+  // Relations
   packageSession   PackageSession?
+  refundLogs       RefundLog[]
+  transferLogs     TransferLog[]
   announcement     Announcement      @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   coach            coach             @relation(fields: [coachId], references: [id], onDelete: Cascade)
   pack             AnnouncementPack? @relation(fields: [packId], references: [id])
@@ -192,6 +224,8 @@ model Reservation {
   @@index([packId])
   @@index([playerId])
   @@index([coachId])
+  @@index([transferStatus])
+  @@index([startDate])
 }
 
 model CoachPlayerChannel {
@@ -218,11 +252,31 @@ model CoachingPackage {
   announcementId  String
   totalHours      Int
   remainingHours  Int
-  priceCents      Int
-  stripePaymentId String?
+  priceCents      Int              // Prix total payé par le joueur
+  commissionCents Int              @default(0) // Commission Edgemy
+  coachEarningsCents Int           @default(0) // Total que doit recevoir le coach
+  stripeFeeCents  Int              @default(0)
+  edgemyFeeCents  Int              @default(0)
+  serviceFeeCents Int              @default(0)
+  coachNetCents   Int              @default(0)
+  sessionPayoutCents Int           @default(0)
+  sessionsCompletedCount Int       @default(0)
+  sessionsTotalCount Int       @default(0)
+
+  // Paiement Stripe
+  stripePaymentId String?          // ID du PaymentIntent
+
+  // Transfert progressif au coach (par session)
+  finalTransferId       String?
+  finalTransferredAt    DateTime?
+  transferStatus        PackageTransferStatus @default(PENDING)
+
+  // Statut du pack
   status          PackageStatus    @default(ACTIVE)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+
+  // Relations
   announcement    Announcement     @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   coach           coach            @relation(fields: [coachId], references: [id], onDelete: Cascade)
   player          user             @relation(fields: [playerId], references: [id], onDelete: Cascade)
@@ -230,6 +284,7 @@ model CoachingPackage {
 
   @@index([playerId])
   @@index([coachId])
+  @@index([transferStatus])
 }
 
 model PackageSession {
@@ -280,6 +335,38 @@ model CoachNotification {
   @@index([coachId])
   @@index([playerId])
   @@index([coachId, playerId])
+  @@index([createdAt])
+}
+
+model RefundLog {
+  id              String   @id @default(cuid())
+  reservationId   String
+  amount          Int      // Montant remboursé (centimes)
+  reason          String
+  stripeRefundId  String
+  initiatedBy     String?  // ID de l'utilisateur qui a initié le remboursement
+  createdAt       DateTime @default(now())
+
+  reservation     Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
+  @@index([createdAt])
+}
+
+model TransferLog {
+  id              String   @id @default(cuid())
+  reservationId   String
+  amount          Int      // Montant transféré (centimes)
+  stripeTransferId String
+  status          String   // pending, paid, failed, canceled
+  transferType    String   // session_completion, cancellation_compensation, pack_first_half, pack_final_half
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  reservation     Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
+  @@index([status])
   @@index([createdAt])
 }
 
@@ -428,4 +515,28 @@ enum LogSeverity {
   INFO
   WARNING
   ERROR
+}
+
+enum TransferStatus {
+  PENDING        // En attente de la session
+  TRANSFERRED    // Transféré au coach
+  FAILED         // Échec du transfer
+  CANCELLED      // Annulé (remboursement)
+}
+
+enum RefundStatus {
+  NONE           // Pas de remboursement
+  PARTIAL        // Remboursement partiel
+  FULL           // Remboursement total
+}
+
+enum CancelledBy {
+  COACH
+  PLAYER
+}
+
+enum PackageTransferStatus {
+  PENDING              // Aucun transfer
+  PARTIALLY_TRANSFERRED // Au moins une session payée
+  FULLY_TRANSFERRED    // Toutes les sessions payées
 }
