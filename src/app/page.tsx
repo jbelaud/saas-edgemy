@@ -1,21 +1,7 @@
-import { LandingHero } from '@/components/landing/hero-simple';
-import { LandingFeatures } from '@/components/landing/features-simple';
-import { SocialProof } from '@/components/landing/social-proof';
-import { LandingFAQ } from '@/components/landing/faq';
-import { LandingNewsletter } from '@/components/landing/newsletter-simple';
-import { Footer } from '@/components/layout/footer';
+import { redirect } from 'next/navigation';
+import { routing } from '@/i18n/routing';
 
-export default function HomePage() {
-  return (
-    <>
-      <main className="min-h-screen">
-        <LandingHero />
-        <LandingFeatures />
-        <SocialProof />
-        <LandingFAQ />
-        <LandingNewsletter />
-      </main>
-      <Footer />
-    </>
-  );
+export default function RootPage() {
+  // Redirect to default locale
+  redirect(`/${routing.defaultLocale}`);
 }
