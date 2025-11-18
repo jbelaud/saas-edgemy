@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useLocale } from 'next-intl';
-import { Check, Zap, Loader2, Gift, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Check, Zap, Loader2, Gift, CheckCircle2, AlertCircle, Sparkles, CreditCard } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -18,30 +18,50 @@ interface SubscriptionModalCoachProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const MONTHLY_PRICE = 39;
-const YEARLY_PRICE = 399;
-const YEARLY_MONTHLY_EQUIVALENT = (YEARLY_PRICE / 12).toFixed(2);
-const YEARLY_SAVINGS = ((MONTHLY_PRICE * 12 - YEARLY_PRICE) / (MONTHLY_PRICE * 12) * 100).toFixed(0);
-
-const FEATURES = [
-  'Profil public visible',
-  'Réservations illimitées',
-  'Gestion des disponibilités',
-  'Paiements sécurisés via Stripe',
-  'Système de messagerie avec les élèves',
-  'Statistiques et revenus détaillés',
-  'Support prioritaire',
-];
+// Prix des plans
+const PLANS = {
+  PRO: {
+    MONTHLY: 39,
+    YEARLY: 399,
+    features: [
+      'Paiement Stripe automatique',
+      'Discord privé avec élèves',
+      'Sessions illimitées',
+      'Analytics avancées',
+      'Support prioritaire',
+      'Branding personnalisé',
+      'Hébergement replays',
+      'Facturation intégrée',
+    ],
+  },
+  LITE: {
+    MONTHLY: 15,
+    YEARLY: 149,
+    features: [
+      'Paiement externe (USDT, Wise, etc.)',
+      'Discord privé avec élèves',
+      'Sessions illimitées',
+      'Configuration moyens de paiement',
+      'Support standard',
+    ],
+  },
+};
 
 export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModalCoachProps) {
   const locale = useLocale();
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'PRO' | 'LITE'>('PRO');
   const [billingPeriod, setBillingPeriod] = useState<'MONTHLY' | 'YEARLY'>('YEARLY');
   const [promoCode, setPromoCode] = useState('');
   const [promoMessage, setPromoMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const currentPrice = billingPeriod === 'MONTHLY' ? MONTHLY_PRICE : YEARLY_PRICE;
+  const currentPlanPrices = PLANS[selectedPlan];
+  const currentPrice = billingPeriod === 'MONTHLY' ? currentPlanPrices.MONTHLY : currentPlanPrices.YEARLY;
   const currentPeriod = billingPeriod === 'MONTHLY' ? 'mois' : 'an';
+
+  // Calculs pour annuel
+  const yearlyMonthlyEquivalent = (currentPlanPrices.YEARLY / 12).toFixed(2);
+  const yearlySavings = ((currentPlanPrices.MONTHLY * 12 - currentPlanPrices.YEARLY) / (currentPlanPrices.MONTHLY * 12) * 100).toFixed(0);
 
   const handlePromoActivation = async () => {
     if (!promoCode.trim()) return;
@@ -53,7 +73,10 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
       const response = await fetch('/api/subscription/activate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: promoCode.toUpperCase() }),
+        body: JSON.stringify({
+          code: promoCode.toUpperCase(),
+          planKey: selectedPlan, // Envoyer le plan sélectionné
+        }),
       });
 
       const data = await response.json();
@@ -64,7 +87,7 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
 
       setPromoMessage({
         type: 'success',
-        text: '30 jours gratuits activés ! Redirection...'
+        text: `30 jours gratuits activés (Plan ${selectedPlan}) ! Redirection...`
       });
 
       // Rediriger vers le dashboard après 1.5 secondes
@@ -82,13 +105,16 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
   };
 
   const handleSubscribe = async () => {
-    // Continuer vers Stripe pour le paiement
     setIsLoading(true);
     try {
       const response = await fetch('/api/stripe/checkout/subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: billingPeriod, locale }),
+        body: JSON.stringify({
+          plan: billingPeriod,
+          planKey: selectedPlan, // Envoyer le plan (PRO ou LITE)
+          locale
+        }),
       });
 
       if (!response.ok) {
@@ -109,17 +135,50 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900/98 backdrop-blur-xl border-amber-500/20 [&>button]:text-white [&>button]:hover:text-amber-400 [&>button]:opacity-100">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-slate-900/98 backdrop-blur-xl border-amber-500/20 [&>button]:text-white [&>button]:hover:text-amber-400 [&>button]:opacity-100">
         <DialogHeader className="mt-2">
           <DialogTitle className="text-2xl md:text-3xl bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
             Activez votre abonnement coach
           </DialogTitle>
           <DialogDescription className="text-sm md:text-base">
-            Choisissez la formule qui vous convient et commencez à coacher dès aujourd&apos;hui
+            Choisissez le plan et la formule qui vous conviennent
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Sélection du plan PRO / LITE */}
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => setSelectedPlan('PRO')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                selectedPlan === 'PRO'
+                  ? 'border-amber-500 bg-amber-500/10'
+                  : 'border-white/10 hover:border-white/20'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="h-5 w-5 text-amber-400" />
+                <h3 className="font-bold text-lg text-white">Plan PRO</h3>
+              </div>
+              <p className="text-sm text-gray-400">Paiement Stripe automatique</p>
+            </button>
+
+            <button
+              onClick={() => setSelectedPlan('LITE')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                selectedPlan === 'LITE'
+                  ? 'border-blue-500 bg-blue-500/10'
+                  : 'border-white/10 hover:border-white/20'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <CreditCard className="h-5 w-5 text-blue-400" />
+                <h3 className="font-bold text-lg text-white">Plan LITE</h3>
+              </div>
+              <p className="text-sm text-gray-400">Paiement externe (USDT, Wise...)</p>
+            </button>
+          </div>
+
           {/* Toggle Mensuel/Annuel */}
           <div className="flex items-center justify-center gap-3 p-1 bg-slate-800/50 rounded-lg border border-white/10">
             <button
@@ -136,30 +195,42 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
               onClick={() => setBillingPeriod('YEARLY')}
               className={`flex-1 py-3 px-6 rounded-md font-semibold transition-all relative ${
                 billingPeriod === 'YEARLY'
-                  ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-black'
+                  ? selectedPlan === 'PRO'
+                    ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-black'
+                    : 'bg-gradient-to-r from-blue-400 to-blue-600 text-white'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
               Annuel
               <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                Économisez {YEARLY_SAVINGS}%
+                Économisez {yearlySavings}%
               </span>
             </button>
           </div>
 
-          {/* Carte d'abonnement unique */}
-          <GlassCard className="border-amber-500/40 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-8">
+          {/* Carte d'abonnement */}
+          <GlassCard className={`border-2 p-8 ${
+            selectedPlan === 'PRO'
+              ? 'border-amber-500/40 bg-gradient-to-br from-amber-500/10 to-orange-500/10'
+              : 'border-blue-500/40 bg-gradient-to-br from-blue-500/10 to-blue-600/10'
+          }`}>
             <div className="text-center mb-8 h-[140px] flex flex-col justify-center">
               <div className="flex items-baseline justify-center gap-2 mb-2">
-                <span className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                <span className={`text-5xl md:text-6xl font-bold ${
+                  selectedPlan === 'PRO'
+                    ? 'bg-gradient-to-r from-amber-400 to-orange-500'
+                    : 'bg-gradient-to-r from-blue-400 to-blue-600'
+                } bg-clip-text text-transparent`}>
                   {currentPrice}€
                 </span>
                 <span className="text-gray-400 text-lg">/{currentPeriod}</span>
               </div>
               <div className="h-[24px] flex items-center justify-center">
                 {billingPeriod === 'YEARLY' && (
-                  <p className="text-sm text-amber-400 font-medium">
-                    Soit {YEARLY_MONTHLY_EQUIVALENT}€/mois • 2 mois offerts
+                  <p className={`text-sm font-medium ${
+                    selectedPlan === 'PRO' ? 'text-amber-400' : 'text-blue-400'
+                  }`}>
+                    Soit {yearlyMonthlyEquivalent}€/mois • {billingPeriod === 'YEARLY' && selectedPlan === 'PRO' ? '2 mois' : '1 mois'} offert{billingPeriod === 'YEARLY' && selectedPlan === 'PRO' ? 's' : ''}
                   </p>
                 )}
               </div>
@@ -167,9 +238,11 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
             </div>
 
             <ul className="space-y-3 mb-8">
-              {FEATURES.map((feature, idx) => (
+              {currentPlanPrices.features.map((feature, idx) => (
                 <li key={idx} className="flex items-center gap-3">
-                  <Check className="h-5 w-5 text-amber-400 flex-shrink-0" />
+                  <Check className={`h-5 w-5 flex-shrink-0 ${
+                    selectedPlan === 'PRO' ? 'text-amber-400' : 'text-blue-400'
+                  }`} />
                   <span className="text-base text-gray-300">{feature}</span>
                 </li>
               ))}
@@ -189,7 +262,7 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
                   type="text"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
-                  placeholder="EDGEMY-FREE1MONTH"
+                  placeholder="FREE30"
                   className="text-center font-semibold tracking-wider uppercase flex-1"
                   disabled={isLoading}
                 />
@@ -240,7 +313,9 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
             <GradientButton
               variant="amber"
               size="lg"
-              className="w-full text-base h-12"
+              className={`w-full text-base h-12 ${
+                selectedPlan === 'LITE' ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700' : ''
+              }`}
               onClick={handleSubscribe}
               disabled={isLoading}
             >
@@ -252,9 +327,7 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
               ) : (
                 <>
                   <Zap className="mr-2 h-5 w-5" />
-                  {billingPeriod === 'MONTHLY'
-                    ? 'S\'abonner - 39€/mois'
-                    : 'S\'abonner - 399€/an'}
+                  S&apos;abonner au Plan {selectedPlan} - {currentPrice}€/{currentPeriod}
                 </>
               )}
             </GradientButton>

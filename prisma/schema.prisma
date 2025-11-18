@@ -18,6 +18,19 @@ model Subscriber {
   @@map("subscribers")
 }
 
+model Plan {
+  id             String   @id @default(cuid())
+  key            String   @unique  // "PRO", "LITE", "VIP", etc.
+  name           String              // "Edgemy Pro", "Edgemy Lite"
+  monthlyPrice   Int                 // en centimes (ex: 3900 pour 39€)
+  yearlyPrice    Int                 // en centimes (ex: 39900 pour 399€)
+  features       Json?               // Features disponibles pour ce plan
+  requiresStripe Boolean  @default(true) // false pour LITE (pas de Stripe pour paiement joueur)
+  isActive       Boolean  @default(true)  // Permet de désactiver un plan
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
 model account {
   id                    String    @id
   userId                String
@@ -47,6 +60,7 @@ model coach {
   bannerUrl              String?
   avatarUrl              String?
   status                 CoachStatus       @default(INACTIVE)
+  planKey                String            @default("PRO") // Référence à Plan.key (PRO, LITE, etc.)
   stripeAccountId        String?
   stripeCustomerId       String?           // ID client Stripe pour abonnement
   subscriptionId         String?           // ID abonnement Stripe
@@ -58,6 +72,12 @@ model coach {
   freeTrialUsed          Boolean           @default(false) // Code promo déjà utilisé
   freeTrialStartDate     DateTime?         // Date début essai gratuit
   freeTrialEndDate       DateTime?         // Date fin essai gratuit
+  paymentPreferences     String[]          @default([])    // Moyens de paiement préférés pour plan LITE (ex: ["USDT", "Wise", "Revolut"])
+
+  // TVA du coach (pour calcul TVA correcte)
+  isVATRegistered        Boolean           @default(false) // Le coach est-il assujetti à la TVA ?
+  vatNumber              String?           // Numéro de TVA intracommunautaire (si applicable)
+
   badges                 String[]
   formats                String[]
   stakes                 String?
@@ -182,6 +202,11 @@ model Reservation {
   edgemyFeeCents   Int               @default(0)
   serviceFeeCents  Int               @default(0)
   coachNetCents    Int               @default(0)
+
+  // Comptabilité TVA Edgemy
+  edgemyRevenueHT       Int?              // Revenu Edgemy HT (en centimes)
+  edgemyRevenueTVACents Int?              // TVA sur revenu Edgemy (en centimes, 20% en France)
+
   isPackage        Boolean           @default(false)
   sessionsCount    Int?
 
@@ -490,6 +515,8 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+  EXTERNAL_PENDING  // En attente de paiement externe (plan LITE)
+  EXTERNAL_PAID     // Payé en externe, confirmé par le coach
 }
 
 enum ReservationType {

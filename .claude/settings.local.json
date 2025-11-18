@@ -66,7 +66,10 @@
       "Bash(rm:*)",
       "Bash(pnpm remove:*)",
       "Bash(\"c:\\Developpement\\saas-edgemy\\TESTING_GUIDE.md\")",
-      "Bash(del /F /Q \"C:\\Developpement\\saas-edgemy\\node_modules\\.pnpm\\@prisma+client@6.16.3_prism_be57e26363a729e491225dc990c89636\\node_modules\\.prisma\\client\\query_engine-windows.dll.node\" 2)"
+      "Bash(del /F /Q \"C:\\Developpement\\saas-edgemy\\node_modules\\.pnpm\\@prisma+client@6.16.3_prism_be57e26363a729e491225dc990c89636\\node_modules\\.prisma\\client\\query_engine-windows.dll.node\" 2)",
+      "Bash(pnpm run build:next:*)",
+      "Bash(cmd /c taskkill /PID 11772 /F)",
+      "Bash(cmd /c taskkill /PID 26164 /F)"
     ],
     "deny": [],
     "ask": []

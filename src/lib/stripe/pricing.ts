@@ -13,8 +13,8 @@ type PricingConfig = {
 };
 
 const DEFAULT_CONFIG: PricingConfig = {
-  stripePercentFee: 1.5,
-  stripeFixedFeeCents: 25,
+  stripePercentFee: 0.015,  // 1.5% en décimal (pas en pourcentage)
+  stripeFixedFeeCents: 25,  // 0.25€ = 25 centimes
   edgemySessionPercent: 5,
   edgemyPackFixedCents: 300,
   edgemyPackPercent: 2,
@@ -66,6 +66,7 @@ function parseRoundingModeEnv(key: string, fallback: RoundingMode): RoundingMode
 
 function getConfig(): PricingConfig {
   return {
+    // stripePercentFee doit être en décimal (0.015 pour 1.5%), pas en pourcentage
     stripePercentFee: parseNumberEnv('STRIPE_PERCENT_FEE', DEFAULT_CONFIG.stripePercentFee),
     stripeFixedFeeCents: parseNumberEnv('STRIPE_FIXED_FEE_CENTS', DEFAULT_CONFIG.stripeFixedFeeCents),
     edgemySessionPercent: parseNumberEnv('EDGEMY_SESSION_PERCENT', DEFAULT_CONFIG.edgemySessionPercent),
@@ -77,9 +78,11 @@ function getConfig(): PricingConfig {
 }
 
 function computeStripeFee(priceCents: number, config: PricingConfig): number {
-  const percentDecimal = config.stripePercentFee / 100;
-  const fee = priceCents * percentDecimal + config.stripeFixedFeeCents;
-  return applyRounding(fee, config.roundingMode);
+  // stripePercentFee est déjà en décimal (0.015 pour 1.5%)
+  const percentFee = priceCents * config.stripePercentFee;
+  const fixedFee = config.stripeFixedFeeCents;
+  const totalFee = percentFee + fixedFee;
+  return applyRounding(totalFee, config.roundingMode);
 }
 
 function computeSessionEdgemyFee(priceCents: number, config: PricingConfig): number {
@@ -113,6 +116,9 @@ export interface PricingBreakdownBase {
   totalCustomerCents: number;
   currency: string;
   roundingMode: RoundingMode;
+  // Champs comptables TVA
+  edgemyRevenueHT: number;      // Revenu Edgemy HT (= edgemyFeeCents)
+  edgemyRevenueTVACents: number; // TVA sur revenu Edgemy (20% en France)
 }
 
 export interface SessionPricingBreakdown extends PricingBreakdownBase {
@@ -151,6 +157,11 @@ export function calculateForSession(priceCents: number): SessionPricingBreakdown
   const actualStripeFee = computeStripeFee(totalCustomerCents, config);
   const edgemyFeeCents = Math.max(0, serviceFeeCents - actualStripeFee);
 
+  // Calcul TVA Edgemy (20% en France)
+  const VAT_RATE_FRANCE = 0.20;
+  const edgemyRevenueHT = edgemyFeeCents;
+  const edgemyRevenueTVACents = Math.round(edgemyRevenueHT * VAT_RATE_FRANCE);
+
   return {
     type: 'SINGLE',
     coachNetCents,
@@ -160,6 +171,8 @@ export function calculateForSession(priceCents: number): SessionPricingBreakdown
     totalCustomerCents,
     currency: config.currency,
     roundingMode: config.roundingMode,
+    edgemyRevenueHT,
+    edgemyRevenueTVACents,
   };
 }
 
@@ -178,6 +191,11 @@ export function calculateForPack(priceCents: number, sessionsCount: number): Pac
   const actualStripeFee = computeStripeFee(totalCustomerCents, config);
   const edgemyFeeCents = Math.max(0, serviceFeeCents - actualStripeFee);
 
+  // Calcul TVA Edgemy (20% en France)
+  const VAT_RATE_FRANCE = 0.20;
+  const edgemyRevenueHT = edgemyFeeCents;
+  const edgemyRevenueTVACents = Math.round(edgemyRevenueHT * VAT_RATE_FRANCE);
+
   const sessionPayoutCents = Math.floor(coachNetCents / validSessionsCount);
   const sessionPayoutRemainderCents = coachNetCents - sessionPayoutCents * validSessionsCount;
 
@@ -193,6 +211,8 @@ export function calculateForPack(priceCents: number, sessionsCount: number): Pac
     sessionPayoutRemainderCents,
     currency: config.currency,
     roundingMode: config.roundingMode,
+    edgemyRevenueHT,
+    edgemyRevenueTVACents,
   };
 }
 

@@ -238,8 +238,8 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
     setIsLoading(true);
 
     try {
-      // Créer la réservation
-      const response = await fetch('/api/reservations', {
+      // Appeler l'API centralisée de réservation
+      const response = await fetch('/api/reservations/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,27 +261,26 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
       const data = await response.json();
       console.log('Réservation créée:', data);
 
-      // Récupérer les informations du coach pour le paiement
-      const coachResponse = await fetch(`/api/coach/${coachId}`);
-      let coachName = 'Coach';
-      if (coachResponse.ok) {
-        const coachData = await coachResponse.json();
-        coachName = coachData.name || 'Coach';
+      // Router selon le mode retourné par l'API
+      if (data.mode === 'PRO') {
+        // Flux PRO : Redirection vers Stripe
+        await redirectToCheckout({
+          reservationId: data.reservationId,
+          coachId: data.coachId,
+          coachName: data.coachName,
+          playerEmail: data.playerEmail,
+          price: data.price,
+          locale,
+          type: data.type,
+        });
+        // La redirection Stripe prend le relais
+      } else if (data.mode === 'LITE') {
+        // Flux LITE : Redirection vers page de confirmation
+        router.push(`/${locale}/reservation-lite/${data.reservationId}`);
+      } else {
+        // Fallback safe
+        throw new Error('Mode de réservation non supporté');
       }
-
-      // Rediriger vers Stripe pour le paiement
-      await redirectToCheckout({
-        reservationId: data.id,
-        coachId,
-        coachName,
-        playerEmail: session.user.email,
-        price: displayPrice,
-        locale,
-        type: bookingType === 'pack' ? 'PACK' : 'SINGLE',
-      });
-
-      // Note: La redirection vers Stripe prend le relais ici
-      // Le retour se fera via les URLs success/cancel configurées dans create-session
     } catch (error) {
       console.error('Erreur réservation:', error);
       alert(error instanceof Error ? error.message : 'Une erreur est survenue. Veuillez réessayer.');

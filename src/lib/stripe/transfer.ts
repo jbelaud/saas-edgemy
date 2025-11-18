@@ -45,12 +45,42 @@ export async function createStripeTransfer(
   const { amount, destinationAccountId, sourceTransaction, reservationId, transferType, metadata } = params;
 
   try {
-    // Créer le transfer Stripe
+    // 🔐 SÉCURITÉ : Vérifier que le montant est positif
+    if (amount <= 0) {
+      throw new Error(`Montant de transfer invalide: ${amount} centimes`);
+    }
+
+    // 🔐 SÉCURITÉ : Vérifier que le compte Connect est valide
+    if (!destinationAccountId || destinationAccountId.startsWith('acct_mock_')) {
+      throw new Error(`Compte Stripe Connect invalide: ${destinationAccountId}`);
+    }
+
+    // Si sourceTransaction commence par 'pi_', c'est un PaymentIntent
+    // On doit récupérer le Charge ID associé
+    let chargeId = sourceTransaction;
+
+    if (sourceTransaction.startsWith('pi_')) {
+      console.log(`🔄 Récupération du Charge ID pour PaymentIntent: ${sourceTransaction}`);
+
+      const paymentIntent = await stripe.paymentIntents.retrieve(sourceTransaction);
+
+      if (paymentIntent.latest_charge) {
+        chargeId = typeof paymentIntent.latest_charge === 'string'
+          ? paymentIntent.latest_charge
+          : paymentIntent.latest_charge.id;
+
+        console.log(`✅ Charge ID trouvé: ${chargeId}`);
+      } else {
+        throw new Error(`Aucun charge trouvé pour le PaymentIntent ${sourceTransaction}`);
+      }
+    }
+
+    // Créer le transfer Stripe avec le Charge ID
     const transfer = await stripe.transfers.create({
       amount,
       currency: 'eur',
       destination: destinationAccountId,
-      source_transaction: sourceTransaction,
+      source_transaction: chargeId,
       metadata: {
         reservationId,
         transferType,

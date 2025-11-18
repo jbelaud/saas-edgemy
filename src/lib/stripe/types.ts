@@ -9,15 +9,29 @@ export type SubscriptionPlan = 'MONTHLY' | 'YEARLY';
 export interface StripeConfig {
   // Plans d'abonnement coach
   plans: {
-    monthly: {
-      priceId: string;
-      amount: number; // en centimes
-      name: string;
+    PRO: {
+      monthly: {
+        priceId: string;
+        amount: number; // en centimes
+        name: string;
+      };
+      yearly: {
+        priceId: string;
+        amount: number; // en centimes
+        name: string;
+      };
     };
-    yearly: {
-      priceId: string;
-      amount: number; // en centimes
-      name: string;
+    LITE: {
+      monthly: {
+        priceId: string;
+        amount: number; // en centimes
+        name: string;
+      };
+      yearly: {
+        priceId: string;
+        amount: number; // en centimes
+        name: string;
+      };
     };
   };
 }
@@ -25,15 +39,29 @@ export interface StripeConfig {
 // Configuration Stripe (les Price IDs seront créés dans Stripe Dashboard)
 export const STRIPE_CONFIG: StripeConfig = {
   plans: {
-    monthly: {
-      priceId: process.env.STRIPE_COACH_MONTHLY_PRICE_ID || '',
-      amount: 3900, // 39€
-      name: 'Abonnement Coach - Mensuel',
+    PRO: {
+      monthly: {
+        priceId: process.env.STRIPE_COACH_MONTHLY_PRICE_ID || '',
+        amount: 3900, // 39€
+        name: 'Edgemy Pro - Mensuel',
+      },
+      yearly: {
+        priceId: process.env.STRIPE_COACH_YEARLY_PRICE_ID || '',
+        amount: 39900, // 399€
+        name: 'Edgemy Pro - Annuel',
+      },
     },
-    yearly: {
-      priceId: process.env.STRIPE_COACH_YEARLY_PRICE_ID || '',
-      amount: 39900, // 399€
-      name: 'Abonnement Coach - Annuel',
+    LITE: {
+      monthly: {
+        priceId: process.env.STRIPE_COACH_LITE_MONTHLY_PRICE_ID || '',
+        amount: 1500, // 15€
+        name: 'Edgemy Lite - Mensuel',
+      },
+      yearly: {
+        priceId: process.env.STRIPE_COACH_LITE_YEARLY_PRICE_ID || '',
+        amount: 14900, // 149€
+        name: 'Edgemy Lite - Annuel',
+      },
     },
   },
 };

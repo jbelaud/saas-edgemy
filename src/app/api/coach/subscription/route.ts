@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
         id: true,
         subscriptionStatus: true,
         subscriptionPlan: true,
+        planKey: true,
         currentPeriodEnd: true,
         subscriptionId: true,
       },
@@ -69,6 +70,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       subscriptionStatus: coach.subscriptionStatus,
       subscriptionPlan: coach.subscriptionPlan,
+      planKey: coach.planKey,
       currentPeriodEnd: currentPeriodEnd,
       subscriptionId: coach.subscriptionId,
       cancelAtPeriodEnd,

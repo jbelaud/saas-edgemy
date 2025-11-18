@@ -22,6 +22,7 @@ export default function CoachAnnouncementsPage() {
     isOnboarded: boolean;
     isDiscordConnected: boolean;
     stripeAccountId: string | null;
+    planKey?: 'PRO' | 'LITE' | null;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -30,6 +31,8 @@ export default function CoachAnnouncementsPage() {
   const {
     hasActiveSubscription,
     isStripeConnected,
+    isDiscordConnected,
+    isLitePlan,
     checkAccess,
     blockReason,
     isGuardOpen,
@@ -72,7 +75,8 @@ export default function CoachAnnouncementsPage() {
 
   const handleCreateAnnouncement = () => {
     // Vérifier l'accès avant d'ouvrir la modal
-    // Discord est requis pour créer les salons privés avec les élèves
+    // LITE: subscription + discord (pas besoin de Stripe)
+    // PRO: subscription + stripe + discord
     if (checkAccess({ subscription: true, stripe: true, discord: true })) {
       setIsCreateModalOpen(true);
     }
@@ -133,7 +137,7 @@ export default function CoachAnnouncementsPage() {
         <DashboardAnnouncements coach={coach} key={refreshKey} />
       </SubscriptionGate>
 
-      {hasActiveSubscription && isStripeConnected && (
+      {hasActiveSubscription && (isLitePlan || isStripeConnected) && isDiscordConnected && (
         <CreateAnnouncementModalV2
           open={isCreateModalOpen}
           onOpenChange={setIsCreateModalOpen}

@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { code } = await request.json();
+    const { code, planKey } = await request.json();
 
     // Vérifier que le code est fourni
     if (!code || typeof code !== 'string') {
@@ -37,6 +37,9 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // Valider le planKey (optionnel, par défaut PRO)
+    const selectedPlan = planKey && ['PRO', 'LITE'].includes(planKey) ? planKey : 'PRO';
 
     // Récupérer le profil coach
     const coach = await prisma.coach.findUnique({
@@ -63,10 +66,11 @@ export async function POST(request: Request) {
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 30); // 30 jours
 
-    // Activer l'essai gratuit
+    // Activer l'essai gratuit avec le plan sélectionné
     await prisma.coach.update({
       where: { id: coach.id },
       data: {
+        planKey: selectedPlan, // Définir le plan (PRO ou LITE)
         subscriptionPlan: 'FREE_TRIAL',
         subscriptionStatus: 'ACTIVE',
         freeTrialUsed: true,
@@ -76,12 +80,13 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log(`✅ Essai gratuit activé pour le coach ${coach.id} jusqu'au ${trialEndDate.toISOString()}`);
+    console.log(`✅ Essai gratuit ${selectedPlan} activé pour le coach ${coach.id} jusqu'au ${trialEndDate.toISOString()}`);
 
     return NextResponse.json({
       success: true,
-      message: 'Essai gratuit de 30 jours activé avec succès',
+      message: `Essai gratuit de 30 jours activé avec succès (Plan ${selectedPlan})`,
       endDate: trialEndDate.toISOString(),
+      planKey: selectedPlan,
     });
 
   } catch (error) {

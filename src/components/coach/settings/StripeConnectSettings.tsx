@@ -19,6 +19,7 @@ interface StripeStatus {
   cancelAtPeriodEnd: boolean;
   currentPeriodEnd: string | null;
   subscriptionStatus: string | null;
+  planKey?: 'PRO' | 'LITE' | null;
   requirements?: {
     currentlyDue?: string[];
     eventuallyDue?: string[];
@@ -103,6 +104,11 @@ export function StripeConnectSettings() {
         <Loader2 className="h-8 w-8 animate-spin text-sky-400" />
       </div>
     );
+  }
+
+  // Si le coach a un plan LITE, ne pas afficher la section Stripe Connect
+  if (status?.planKey === 'LITE') {
+    return null;
   }
 
   const isFullyConnected =

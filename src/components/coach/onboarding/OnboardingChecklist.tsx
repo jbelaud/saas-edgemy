@@ -9,6 +9,7 @@ interface OnboardingChecklistProps {
   hasActiveSubscription: boolean;
   isStripeConnected: boolean;
   isDiscordConnected: boolean;
+  planKey?: 'PRO' | 'LITE' | null;
   onConnectStripe: () => void;
   onConnectDiscord: () => void;
   onCreateAnnouncement: () => void;
@@ -27,11 +28,14 @@ export function OnboardingChecklist({
   hasActiveSubscription,
   isStripeConnected,
   isDiscordConnected,
+  planKey,
   onConnectStripe,
   onConnectDiscord,
   onCreateAnnouncement,
 }: OnboardingChecklistProps) {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+
+  const isLitePlan = planKey === 'LITE';
 
   const items: ChecklistItem[] = [
     {
@@ -44,14 +48,15 @@ export function OnboardingChecklist({
       action: hasActiveSubscription ? undefined : () => setIsSubscriptionModalOpen(true),
       actionLabel: 'Activer mon abonnement',
     },
-    {
+    // Stripe Connect seulement pour plan PRO
+    ...(!isLitePlan ? [{
       id: 'stripe',
       label: 'Activer mes paiements',
-      status: !hasActiveSubscription
+      status: (!hasActiveSubscription
         ? 'blocked'
         : isStripeConnected
         ? 'completed'
-        : 'pending',
+        : 'pending') as 'completed' | 'pending' | 'blocked',
       description: !hasActiveSubscription
         ? 'Disponible après activation de l\'abonnement'
         : isStripeConnected
@@ -59,7 +64,7 @@ export function OnboardingChecklist({
         : 'Connectez votre compte Stripe pour recevoir vos paiements',
       action: hasActiveSubscription && !isStripeConnected ? onConnectStripe : undefined,
       actionLabel: 'Activer mes paiements',
-    },
+    }] : []),
     {
       id: 'discord',
       label: 'Connecter mon Discord',
@@ -80,22 +85,26 @@ export function OnboardingChecklist({
       id: 'announcement',
       label: 'Créer ma première annonce',
       status:
-        !hasActiveSubscription || !isStripeConnected
+        !hasActiveSubscription || (!isLitePlan && !isStripeConnected)
           ? 'blocked'
           : 'pending',
       description:
-        !hasActiveSubscription || !isStripeConnected
+        !hasActiveSubscription || (!isLitePlan && !isStripeConnected)
           ? 'Disponible après validation des étapes précédentes'
           : 'Créez votre première annonce pour commencer à coacher',
       action:
-        hasActiveSubscription && isStripeConnected
+        hasActiveSubscription && (isLitePlan || isStripeConnected)
           ? onCreateAnnouncement
           : undefined,
       actionLabel: 'Créer ma première annonce',
     },
   ];
 
-  const allCompleted = items.slice(0, 3).every((item) => item.status === 'completed');
+  // Pour LITE : allCompleted = subscription + discord
+  // Pour PRO : allCompleted = subscription + stripe + discord
+  const allCompleted = isLitePlan
+    ? items.slice(0, 2).every((item) => item.status === 'completed')  // subscription + discord
+    : items.slice(0, 3).every((item) => item.status === 'completed'); // subscription + stripe + discord
 
   const getIcon = (status: 'completed' | 'pending' | 'blocked') => {
     switch (status) {

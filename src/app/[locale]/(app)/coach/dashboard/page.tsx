@@ -40,6 +40,8 @@ export default function CoachDashboardPage() {
     hasActiveSubscription,
     isStripeConnected,
     isDiscordConnected,
+    isLitePlan,
+    checkAccess,
     blockReason,
     isGuardOpen,
     closeGuard,
@@ -80,56 +82,46 @@ export default function CoachDashboardPage() {
     }
   }, [session, router, isSettingUp]);
 
-  // Rafraîchir les données après un paiement réussi
+  // Confirmer l'abonnement immédiatement au retour de Stripe
   useEffect(() => {
     const subscriptionStatus = searchParams.get('subscription');
+    const sessionId = searchParams.get('session_id');
 
-    if (subscriptionStatus === 'success' && !isLoading && data) {
+    if (subscriptionStatus === 'success' && sessionId && !isLoading && data) {
       // Nettoyer l'URL immédiatement
       const url = new URL(window.location.href);
       url.searchParams.delete('subscription');
+      url.searchParams.delete('session_id');
       window.history.replaceState({}, '', url.toString());
 
-      // Vérifier périodiquement si l'abonnement est activé (max 10 secondes)
-      let attempts = 0;
-      const maxAttempts = 20; // 20 tentatives x 500ms = 10 secondes max
-
-      const checkSubscription = async () => {
+      // Confirmer l'abonnement immédiatement via l'API
+      const confirmSubscription = async () => {
         try {
-          const response = await fetch('/api/coach/dashboard');
-          if (response.ok) {
-            const dashboardData = await response.json();
+          const response = await fetch('/api/subscription/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId }),
+          });
 
-            // Si l'abonnement est maintenant actif, recharger une seule fois
-            if (dashboardData.coach.subscriptionStatus === 'ACTIVE') {
-              window.location.reload();
-              return true;
-            }
+          if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Abonnement confirmé:', result.message);
+            // Recharger la page pour afficher le nouveau statut
+            window.location.reload();
+          } else {
+            const error = await response.json();
+            console.error('Erreur confirmation abonnement:', error);
+            // Même en cas d'erreur, recharger pour laisser le webhook gérer
+            setTimeout(() => window.location.reload(), 2000);
           }
-          return false;
         } catch (error) {
-          console.error('Erreur vérification abonnement:', error);
-          return false;
+          console.error('Erreur lors de la confirmation:', error);
+          // En cas d'erreur, recharger pour laisser le webhook gérer
+          setTimeout(() => window.location.reload(), 2000);
         }
       };
 
-      const intervalId = setInterval(async () => {
-        attempts++;
-
-        const isActive = await checkSubscription();
-
-        if (isActive || attempts >= maxAttempts) {
-          clearInterval(intervalId);
-
-          // Si après 10 secondes l'abonnement n'est toujours pas actif, recharger quand même
-          if (attempts >= maxAttempts && !isActive) {
-            window.location.reload();
-          }
-        }
-      }, 500);
-
-      // Cleanup au démontage du composant
-      return () => clearInterval(intervalId);
+      confirmSubscription();
     }
   }, [searchParams, isLoading, data]);
 
@@ -187,7 +179,9 @@ export default function CoachDashboardPage() {
 
   const handleCreateAnnouncement = () => {
     // Vérifier l'accès avant d'ouvrir la modal
-    if (hasActiveSubscription && isStripeConnected && isDiscordConnected) {
+    // LITE: subscription + discord (pas besoin de Stripe)
+    // PRO: subscription + stripe + discord
+    if (checkAccess({ subscription: true, stripe: true, discord: true })) {
       setIsCreateModalOpen(true);
     }
   };
@@ -239,6 +233,7 @@ export default function CoachDashboardPage() {
             hasActiveSubscription={hasActiveSubscription ?? false}
             isStripeConnected={isStripeConnected ?? false}
             isDiscordConnected={isDiscordConnected ?? false}
+            planKey={coach.planKey}
             onConnectStripe={handleConnectStripe}
             onConnectDiscord={handleConnectDiscord}
             onCreateAnnouncement={handleCreateAnnouncement}
@@ -327,7 +322,7 @@ export default function CoachDashboardPage() {
       </Tabs>
 
       {/* Modal de création d'annonce */}
-      {hasActiveSubscription && isStripeConnected && isDiscordConnected && (
+      {hasActiveSubscription && (isLitePlan || isStripeConnected) && isDiscordConnected && (
         <CreateAnnouncementModalV2
           open={isCreateModalOpen}
           onOpenChange={setIsCreateModalOpen}

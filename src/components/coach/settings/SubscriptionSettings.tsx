@@ -20,6 +20,7 @@ import {
 interface SubscriptionData {
   subscriptionStatus: string | null;
   subscriptionPlan: string | null;
+  planKey?: 'PRO' | 'LITE' | null;
   currentPeriodEnd: string | null;
   subscriptionId: string | null;
   cancelAtPeriodEnd?: boolean;
@@ -35,6 +36,17 @@ export function SubscriptionSettings() {
   const [showChangeDialog, setShowChangeDialog] = useState(false);
   const [targetPlan, setTargetPlan] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY');
   const [alertMessage, setAlertMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Helper pour obtenir le prix selon le planKey
+  const getPrice = (planKey: 'PRO' | 'LITE' | null | undefined, period: 'MONTHLY' | 'YEARLY' | string | null) => {
+    const isPro = !planKey || planKey === 'PRO'; // Par défaut PRO si non spécifié
+    if (period === 'MONTHLY') {
+      return isPro ? '39€/mois' : '15€/mois';
+    } else if (period === 'YEARLY') {
+      return isPro ? '399€/an' : '149€/an';
+    }
+    return '';
+  };
 
   useEffect(() => {
     fetchSubscription();
@@ -264,10 +276,15 @@ export function SubscriptionSettings() {
         {subscription?.subscriptionPlan && (
           <div className="flex items-center gap-2 text-sm text-gray-400">
             <span>Plan actuel:</span>
+            <Badge variant="outline" className={`${
+              subscription.planKey === 'LITE' ? 'border-blue-500/50 text-blue-300' : 'border-amber-500/50 text-amber-300'
+            }`}>
+              {subscription.planKey || 'PRO'}
+            </Badge>
             {getPlanBadge(subscription.subscriptionPlan)}
             {subscription.subscriptionPlan !== 'FREE_TRIAL' && (
               <span>
-                {subscription.subscriptionPlan === 'MONTHLY' ? '39€/mois' : '399€/an'}
+                {getPrice(subscription.planKey, subscription.subscriptionPlan)}
               </span>
             )}
           </div>
@@ -352,7 +369,12 @@ export function SubscriptionSettings() {
                 </span>
                 {' '}pour{' '}
                 <span className="font-semibold text-white">
-                  {subscription.subscriptionPlan === 'MONTHLY' ? '39€' : '399€'}
+                  {(() => {
+                    const isPro = !subscription.planKey || subscription.planKey === 'PRO';
+                    return subscription.subscriptionPlan === 'MONTHLY'
+                      ? (isPro ? '39€' : '15€')
+                      : (isPro ? '399€' : '149€');
+                  })()}
                 </span>
                 . Vous pouvez annuler à tout moment.
               </p>
@@ -397,12 +419,19 @@ export function SubscriptionSettings() {
                     Changer de plan
                   </h4>
                   <p className="text-xs text-gray-400 mb-3">
-                    {subscription.subscriptionPlan === 'MONTHLY'
-                      ? 'Passez à l\'annuel et économisez 2 mois (399€/an au lieu de 468€/an)'
-                      : canDowngradeToMonthly
-                        ? 'Revenez au mensuel pour plus de flexibilité (39€/mois)'
-                        : `Vous pourrez passer au mensuel dans ${daysUntilEligible} jour${daysUntilEligible > 1 ? 's' : ''} (1 mois avant la fin de votre abonnement annuel)`
-                    }
+                    {(() => {
+                      const isPro = !subscription.planKey || subscription.planKey === 'PRO';
+                      if (subscription.subscriptionPlan === 'MONTHLY') {
+                        const yearlyPrice = isPro ? '399€' : '149€';
+                        const monthlyTotal = isPro ? '468€' : '180€';
+                        return `Passez à l'annuel et économisez ${isPro ? '2 mois' : '1 mois'} (${yearlyPrice}/an au lieu de ${monthlyTotal}/an)`;
+                      } else if (canDowngradeToMonthly) {
+                        const monthlyPrice = isPro ? '39€' : '15€';
+                        return `Revenez au mensuel pour plus de flexibilité (${monthlyPrice}/mois)`;
+                      } else {
+                        return `Vous pourrez passer au mensuel dans ${daysUntilEligible} jour${daysUntilEligible > 1 ? 's' : ''} (1 mois avant la fin de votre abonnement annuel)`;
+                      }
+                    })()}
                   </p>
                   <Button
                     onClick={() => {

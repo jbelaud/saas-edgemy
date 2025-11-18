@@ -7,6 +7,7 @@ import { createOrReuseDiscordChannel, DiscordChannelError } from '@/lib/discord/
 import type { DiscordChannelReservation } from '@/lib/discord/channel';
 import { sendSessionReminderDM } from '@/lib/discord/messages';
 import { ensureMemberRole } from '@/lib/discord/roles';
+import { checkLowMargin, alertPaymentFailure, alertSubscriptionPastDue } from '@/lib/stripe/alerts';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -202,6 +203,11 @@ export async function POST(req: Request) {
               ? session.payment_intent
               : session.payment_intent?.id ?? null;
 
+          // Calcul TVA Edgemy (20% en France)
+          const VAT_RATE_FRANCE = 0.20;
+          const edgemyRevenueHT = edgemyFeeCents;
+          const edgemyRevenueTVACents = Math.round(edgemyRevenueHT * VAT_RATE_FRANCE);
+
           const reservationUpdateData: Prisma.ReservationUncheckedUpdateInput = {
             paymentStatus: 'PAID',
             status: 'CONFIRMED',
@@ -213,6 +219,8 @@ export async function POST(req: Request) {
             stripeFeeCents,
             edgemyFeeCents,
             serviceFeeCents,
+            edgemyRevenueHT,
+            edgemyRevenueTVACents,
             isPackage,
             sessionsCount: isPackage ? sessionsCountValue : null,
             transferStatus: 'PENDING',
@@ -222,6 +230,9 @@ export async function POST(req: Request) {
             where: { id: reservationId },
             data: reservationUpdateData,
           });
+
+          // 🔐 Vérifier et alerter si marge anormale
+          await checkLowMargin(reservationId, edgemyFeeCents, totalCustomerCents);
 
           console.log(`✅ Réservation ${reservationId} marquée comme PAID et CONFIRMED`);
           console.log(`⏳ transferStatus: PENDING - Le transfer sera fait via /api/reservations/${reservationId}/complete`);
@@ -497,6 +508,7 @@ export async function POST(req: Request) {
         }
 
         const planType = subscription.metadata?.plan as 'MONTHLY' | 'YEARLY' || 'MONTHLY';
+        const planKey = subscription.metadata?.planKey as 'PRO' | 'LITE' || 'PRO';
         const status = subscription.status;
 
         // Mapper les statuts Stripe vers nos statuts
@@ -508,16 +520,16 @@ export async function POST(req: Request) {
           case 'past_due':
             subscriptionStatus = 'PAST_DUE';
             break;
-          case 'canceled':
-          case 'unpaid':
-            subscriptionStatus = 'CANCELED';
-            break;
           case 'incomplete':
           case 'incomplete_expired':
             subscriptionStatus = 'INCOMPLETE';
             break;
           case 'trialing':
             subscriptionStatus = 'TRIALING';
+            break;
+          case 'canceled':
+          case 'unpaid':
+            subscriptionStatus = 'CANCELED';
             break;
           default:
             subscriptionStatus = 'ACTIVE';
@@ -531,11 +543,12 @@ export async function POST(req: Request) {
             subscriptionId: subscription.id,
             subscriptionStatus,
             subscriptionPlan: planType,
+            planKey: planKey, // Ajouter le planKey (PRO ou LITE)
             currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : undefined,
           },
         });
 
-        console.log(`✅ Abonnement coach mis à jour: ${coachId} - ${subscriptionStatus} (${planType})`);
+        console.log(`✅ Abonnement coach mis à jour: ${coachId} - ${subscriptionStatus} (Plan ${planKey} ${planType})`);
         break;
       }
 

@@ -1,9 +1,6 @@
 'use client';
 
-import { useLocale } from 'next-intl';
-
 export function CTASection() {
-  const locale = useLocale();
 
   const handlePlayerSignup = () => {
     const event = new CustomEvent('openSignupModal');

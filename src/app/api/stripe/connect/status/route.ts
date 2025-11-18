@@ -64,6 +64,7 @@ export async function GET() {
         cancelAtPeriodEnd,
         currentPeriodEnd: coach.currentPeriodEnd?.toISOString() || null,
         subscriptionStatus: coach.subscriptionStatus,
+        planKey: coach.planKey,
       });
     }
 
@@ -81,6 +82,7 @@ export async function GET() {
         cancelAtPeriodEnd,
         currentPeriodEnd: coach.currentPeriodEnd?.toISOString() || null,
         subscriptionStatus: coach.subscriptionStatus,
+        planKey: coach.planKey,
       });
     }
 
@@ -98,6 +100,7 @@ export async function GET() {
       cancelAtPeriodEnd,
       currentPeriodEnd: coach.currentPeriodEnd?.toISOString() || null,
       subscriptionStatus: coach.subscriptionStatus,
+      planKey: coach.planKey,
       requirements: {
         currentlyDue: account.requirements?.currently_due || [],
         eventuallyDue: account.requirements?.eventually_due || [],

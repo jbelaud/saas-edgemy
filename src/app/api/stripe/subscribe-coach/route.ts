@@ -24,7 +24,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const { plan } = await req.json() as { plan: SubscriptionPlan };
+    const { plan, planKey } = await req.json() as {
+      plan: SubscriptionPlan;
+      planKey?: 'PRO' | 'LITE';
+    };
 
     // Validation
     if (!plan || !['MONTHLY', 'YEARLY'].includes(plan)) {
@@ -33,6 +36,8 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    const selectedPlanKey = planKey && ['PRO', 'LITE'].includes(planKey) ? planKey : 'PRO';
 
     // Récupérer le coach
     const coach = await prisma.coach.findUnique({
@@ -55,13 +60,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const planConfig = plan === 'MONTHLY' ? STRIPE_CONFIG.plans.monthly : STRIPE_CONFIG.plans.yearly;
+    // Récupérer la config du plan (PRO ou LITE)
+    const planTypeConfig = STRIPE_CONFIG.plans[selectedPlanKey];
+    const planConfig = plan === 'MONTHLY' ? planTypeConfig.monthly : planTypeConfig.yearly;
 
     // Vérifier que les Price IDs sont configurés
     if (!planConfig.priceId) {
-      console.error(`Price ID manquant pour le plan ${plan}`);
+      console.error(`Price ID manquant pour le plan ${selectedPlanKey} ${plan}`);
       return NextResponse.json(
-        { error: 'Configuration Stripe incomplète. Contactez l\'administrateur.' },
+        { error: `Configuration Stripe incomplète pour le plan ${selectedPlanKey}. Contactez l\'administrateur.` },
         { status: 500 }
       );
     }
@@ -106,10 +113,19 @@ export async function POST(req: Request) {
         coachId: coach.id,
         userId: session.user.id,
         plan,
+        planKey: selectedPlanKey,
+      },
+      subscription_data: {
+        metadata: {
+          coachId: coach.id,
+          userId: session.user.id,
+          plan,
+          planKey: selectedPlanKey,
+        },
       },
     });
 
-    console.log(`✅ Session d'abonnement créée pour coach ${coach.id} (${plan})`);
+    console.log(`✅ Session d'abonnement ${selectedPlanKey} créée pour coach ${coach.id} (${plan})`);
 
     return NextResponse.json({
       url: checkoutSession.url,

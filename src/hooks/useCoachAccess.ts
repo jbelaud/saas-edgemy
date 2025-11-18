@@ -8,6 +8,7 @@ interface CoachData {
   isOnboarded: boolean;
   isDiscordConnected: boolean;
   stripeAccountId: string | null;
+  planKey?: 'PRO' | 'LITE' | null;
 }
 
 export function useCoachAccess(coach: CoachData | null) {
@@ -15,6 +16,7 @@ export function useCoachAccess(coach: CoachData | null) {
   const [isGuardOpen, setIsGuardOpen] = useState(false);
 
   const hasActiveSubscription = coach?.subscriptionStatus === 'ACTIVE';
+  const isLitePlan = coach?.planKey === 'LITE';
   // Un coach est considéré comme connecté à Stripe s'il a un compte Stripe (même en cours de configuration)
   // Les comptes mock (mode dev) ne comptent pas
   const isStripeConnected = Boolean(
@@ -35,7 +37,8 @@ export function useCoachAccess(coach: CoachData | null) {
         return false;
       }
 
-      if (requiredFeatures.stripe && !isStripeConnected) {
+      // Pour les plans LITE, Stripe n'est pas requis
+      if (requiredFeatures.stripe && !isLitePlan && !isStripeConnected) {
         setBlockReason('stripe_not_connected');
         setIsGuardOpen(true);
         return false;
@@ -49,7 +52,7 @@ export function useCoachAccess(coach: CoachData | null) {
 
       return true;
     },
-    [hasActiveSubscription, isStripeConnected, isDiscordConnected]
+    [hasActiveSubscription, isLitePlan, isStripeConnected, isDiscordConnected]
   );
 
   const closeGuard = useCallback(() => {
@@ -61,6 +64,7 @@ export function useCoachAccess(coach: CoachData | null) {
     hasActiveSubscription,
     isStripeConnected,
     isDiscordConnected,
+    isLitePlan,
     checkAccess,
     blockReason,
     isGuardOpen,
