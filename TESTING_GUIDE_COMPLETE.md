@@ -1,7 +1,7 @@
 # 🧪 GUIDE DE TEST COMPLET PRE-PRODUCTION STRIPE
 
 **Version** : 2.0 (avec TVA et alertes)
-**Date** : 20 janvier 2025
+**Date** : 20 novembre 2025
 
 Ce guide vous permet de vérifier que l'intégration Stripe fonctionne correctement **avant le déploiement en production**.
 

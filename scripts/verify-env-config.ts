@@ -4,6 +4,13 @@
  * Vérifie que toutes les variables Stripe nécessaires sont configurées
  */
 
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
+// Charger les variables d'environnement depuis .env.local en priorité, puis .env
+config({ path: resolve(process.cwd(), '.env.local') });
+config({ path: resolve(process.cwd(), '.env') });
+
 console.log('🔍 VÉRIFICATION VARIABLES D\'ENVIRONNEMENT\n');
 console.log('═'.repeat(80));
 

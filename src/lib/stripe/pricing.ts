@@ -5,9 +5,7 @@ type RoundingMode = 'nearest' | 'up' | 'down';
 type PricingConfig = {
   stripePercentFee: number;
   stripeFixedFeeCents: number;
-  edgemySessionPercent: number;
-  edgemyPackFixedCents: number;
-  edgemyPackPercent: number;
+  edgemyServiceFeePercent: number; // Taux uniforme pour sessions ET packs
   currency: string;
   roundingMode: RoundingMode;
 };
@@ -15,9 +13,7 @@ type PricingConfig = {
 const DEFAULT_CONFIG: PricingConfig = {
   stripePercentFee: 0.015,  // 1.5% en décimal (pas en pourcentage)
   stripeFixedFeeCents: 25,  // 0.25€ = 25 centimes
-  edgemySessionPercent: 5,
-  edgemyPackFixedCents: 300,
-  edgemyPackPercent: 2,
+  edgemyServiceFeePercent: 6.5, // 6.5% uniforme pour tout
   currency: 'eur',
   roundingMode: 'nearest',
 };
@@ -69,9 +65,8 @@ function getConfig(): PricingConfig {
     // stripePercentFee doit être en décimal (0.015 pour 1.5%), pas en pourcentage
     stripePercentFee: parseNumberEnv('STRIPE_PERCENT_FEE', DEFAULT_CONFIG.stripePercentFee),
     stripeFixedFeeCents: parseNumberEnv('STRIPE_FIXED_FEE_CENTS', DEFAULT_CONFIG.stripeFixedFeeCents),
-    edgemySessionPercent: parseNumberEnv('EDGEMY_SESSION_PERCENT', DEFAULT_CONFIG.edgemySessionPercent),
-    edgemyPackFixedCents: parseNumberEnv('EDGEMY_PACK_FIXED_CENTS', DEFAULT_CONFIG.edgemyPackFixedCents),
-    edgemyPackPercent: parseNumberEnv('EDGEMY_PACK_PERCENT', DEFAULT_CONFIG.edgemyPackPercent),
+    // edgemyServiceFeePercent est en pourcentage (6.5 pour 6.5%), pas en décimal
+    edgemyServiceFeePercent: parseNumberEnv('EDGEMY_SERVICE_FEE_PERCENT', DEFAULT_CONFIG.edgemyServiceFeePercent),
     currency: process.env.DEFAULT_CURRENCY?.toLowerCase() || DEFAULT_CONFIG.currency,
     roundingMode: parseRoundingModeEnv('ROUNDING_MODE', DEFAULT_CONFIG.roundingMode),
   };
@@ -85,16 +80,11 @@ function computeStripeFee(priceCents: number, config: PricingConfig): number {
   return applyRounding(totalFee, config.roundingMode);
 }
 
-function computeSessionEdgemyFee(priceCents: number, config: PricingConfig): number {
-  const percentDecimal = config.edgemySessionPercent / 100;
+function computeEdgemyServiceFee(priceCents: number, config: PricingConfig): number {
+  // edgemyServiceFeePercent est en pourcentage (6.5 pour 6.5%)
+  const percentDecimal = config.edgemyServiceFeePercent / 100;
   const fee = priceCents * percentDecimal;
   return applyRounding(fee, config.roundingMode);
-}
-
-function computePackEdgemyFee(priceCents: number, config: PricingConfig): number {
-  const percentDecimal = config.edgemyPackPercent / 100;
-  const percentFee = applyRounding(priceCents * percentDecimal, config.roundingMode);
-  return config.edgemyPackFixedCents + percentFee;
 }
 
 function clampSessionsCount(sessionsCount: number): number {
@@ -149,8 +139,8 @@ export function calculateForSession(priceCents: number): SessionPricingBreakdown
   const config = getConfig();
   const coachNetCents = priceCents;
 
-  // Commission TOUT COMPRIS (Stripe + Edgemy) : 5%
-  const serviceFeeCents = computeSessionEdgemyFee(priceCents, config);
+  // Commission TOUT COMPRIS (Stripe + Edgemy) : 6.5% uniforme
+  const serviceFeeCents = computeEdgemyServiceFee(priceCents, config);
   const totalCustomerCents = coachNetCents + serviceFeeCents;
 
   // IMPORTANT: Stripe prélève ses frais sur le MONTANT TOTAL (pas juste le prix coach)
@@ -158,9 +148,11 @@ export function calculateForSession(priceCents: number): SessionPricingBreakdown
   const edgemyFeeCents = Math.max(0, serviceFeeCents - actualStripeFee);
 
   // Calcul TVA Edgemy (20% en France)
+  // edgemyFeeCents est TTC (toutes taxes comprises)
+  // Il faut extraire le HT et la TVA selon la formule: HT = TTC / 1.20
   const VAT_RATE_FRANCE = 0.20;
-  const edgemyRevenueHT = edgemyFeeCents;
-  const edgemyRevenueTVACents = Math.round(edgemyRevenueHT * VAT_RATE_FRANCE);
+  const edgemyRevenueHT = Math.round(edgemyFeeCents / (1 + VAT_RATE_FRANCE));
+  const edgemyRevenueTVACents = edgemyFeeCents - edgemyRevenueHT;
 
   return {
     type: 'SINGLE',
@@ -183,8 +175,8 @@ export function calculateForPack(priceCents: number, sessionsCount: number): Pac
   const config = getConfig();
   const coachNetCents = priceCents;
 
-  // Commission TOUT COMPRIS (Stripe + Edgemy) : 3€ fixe + 2%
-  const serviceFeeCents = computePackEdgemyFee(priceCents, config);
+  // Commission TOUT COMPRIS (Stripe + Edgemy) : 6.5% uniforme
+  const serviceFeeCents = computeEdgemyServiceFee(priceCents, config);
   const totalCustomerCents = coachNetCents + serviceFeeCents;
 
   // IMPORTANT: Stripe prélève ses frais sur le MONTANT TOTAL (pas juste le prix coach)
@@ -192,9 +184,11 @@ export function calculateForPack(priceCents: number, sessionsCount: number): Pac
   const edgemyFeeCents = Math.max(0, serviceFeeCents - actualStripeFee);
 
   // Calcul TVA Edgemy (20% en France)
+  // edgemyFeeCents est TTC (toutes taxes comprises)
+  // Il faut extraire le HT et la TVA selon la formule: HT = TTC / 1.20
   const VAT_RATE_FRANCE = 0.20;
-  const edgemyRevenueHT = edgemyFeeCents;
-  const edgemyRevenueTVACents = Math.round(edgemyRevenueHT * VAT_RATE_FRANCE);
+  const edgemyRevenueHT = Math.round(edgemyFeeCents / (1 + VAT_RATE_FRANCE));
+  const edgemyRevenueTVACents = edgemyFeeCents - edgemyRevenueHT;
 
   const sessionPayoutCents = Math.floor(coachNetCents / validSessionsCount);
   const sessionPayoutRemainderCents = coachNetCents - sessionPayoutCents * validSessionsCount;

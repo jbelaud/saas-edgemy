@@ -4,6 +4,7 @@ import { PublicLayout } from '@/components/layout'
 import { HeroSection } from '@/components/home/HeroSection'
 import { HowItWorksSection } from '@/components/home/HowItWorksSection'
 import { FeaturesSection } from '@/components/home/FeaturesSection'
+import { CalculateurCoach } from '@/components/home/CalculateurCoach'
 import { DualSection } from '@/components/home/DualSection'
 // Section temporairement masquée en attente de vrais témoignages
 // import { TestimonialsSection } from '@/components/home/TestimonialsSection'
@@ -27,6 +28,7 @@ export default async function Home({
       <HeroSection />
       <HowItWorksSection />
       <FeaturesSection />
+      <CalculateurCoach />
       <DualSection />
       {/* Section temporairement masquée en attente de vrais témoignages */}
       {/* <TestimonialsSection /> */}

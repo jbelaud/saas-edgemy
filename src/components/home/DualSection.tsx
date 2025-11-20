@@ -5,12 +5,23 @@ import { useState } from 'react';
 export function DualSection() {
   const [hoveredCard, setHoveredCard] = useState<'player' | 'coach' | null>(null);
   const [isYearly, setIsYearly] = useState(false);
-  const coachPrice = isYearly ? '399' : '39';
+  const [selectedPlan, setSelectedPlan] = useState<'lite' | 'pro'>('pro');
+
+  const playerCommission = '6,5%';
+
+  // Prix et périodes pour les plans coach
+  const litePriceMonthly = '15';
+  const litePriceYearly = '149';
+  const proPriceMonthly = '39';
+  const proPriceYearly = '399';
+
+  const coachPrice = selectedPlan === 'lite'
+    ? (isYearly ? litePriceYearly : litePriceMonthly)
+    : (isYearly ? proPriceYearly : proPriceMonthly);
   const coachPeriod = isYearly ? 'an' : 'mois';
-  const playerCommission = '5%';
-  
+
   // Hauteur fixe pour les cartes
-  const cardHeight = 'min-h-[680px]';
+  const cardHeight = 'min-h-[780px]';
 
   return (
     <section id="for-players" className="relative py-24 bg-slate-950">
@@ -51,29 +62,29 @@ export function DualSection() {
               </div>
 
               {/* Title */}
-              <div className="flex-1 flex flex-col items-center mb-6">
+              <div className="flex flex-col items-center mb-6 pt-16">
                 <h3 className="text-3xl font-bold mb-2 text-white text-center">
                   Trouve ton coach idéal
                 </h3>
                 <div className="text-4xl font-extrabold text-emerald-400 mb-2">
                   Gratuit
                 </div>
-                <div className="text-sm text-gray-400 mb-4">
+                <div className="text-sm text-gray-400 mb-2">
                   {playerCommission} de commission sur les réservations
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-gray-400 mb-6 leading-relaxed text-center">
+              <p className="text-gray-400 mb-6 leading-relaxed text-center mx-auto max-w-md">
                 Accès gratuit à tous les coachs. Payez uniquement les séances que vous réservez.
                 Bénéficiez de tarifs dégressifs sur les packs d&apos;heures.
               </p>
 
               {/* Features List */}
-              <ul className="space-y-3 mb-6">
+              <ul className="space-y-3 mb-6 pb-8">
                 {[
                   "Accès gratuit à la plateforme",
-                  "5% de commission sur les réservations",
+                  "6,5% de commission sur les réservations",
                   "Réductions sur les packs d'heures",
                   "Paiements sécurisés via Stripe"
                 ].map((feature, index) => (
@@ -112,7 +123,7 @@ export function DualSection() {
 
             <div className="relative z-10 flex flex-col h-full">
               {/* Header with Icon and Badge */}
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-4 mb-6">
                 <div className="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-amber-600/20 rounded-2xl flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform flex-shrink-0">
                   <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -124,67 +135,117 @@ export function DualSection() {
               </div>
 
               {/* Title */}
-              <div className="flex-1 flex flex-col items-center mb-6">
-                <h3 className="text-3xl font-bold mb-2 text-white text-center">
-                  Développe ton activité
-                </h3>
-                
-                {/* Toggle Annuel/Mensuel */}
-                <div className="flex items-center justify-center gap-4 mb-6">
-                  <span className={`text-sm font-medium ${!isYearly ? 'text-white' : 'text-gray-500'}`}>Mensuel</span>
-                  <button 
-                    onClick={() => setIsYearly(!isYearly)}
-                    className="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-                  >
-                    <span 
-                      className={`${
-                        isYearly ? 'translate-x-6' : 'translate-x-1'
-                      } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                    />
-                  </button>
-                  <div className="flex flex-col">
-                    <span className={`text-sm font-medium ${isYearly ? 'text-white' : 'text-gray-500'}`}>Annuel</span>
-                    {isYearly && (
-                      <span className="text-xs text-amber-400">-15%</span>
-                    )}
-                  </div>
-                </div>
+              <h3 className="text-3xl font-bold mb-4 text-white text-center">
+                Développe ton activité
+              </h3>
 
-                {/* Prix */}
-                <div className="text-center mb-4">
-                  <span className="text-5xl font-extrabold text-amber-400">{coachPrice}€</span>
-                  <span className="text-lg text-gray-400"> /{coachPeriod}</span>
-                </div>
-                <div className="h-6 mb-2">
-                  {isYearly ? (
-                    <div className="text-sm text-amber-400">
-                      Soit seulement 33,25€/mois
-                    </div>
-                  ) : (
-                    <div className="h-6">{/* Espace réservé pour maintenir la hauteur */}</div>
+              {/* Toggle Plan LITE / PRO */}
+              <div className="flex gap-2 mb-4 bg-slate-800/50 p-1 rounded-xl">
+                <button
+                  onClick={() => setSelectedPlan('lite')}
+                  className={`flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                    selectedPlan === 'lite'
+                      ? 'bg-gradient-to-r from-slate-600 to-slate-700 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  LITE
+                </button>
+                <button
+                  onClick={() => setSelectedPlan('pro')}
+                  className={`relative flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                    selectedPlan === 'pro'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/30'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  PRO
+                  {selectedPlan === 'pro' && (
+                    <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      Recommandé
+                    </span>
                   )}
-                </div>
-                <div className="text-sm text-gray-400 mb-2">
-                  {isYearly ? 'Facturé 399€ par an' : 'Sans engagement'}
+                </button>
+              </div>
+
+              {/* Toggle Annuel/Mensuel */}
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <span className={`text-sm font-medium ${!isYearly ? 'text-white' : 'text-gray-500'}`}>Mensuel</span>
+                <button
+                  onClick={() => setIsYearly(!isYearly)}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+                >
+                  <span
+                    className={`${
+                      isYearly ? 'translate-x-6' : 'translate-x-1'
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                  />
+                </button>
+                <div className="flex flex-col items-start">
+                  <span className={`text-sm font-medium ${isYearly ? 'text-white' : 'text-gray-500'}`}>Annuel</span>
+                  {isYearly && selectedPlan === 'lite' && (
+                    <span className="text-xs text-amber-400">-17%</span>
+                  )}
+                  {isYearly && selectedPlan === 'pro' && (
+                    <span className="text-xs text-amber-400">-15%</span>
+                  )}
                 </div>
               </div>
 
+              {/* Prix */}
+              <div className="text-center mb-4">
+                <span className="text-5xl font-extrabold text-amber-400">{coachPrice}€</span>
+                <span className="text-lg text-gray-400"> /{coachPeriod}</span>
+              </div>
+
+              {/* Sous-titre prix annuel */}
+              <div className="h-6 mb-3 text-center">
+                {isYearly && selectedPlan === 'lite' && (
+                  <div className="text-sm text-amber-400">
+                    Soit seulement 12,42€/mois
+                  </div>
+                )}
+                {isYearly && selectedPlan === 'pro' && (
+                  <div className="text-sm text-amber-400">
+                    Soit seulement 33,25€/mois
+                  </div>
+                )}
+              </div>
+
               {/* Description */}
-              <p className="text-gray-400 mb-6 leading-relaxed text-center">
-                Gère ton activité, tes paiements et ta visibilité en toute simplicité.
-                Concentre-toi sur le coaching, on s&apos;occupe du reste avec nos outils professionnels.
+              <p className="text-gray-400 mb-4 leading-relaxed text-center text-sm">
+                {selectedPlan === 'lite'
+                  ? "Fonctionnalités de base pour démarrer ton activité de coaching sur Edgemy."
+                  : "Maximise ta visibilité et garde 100% du montant de tes sessions. Idéal pour les coachs actifs."
+                }
               </p>
 
               {/* Features List */}
-              <ul className="space-y-3 mb-6">
-                {[
-                  "39€/mois ou 399€/an (-15%)",
+              <ul className="space-y-2.5 mb-6 flex-1">
+                {selectedPlan === 'lite' && [
                   "Profil public personnalisable",
-                  "Paiements automatisés et sécurisés",
-                  "Outils de suivi élèves avancés"
+                  "Visibilité dans l'annuaire",
+                  "Tu gères tes propres moyens de paiement"
                 ].map((feature, index) => (
                   <li key={index} className="flex items-start gap-3 text-gray-300">
-                    <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm leading-tight">{feature}</span>
+                  </li>
+                ))}
+
+                {selectedPlan === 'pro' && [
+                  "Automatisation complète des paiements",
+                  "Visibilité dans l'annuaire",
+                  "Personnalisation avancée du profil",
+                  "Support direct de l'équipe Edgemy",
+                  <span key="highlight" className="font-semibold text-amber-400">
+                    Tu gardes 100% du montant des sessions
+                  </span>
+                ].map((feature, index) => (
+                  <li key={index} className="flex items-start gap-3 text-gray-300">
+                    <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     <span className="text-sm leading-tight">{feature}</span>
@@ -192,14 +253,33 @@ export function DualSection() {
                 ))}
               </ul>
 
+              {/* Highlight Box pour PRO */}
+              {selectedPlan === 'pro' && (
+                <div className="mb-4 p-3 bg-gradient-to-r from-amber-500/10 to-amber-600/10 border border-amber-500/30 rounded-xl">
+                  <div className="flex items-center gap-2 mb-1">
+                    <svg className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-amber-400 font-bold text-sm">Avantage PRO</span>
+                  </div>
+                  <p className="text-xs text-gray-300 leading-relaxed">
+                    Aucune commission prélevée sur tes réservations. Maximise tes revenus en gardant l&apos;intégralité de tes gains.
+                  </p>
+                </div>
+              )}
+
               {/* CTA Button */}
               <div className="mt-auto">
-                <button 
+                <button
                   onClick={() => {
                     const event = new CustomEvent('openCoachModal');
                     window.dispatchEvent(event);
                   }}
-                  className="w-full px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
+                  className={`w-full px-6 py-4 font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg ${
+                    selectedPlan === 'pro'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 shadow-amber-500/20'
+                      : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white shadow-slate-500/20'
+                  }`}
                 >
                   Devenir coach sur Edgemy
                 </button>
