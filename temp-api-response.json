@@ -1,0 +1,296 @@
+﻿{
+    "coaches":  [
+                    {
+                        "id":  "cmi3l2ovn0001uy702dmvjvlx",
+                        "slug":  "harmonie-mrn",
+                        "firstName":  "Harmonie",
+                        "lastName":  "Mrn",
+                        "bio":  "",
+                        "avatarUrl":  null,
+                        "formats":  [
+
+                                    ],
+                        "languages":  [
+                                          "fr"
+                                      ],
+                        "experience":  null,
+                        "roi":  null,
+                        "stakes":  null,
+                        "badges":  [
+
+                                   ],
+                        "subscriptionStatus":  "ACTIVE",
+                        "announcements":  [
+
+                                          ]
+                    },
+                    {
+                        "id":  "cmi0fmlo60001l804tqw9ekzj",
+                        "slug":  "maxime-pontreau",
+                        "firstName":  "Maxime",
+                        "lastName":  "Pontreau",
+                        "bio":  "",
+                        "avatarUrl":  null,
+                        "formats":  [
+
+                                    ],
+                        "languages":  [
+                                          "fr"
+                                      ],
+                        "experience":  null,
+                        "roi":  null,
+                        "stakes":  null,
+                        "badges":  [
+
+                                   ],
+                        "subscriptionStatus":  null,
+                        "announcements":  [
+
+                                          ]
+                    },
+                    {
+                        "id":  "cmi011ls70001uyfc3moavnb0",
+                        "slug":  "jeremy-belaud",
+                        "firstName":  "Jeremy",
+                        "lastName":  "BELAUD",
+                        "bio":  "",
+                        "avatarUrl":  null,
+                        "formats":  [
+
+                                    ],
+                        "languages":  [
+                                          "fr"
+                                      ],
+                        "experience":  null,
+                        "roi":  null,
+                        "stakes":  null,
+                        "badges":  [
+
+                                   ],
+                        "subscriptionStatus":  "ACTIVE",
+                        "announcements":  [
+
+                                          ]
+                    },
+                    {
+                        "id":  "cmhv2cleb0003uyvs9xacware",
+                        "slug":  "olivier-belaud",
+                        "firstName":  "Olivier",
+                        "lastName":  "Belaud",
+                        "bio":  "Joueur pro depuis 5 ans, aujourd\u0027hui je partage mon savoir auprÃ¨s de jeune joueur motivÃ© Ã  progresser",
+                        "avatarUrl":  null,
+                        "formats":  [
+
+                                    ],
+                        "languages":  [
+                                          "fr"
+                                      ],
+                        "experience":  5,
+                        "roi":  10,
+                        "stakes":  "25",
+                        "badges":  [
+
+                                   ],
+                        "subscriptionStatus":  "ACTIVE",
+                        "announcements":  [
+                                              {
+                                                  "id":  "cmhwhg3oe0003uyj8c9e524ld",
+                                                  "type":  "STRATEGY",
+                                                  "title":  "Coaching MTT - StratÃ©gie",
+                                                  "priceCents":  10000,
+                                                  "durationMin":  60,
+                                                  "variant":  "NLHE",
+                                                  "format":  "MTT",
+                                                  "abiRange":  "25",
+                                                  "tags":  [
+                                                               "ICM",
+                                                               "Bankroll",
+                                                               "Postflop"
+                                                           ],
+                                                  "reviewType":  null,
+                                                  "reviewSupport":  null,
+                                                  "toolName":  null,
+                                                  "toolObjective":  null,
+                                                  "mentalFocus":  null
+                                              }
+                                          ]
+                    },
+                    {
+                        "id":  "cmhi5yryz0003uy3wzotoz1di",
+                        "slug":  "e2e-test-coach",
+                        "firstName":  "E2E",
+                        "lastName":  "Test Coach",
+                        "bio":  "Coach de test pour E2E",
+                        "avatarUrl":  null,
+                        "formats":  [
+                                        "Cash Game",
+                                        "MTT"
+                                    ],
+                        "languages":  [
+                                          "fr",
+                                          "en"
+                                      ],
+                        "experience":  null,
+                        "roi":  null,
+                        "stakes":  null,
+                        "badges":  [
+                                       "NL50",
+                                       "NL100"
+                                   ],
+                        "subscriptionStatus":  null,
+                        "announcements":  [
+
+                                          ]
+                    },
+                    {
+                        "id":  "cmhi5qmtr0005uywsvpp7kfb6",
+                        "slug":  "pierre-durand",
+                        "firstName":  "Pierre",
+                        "lastName":  "Durand",
+                        "bio":  "Coach mental game et stratÃ©gie avancÃ©e. Expert en psychologie du poker.",
+                        "avatarUrl":  "https://api.dicebear.com/7.x/avataaars/svg?seed=pierre",
+                        "formats":  [
+                                        "MENTAL",
+                                        "GTO"
+                                    ],
+                        "languages":  [
+                                          "fr",
+                                          "en",
+                                          "de"
+                                      ],
+                        "experience":  7,
+                        "roi":  null,
+                        "stakes":  "NL50-NL200",
+                        "badges":  [
+
+                                   ],
+                        "subscriptionStatus":  null,
+                        "announcements":  [
+
+                                          ]
+                    },
+                    {
+                        "id":  "cmhi5qmjp0003uywssxv3rh41",
+                        "slug":  "marie-martin",
+                        "firstName":  "Marie",
+                        "lastName":  "Martin",
+                        "bio":  "SpÃ©cialiste Spin \u0026 Go et MTT low stakes. Ancienne joueuse professionnelle.",
+                        "avatarUrl":  "https://api.dicebear.com/7.x/avataaars/svg?seed=marie",
+                        "formats":  [
+                                        "SPIN",
+                                        "MTT"
+                                    ],
+                        "languages":  [
+                                          "fr"
+                                      ],
+                        "experience":  5,
+                        "roi":  12,
+                        "stakes":  "NL10-NL50",
+                        "badges":  [
+
+                                   ],
+                        "subscriptionStatus":  null,
+                        "announcements":  [
+                                              {
+                                                  "id":  "cmhi5qnno000buyws9op37ai0",
+                                                  "type":  "STRATEGY",
+                                                  "title":  "Coaching Spin \u0026 Go",
+                                                  "priceCents":  4000,
+                                                  "durationMin":  60,
+                                                  "variant":  null,
+                                                  "format":  "SPIN",
+                                                  "abiRange":  null,
+                                                  "tags":  [
+
+                                                           ],
+                                                  "reviewType":  null,
+                                                  "reviewSupport":  null,
+                                                  "toolName":  null,
+                                                  "toolObjective":  null,
+                                                  "mentalFocus":  null
+                                              }
+                                          ]
+                    },
+                    {
+                        "id":  "cmhi5qm9h0001uywsekngsnjm",
+                        "slug":  "jean-dupont",
+                        "firstName":  "Jean",
+                        "lastName":  "Dupont",
+                        "bio":  "Joueur professionnel de poker depuis 10 ans, spÃ©cialisÃ© en MTT et Cash Game. \n      \nJ\u0027ai remportÃ© plusieurs tournois majeurs dont un bracelet WSOP et je partage maintenant mon expÃ©rience avec les joueurs qui souhaitent progresser.\n\nMa mÃ©thode se base sur l\u0027analyse dÃ©taillÃ©e de vos mains, le travail sur les leaks et l\u0027optimisation de votre stratÃ©gie selon votre niveau et vos objectifs.",
+                        "avatarUrl":  "https://api.dicebear.com/7.x/avataaars/svg?seed=jean",
+                        "formats":  [
+                                        "MTT",
+                                        "CASH",
+                                        "GTO"
+                                    ],
+                        "languages":  [
+                                          "fr",
+                                          "en"
+                                      ],
+                        "experience":  10,
+                        "roi":  18.5,
+                        "stakes":  "NL100-NL500",
+                        "badges":  [
+                                       "WSOP_BRACELET",
+                                       "EPT_WINNER"
+                                   ],
+                        "subscriptionStatus":  null,
+                        "announcements":  [
+                                              {
+                                                  "id":  "cmhi5qn3o0006uywsl0ymw2kr",
+                                                  "type":  "STRATEGY",
+                                                  "title":  "Coaching MTT - DÃ©butant",
+                                                  "priceCents":  5000,
+                                                  "durationMin":  60,
+                                                  "variant":  null,
+                                                  "format":  "MTT",
+                                                  "abiRange":  null,
+                                                  "tags":  [
+
+                                                           ],
+                                                  "reviewType":  null,
+                                                  "reviewSupport":  null,
+                                                  "toolName":  null,
+                                                  "toolObjective":  null,
+                                                  "mentalFocus":  null
+                                              },
+                                              {
+                                                  "id":  "cmhi5qn3o0007uywsujerd4ca",
+                                                  "type":  "STRATEGY",
+                                                  "title":  "Coaching Cash Game NL100-NL200",
+                                                  "priceCents":  8000,
+                                                  "durationMin":  90,
+                                                  "variant":  null,
+                                                  "format":  "CASH",
+                                                  "abiRange":  null,
+                                                  "tags":  [
+
+                                                           ],
+                                                  "reviewType":  null,
+                                                  "reviewSupport":  null,
+                                                  "toolName":  null,
+                                                  "toolObjective":  null,
+                                                  "mentalFocus":  null
+                                              },
+                                              {
+                                                  "id":  "cmhi5qn3o0008uywsprroefmo",
+                                                  "type":  "STRATEGY",
+                                                  "title":  "Pack 5 sessions - Progression MTT",
+                                                  "priceCents":  20000,
+                                                  "durationMin":  60,
+                                                  "variant":  null,
+                                                  "format":  "MTT",
+                                                  "abiRange":  null,
+                                                  "tags":  [
+
+                                                           ],
+                                                  "reviewType":  null,
+                                                  "reviewSupport":  null,
+                                                  "toolName":  null,
+                                                  "toolObjective":  null,
+                                                  "mentalFocus":  null
+                                              }
+                                          ]
+                    }
+                ]
+}

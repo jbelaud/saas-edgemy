@@ -9,6 +9,7 @@ import { useAlertDialog } from '@/hooks/useAlertDialog';
 import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
 import { useSession } from '@/lib/auth-client';
 import { useLocale } from 'next-intl';
+import { POKER_FORMATS } from '@/constants/poker';
 
 interface CoachHeaderProps {
   coach: {
@@ -16,6 +17,7 @@ interface CoachHeaderProps {
     firstName: string;
     lastName: string;
     avatarUrl: string | null;
+    bannerUrl: string | null;
     status: string;
     subscriptionStatus: string | null;
     subscriptionPlan: string | null;
@@ -102,7 +104,7 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
       } else {
         throw new Error(data.error || 'Erreur lors de l\'envoi de la notification');
       }
-    } catch (error) {
+    } catch {
       showError(
         'Erreur',
         'Impossible d\'envoyer la notification pour le moment. Réessaie plus tard.'
@@ -129,15 +131,37 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
 
   return (
     <>
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 overflow-hidden">
-        {/* Poker pattern background */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            backgroundSize: '60px 60px'
-          }} />
-        </div>
+      {/* Hero Section avec bannière OU fond bleu */}
+      <div className="relative overflow-hidden">
+        {/* Bannière en arrière-plan (si présente) */}
+        {coach.bannerUrl ? (
+          <>
+            <div className="absolute inset-0 w-full h-full">
+              <Image
+                src={coach.bannerUrl}
+                alt={`Bannière de ${coach.firstName} ${coach.lastName}`}
+                fill
+                className="object-cover"
+                sizes="100vw"
+                priority
+                unoptimized
+              />
+            </div>
+            {/* Overlay gradient pour meilleure lisibilité avec la bannière */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/70" />
+          </>
+        ) : (
+          <>
+            {/* Fond bleu avec pattern (par défaut sans bannière) */}
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900" />
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0" style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                backgroundSize: '60px 60px'
+              }} />
+            </div>
+          </>
+        )}
 
         <div className="container mx-auto px-6 py-16 relative z-10">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
@@ -150,7 +174,7 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
                   fill
                   className="object-cover"
                   sizes="(min-width: 768px) 10rem, 8rem"
-                  unoptimized
+                  unoptimized={true}
                 />
               </div>
               {isTopCoach && (
@@ -181,11 +205,15 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
               {/* Formats */}
               {coach.formats && coach.formats.length > 0 && (
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-4">
-                  {coach.formats.map((format) => (
-                    <Badge key={format} className="bg-orange-500/20 text-orange-200 border-orange-400/30 hover:bg-orange-500/30">
-                      {format}
-                    </Badge>
-                  ))}
+                  {coach.formats.map((format) => {
+                    const formatOption = POKER_FORMATS.find((f) => f.value === format);
+                    const label = formatOption?.label || format;
+                    return (
+                      <Badge key={format} className="bg-orange-500/20 text-orange-200 border-orange-400/30 hover:bg-orange-500/30">
+                        {label}
+                      </Badge>
+                    );
+                  })}
                 </div>
               )}
 

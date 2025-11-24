@@ -88,6 +88,7 @@ model coach {
   youtubeUrl             String?
   twitterUrl             String?
   discordUrl             String?
+  presentationVideoUrl   String?           // URL YouTube de présentation
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
   timezone               String?

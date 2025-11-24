@@ -83,6 +83,7 @@ export function CoachSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [coachSlug, setCoachSlug] = useState<string | null>(null);
   const [hasPlayerProfile, setHasPlayerProfile] = useState(false);
+  const [coachAvatarUrl, setCoachAvatarUrl] = useState<string | null>(null);
   const { data: session } = useSession();
 
   // Détecter la taille de l'écran pour fermer sur mobile
@@ -117,6 +118,7 @@ export function CoachSidebar() {
         if (response.ok) {
           const data = await response.json();
           setCoachSlug(data.coach?.slug || null);
+          setCoachAvatarUrl(data.coach?.avatarUrl || null);
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du slug:', error);
@@ -233,7 +235,7 @@ export function CoachSidebar() {
               )}
             >
               <Avatar className="h-8 w-8 flex-shrink-0 ring-2 ring-amber-500/20">
-                <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
+                <AvatarImage src={coachAvatarUrl || user?.image || ""} alt={user?.name || ""} />
                 <AvatarFallback className="bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-bold">
                   {initials}
                 </AvatarFallback>

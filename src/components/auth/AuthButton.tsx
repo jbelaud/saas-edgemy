@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { signIn, signOut, useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +18,23 @@ import { useLocale } from "next-intl";
 export function AuthButton() {
   const locale = useLocale();
   const { data: session, isPending } = useSession();
+  const [coachData, setCoachData] = React.useState<{ avatarUrl?: string | null; isCoach?: boolean }>({});
+
+  // Récupérer les données du coach si l'utilisateur est un coach
+  React.useEffect(() => {
+    if (session?.user) {
+      fetch('/api/coach/profile')
+        .then(res => res.json())
+        .then(data => {
+          if (data.coach) {
+            setCoachData({ avatarUrl: data.coach.avatarUrl, isCoach: true });
+          }
+        })
+        .catch(() => {
+          setCoachData({});
+        });
+    }
+  }, [session]);
 
   if (isPending) {
     return (
@@ -34,12 +52,15 @@ export function AuthButton() {
       .join("")
       .toUpperCase() || "U";
 
+    // Utiliser l'avatar du coach en priorité, puis l'avatar du user
+    const avatarUrl = coachData.avatarUrl || user.image;
+
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/10 transition-all">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.image || undefined} alt={user.name || ""} />
+              <AvatarImage src={avatarUrl || undefined} alt={user.name || ""} />
               <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white font-semibold">
                 {initials}
               </AvatarFallback>
@@ -55,7 +76,7 @@ export function AuthButton() {
           <div className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-b border-white/10">
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12">
-                <AvatarImage src={user.image || undefined} alt={user.name || ""} />
+                <AvatarImage src={avatarUrl || undefined} alt={user.name || ""} />
                 <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white font-semibold">
                   {initials}
                 </AvatarFallback>
@@ -71,7 +92,7 @@ export function AuthButton() {
           <div className="p-2">
             <DropdownMenuItem asChild>
               <Link
-                href={`/${locale}/player/dashboard`}
+                href={coachData.isCoach ? `/${locale}/coach/dashboard` : `/${locale}/player/dashboard`}
                 className="flex items-center gap-3 px-3 py-3 text-white hover:bg-white/10 rounded-lg transition-all cursor-pointer group"
               >
                 <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">

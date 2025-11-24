@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { GlassCard, GradientButton, Input, Label, Checkbox } from '@/components/ui';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Save, User, Target, Globe } from 'lucide-react';
+import { Loader2, Save, User, Target, Globe, Camera, Video } from 'lucide-react';
 import { POKER_FORMATS, LANGUAGES } from '@/types/coach';
+import { ProfileImageUpload } from './ProfileImageUpload';
+import { isValidYouTubeUrl } from '@/lib/youtube';
 
 const profileSchema = z.object({
   firstName: z.string().min(2, 'Minimum 2 caractères'),
@@ -23,6 +25,10 @@ const profileSchema = z.object({
   youtubeUrl: z.string().url().optional().or(z.literal('')),
   twitterUrl: z.string().url().optional().or(z.literal('')),
   discordUrl: z.string().optional(),
+  presentationVideoUrl: z.string().optional().or(z.literal('')).refine(
+    (val) => !val || isValidYouTubeUrl(val),
+    { message: 'URL YouTube invalide (ex: https://youtu.be/VIDEO_ID)' }
+  ),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -36,7 +42,8 @@ interface DashboardProfileProps {
 export function DashboardProfile({ coach }: DashboardProfileProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
+  const [avatarUrl, setAvatarUrl] = useState(coach.avatarUrl || null);
+  const [bannerUrl, setBannerUrl] = useState(coach.bannerUrl || null);
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -53,6 +60,7 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
       youtubeUrl: coach.youtubeUrl || '',
       twitterUrl: coach.twitterUrl || '',
       discordUrl: coach.discordUrl || '',
+      presentationVideoUrl: coach.presentationVideoUrl || '',
     },
   });
 
@@ -95,13 +103,82 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
       {/* Message */}
       {message && (
         <div className={`p-4 rounded-xl border ${
-          message.type === 'success' 
-            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+          message.type === 'success'
+            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
             : 'bg-red-500/10 border-red-500/20 text-red-400'
         }`}>
           {message.text}
         </div>
       )}
+
+      {/* Images de profil */}
+      <GlassCard>
+        <div className="flex items-center gap-2 mb-4">
+          <Camera className="h-5 w-5 text-amber-400" />
+          <h3 className="text-xl font-bold text-white">Photos et bannière</h3>
+        </div>
+        <p className="text-sm text-gray-400 mb-6">
+          Ajoutez une photo de profil et une bannière pour personnaliser votre page publique
+        </p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Avatar */}
+          <ProfileImageUpload
+            currentUrl={avatarUrl}
+            type="avatar"
+            userId={coach.userId}
+            onUploadSuccess={(url) => {
+              setAvatarUrl(url);
+              setMessage({ type: 'success', text: 'Photo de profil mise à jour !' });
+            }}
+            onDeleteSuccess={() => {
+              setAvatarUrl(null);
+              setMessage({ type: 'success', text: 'Photo de profil supprimée' });
+            }}
+          />
+
+          {/* Bannière */}
+          <ProfileImageUpload
+            currentUrl={bannerUrl}
+            type="banner"
+            userId={coach.userId}
+            onUploadSuccess={(url) => {
+              setBannerUrl(url);
+              setMessage({ type: 'success', text: 'Bannière mise à jour !' });
+            }}
+            onDeleteSuccess={() => {
+              setBannerUrl(null);
+              setMessage({ type: 'success', text: 'Bannière supprimée' });
+            }}
+          />
+        </div>
+      </GlassCard>
+
+      {/* Vidéo de présentation */}
+      <GlassCard>
+        <div className="flex items-center gap-2 mb-4">
+          <Video className="h-5 w-5 text-amber-400" />
+          <h3 className="text-xl font-bold text-white">Vidéo de présentation</h3>
+        </div>
+        <p className="text-sm text-gray-400 mb-6">
+          Ajoutez une vidéo YouTube pour présenter votre coaching (optionnel mais recommandé)
+        </p>
+        <div>
+          <Label htmlFor="presentationVideoUrl" className="text-gray-300">URL YouTube</Label>
+          <Input
+            id="presentationVideoUrl"
+            {...register('presentationVideoUrl')}
+            placeholder="https://youtu.be/VIDEO_ID ou https://www.youtube.com/watch?v=VIDEO_ID"
+            className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
+          />
+          {errors.presentationVideoUrl && (
+            <p className="text-sm text-red-400 mt-1">{errors.presentationVideoUrl.message}</p>
+          )}
+          <p className="text-xs text-gray-500 mt-2">
+            💡 Conseil : Uploadez votre vidéo sur YouTube en mode &ldquo;Non répertorié&rdquo; pour qu&apos;elle soit visible uniquement via ce lien
+          </p>
+        </div>
+      </GlassCard>
 
       {/* Informations personnelles */}
       <GlassCard>
@@ -320,13 +397,14 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
         </div>
       </GlassCard>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-4">
-        <GradientButton 
-          type="submit" 
+      {/* Bouton sticky flottant - toujours visible en bas du conteneur */}
+      <div className="sticky bottom-0 flex justify-end gap-4 pt-6 pb-8 bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent">
+        <GradientButton
+          type="submit"
           variant="amber"
-          size="lg" 
+          size="lg"
           disabled={isLoading}
+          className="shadow-2xl hover:shadow-3xl transition-all"
         >
           {isLoading ? (
             <>

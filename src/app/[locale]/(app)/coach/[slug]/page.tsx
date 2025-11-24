@@ -5,6 +5,8 @@ import { CoachHeader } from '@/components/coach/public/CoachHeader';
 import { CoachAnnouncements } from '@/components/coach/public/CoachAnnouncements';
 import { CoachAbout } from '@/components/coach/public/CoachAbout';
 import { CoachReviews } from '@/components/coach/public/CoachReviews';
+import { CoachVideo } from '@/components/coach/public/CoachVideo';
+import { CoachCalendar } from '@/components/coach/public/CoachCalendar';
 // import { CoachWhyMe } from '@/components/coach/public/CoachWhyMe'; // Désactivé pour MVP - à réactiver plus tard
 import { TrustBadges } from '@/components/coach/public/TrustBadges';
 
@@ -24,6 +26,7 @@ async function getCoach(slug: string) {
       firstName: true,
       lastName: true,
       avatarUrl: true,
+      bannerUrl: true,
       status: true,
       subscriptionStatus: true,
       subscriptionPlan: true,
@@ -35,6 +38,7 @@ async function getCoach(slug: string) {
       youtubeUrl: true,
       twitterUrl: true,
       discordUrl: true,
+      presentationVideoUrl: true,
       bio: true,
       methodology: true,
       announcements: {
@@ -112,21 +116,49 @@ export default async function CoachPublicPage({ params }: PageProps) {
 
         {/* Main Content */}
         <div className="container mx-auto px-6 py-12">
-          <div className="space-y-12">
-            {/* À propos + Méthodologie */}
-            <CoachAbout coach={coach} />
+          <div className="space-y-8">
+            {/* Section 1: À propos + Vidéo OU Calendrier */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* À propos + Méthodologie - 2 colonnes */}
+              <div className="lg:col-span-2">
+                <CoachAbout coach={coach} />
+              </div>
 
-            {/* Offres de coaching - KEEP AS IS */}
+              {/* Vidéo OU Calendrier - 1 colonne */}
+              <div>
+                {coach.presentationVideoUrl ? (
+                  <CoachVideo
+                    presentationVideoUrl={coach.presentationVideoUrl}
+                    coachName={`${coach.firstName} ${coach.lastName}`}
+                  />
+                ) : (
+                  <CoachCalendar
+                    coachId={coach.id}
+                    coachName={`${coach.firstName} ${coach.lastName}`}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Section 2: Calendrier (si vidéo présente) */}
+            {coach.presentationVideoUrl && (
+              <CoachCalendar
+                coachId={coach.id}
+                coachName={`${coach.firstName} ${coach.lastName}`}
+              />
+            )}
+
+            {/* Section 3: Offres de coaching - Grid responsive */}
             <div id="offers">
-              <CoachAnnouncements 
-                announcements={transformedAnnouncements} 
+              <CoachAnnouncements
+                announcements={transformedAnnouncements}
                 coachId={coach.id}
                 isInactive={isInactive}
               />
             </div>
 
-            {/* Avis des élèves */}
-            <CoachReviews 
+            {/* Section 4: Avis des élèves */}
+            <CoachReviews
               coachId={coach.id}
               averageRating={4.9}
               totalReviews={127}

@@ -7,28 +7,15 @@ import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { GlassCard, GradientButton, GradientText, Input } from '@/components/ui';
-import { Loader2, Search, SlidersHorizontal, RotateCcw, Languages, Clock, Star, Award } from 'lucide-react';
-
-interface CoachPriceRange {
-  min: number;
-  max: number;
-}
-
-interface Coach {
-  id: string;
-  slug: string;
-  firstName: string;
-  lastName: string;
-  bio?: string | null;
-  avatarUrl?: string | null;
-  formats: string[];
-  languages: string[];
-  experience?: number | null;
-  badges: string[];
-  priceRange?: CoachPriceRange | null;
-  announcementTypes: string[];
-  subscriptionStatus?: string | null;
-}
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Loader2, Search, SlidersHorizontal, RotateCcw, Languages, Clock, Star, Award, DollarSign, ChevronDown, Check } from 'lucide-react';
+import {
+  extractDynamicFilters,
+  filterCoaches,
+  type CoachWithAnnouncements,
+  type ActiveFilters,
+} from '@/lib/announcementFilters';
+import { getLanguageLabel } from '@/constants/announcements';
 
 interface CoachsPageContentProps {
   locale: string;
@@ -36,26 +23,60 @@ interface CoachsPageContentProps {
 
 export function CoachsPageContent({ locale }: CoachsPageContentProps) {
   const t = useTranslations('discoverCoaches');
-  const [coaches, setCoaches] = useState<Coach[]>([]);
+
+  // État des données
+  const [coaches, setCoaches] = useState<CoachWithAnnouncements[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedFormats, setSelectedFormats] = useState<string[]>([]);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('');
 
+  // État de recherche
+  const [search, setSearch] = useState('');
+
+  // État UI
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [languagePopoverOpen, setLanguagePopoverOpen] = useState(false);
+  const [pricePopoverOpen, setPricePopoverOpen] = useState(false);
+
+  // État des filtres - Type d'annonce (principal)
+  const [selectedAnnouncementType, setSelectedAnnouncementType] = useState<string>('');
+
+  // État des filtres - STRATEGY
+  const [selectedStrategyVariants, setSelectedStrategyVariants] = useState<string[]>([]);
+  const [selectedStrategyFormats, setSelectedStrategyFormats] = useState<string[]>([]);
+  const [selectedAbiRanges, setSelectedAbiRanges] = useState<string[]>([]);
+
+  // État des filtres - REVIEW
+  const [selectedReviewTypes, setSelectedReviewTypes] = useState<string[]>([]);
+  const [selectedReviewFormats, setSelectedReviewFormats] = useState<string[]>([]);
+  const [selectedReviewSupports, setSelectedReviewSupports] = useState<string[]>([]);
+
+  // État des filtres - TOOL
+  const [selectedToolNames, setSelectedToolNames] = useState<string[]>([]);
+  const [selectedToolObjectives, setSelectedToolObjectives] = useState<string[]>([]);
+
+  // État des filtres - MENTAL
+  const [selectedMentalFocusAreas, setSelectedMentalFocusAreas] = useState<string[]>([]);
+
+  // État des filtres - Communs
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(1000);
+  const [showInactiveCoaches, setShowInactiveCoaches] = useState<boolean>(true); // Par défaut, afficher tous les coachs
+
+  // Chargement des coachs
   useEffect(() => {
     let isMounted = true;
 
     const fetchCoaches = async () => {
       try {
-        const response = await fetch('/api/coach/explore', {
+        const url = `/api/coach/explore${showInactiveCoaches ? '?showInactive=true' : ''}`;
+        const response = await fetch(url, {
           cache: 'no-store',
         });
         if (!response.ok) {
           throw new Error('Failed to load coaches');
         }
-        const data = (await response.json()) as { coaches: Coach[] };
+        const data = (await response.json()) as { coaches: CoachWithAnnouncements[] };
         if (isMounted) {
           setCoaches(data.coaches);
         }
@@ -75,87 +96,130 @@ export function CoachsPageContent({ locale }: CoachsPageContentProps) {
     return () => {
       isMounted = false;
     };
-  }, [t]);
+  }, [t, showInactiveCoaches]);
 
-  const uniqueLanguages = useMemo(() => {
-    const langs = new Map<string, string>();
-    coaches.forEach((coach) => {
-      coach.languages.forEach((lang) => {
-        const key = lang.toLowerCase();
-        if (!langs.has(key)) {
-          langs.set(key, key.toUpperCase());
-        }
-      });
-    });
-    return Array.from(langs.values()).sort();
+  // Extraction des filtres dynamiques
+  const dynamicFilters = useMemo(() => {
+    try {
+      return extractDynamicFilters(coaches);
+    } catch (error) {
+      console.error('Erreur lors de l\'extraction des filtres:', error);
+      return {
+        announcementTypes: [],
+        strategyVariants: [],
+        strategyFormats: [],
+        abiRanges: [],
+        reviewTypes: [],
+        reviewFormats: [],
+        reviewSupports: [],
+        toolNames: [],
+        toolObjectives: [],
+        mentalFocusAreas: [],
+        languages: [],
+        priceRanges: [],
+      };
+    }
   }, [coaches]);
 
-  const uniqueFormats = useMemo(() => {
-    const formats = new Set<string>();
-    coaches.forEach((coach) => {
-      coach.formats.forEach((format) => formats.add(format));
-    });
-    return Array.from(formats).sort();
+  // Calculer le min/max des prix disponibles
+  const priceRange = useMemo(() => {
+    const allAnnouncements = coaches.flatMap((c) => c.announcements || []);
+    if (allAnnouncements.length === 0) return { min: 0, max: 1000 };
+
+    const prices = allAnnouncements.map((a) => a.priceCents / 100);
+    return {
+      min: Math.floor(Math.min(...prices)),
+      max: Math.ceil(Math.max(...prices)),
+    };
   }, [coaches]);
 
-  const uniqueTypes = useMemo(() => {
-    const types = new Set<string>();
-    coaches.forEach((coach) => {
-      coach.announcementTypes.forEach((type) => types.add(type));
-    });
-    return Array.from(types).sort();
-  }, [coaches]);
+  // Initialiser les prix min/max quand les données changent
+  useEffect(() => {
+    setMinPrice(priceRange.min);
+    setMaxPrice(priceRange.max);
+  }, [priceRange.min, priceRange.max]);
 
+  // Construction de l'objet de filtres actifs
+  const activeFilters: ActiveFilters = useMemo(
+    () => ({
+      search,
+      selectedAnnouncementType: selectedAnnouncementType || undefined,
+      selectedStrategyVariants: selectedStrategyVariants.length > 0 ? selectedStrategyVariants : undefined,
+      selectedStrategyFormats: selectedStrategyFormats.length > 0 ? selectedStrategyFormats : undefined,
+      selectedAbiRanges: selectedAbiRanges.length > 0 ? selectedAbiRanges : undefined,
+      selectedReviewTypes: selectedReviewTypes.length > 0 ? selectedReviewTypes : undefined,
+      selectedReviewFormats: selectedReviewFormats.length > 0 ? selectedReviewFormats : undefined,
+      selectedReviewSupports: selectedReviewSupports.length > 0 ? selectedReviewSupports : undefined,
+      selectedToolNames: selectedToolNames.length > 0 ? selectedToolNames : undefined,
+      selectedToolObjectives: selectedToolObjectives.length > 0 ? selectedToolObjectives : undefined,
+      selectedMentalFocusAreas: selectedMentalFocusAreas.length > 0 ? selectedMentalFocusAreas : undefined,
+      selectedLanguages: selectedLanguages.length > 0 ? selectedLanguages : undefined,
+      selectedPriceRange: minPrice > priceRange.min || maxPrice < priceRange.max ? `${minPrice}-${maxPrice}` : undefined,
+    }),
+    [
+      search,
+      selectedAnnouncementType,
+      selectedStrategyVariants,
+      selectedStrategyFormats,
+      selectedAbiRanges,
+      selectedReviewTypes,
+      selectedReviewFormats,
+      selectedReviewSupports,
+      selectedToolNames,
+      selectedToolObjectives,
+      selectedMentalFocusAreas,
+      selectedLanguages,
+      minPrice,
+      maxPrice,
+      priceRange.min,
+      priceRange.max,
+    ]
+  );
+
+  // Filtrage des coachs
   const filteredCoaches = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    const normalizedLanguage = selectedLanguage.toLowerCase();
+    try {
+      return filterCoaches(coaches, activeFilters);
+    } catch (error) {
+      console.error('Erreur lors du filtrage des coachs:', error);
+      return [];
+    }
+  }, [coaches, activeFilters]);
 
-    return coaches.filter((coach) => {
-      const matchesSearch =
-        query.length === 0 ||
-        `${coach.firstName} ${coach.lastName}`.toLowerCase().includes(query) ||
-        (coach.bio?.toLowerCase() ?? '').includes(query) ||
-        coach.formats.some((format) => format.toLowerCase().includes(query));
-
-      const matchesFormats =
-        selectedFormats.length === 0 || coach.formats.some((format) => selectedFormats.includes(format));
-
-      const matchesTypes =
-        selectedTypes.length === 0 || coach.announcementTypes.some((type) => selectedTypes.includes(type));
-
-      const matchesLanguage =
-        selectedLanguage.length === 0 || coach.languages.some((lang) => lang.toLowerCase() === normalizedLanguage);
-
-      return matchesSearch && matchesFormats && matchesTypes && matchesLanguage;
-    });
-  }, [coaches, search, selectedFormats, selectedTypes, selectedLanguage]);
-
-  const handleToggleType = (type: string) => {
-    setSelectedTypes((prev) =>
-      prev.includes(type) ? prev.filter((item) => item !== type) : [...prev, type],
-    );
+  // Handlers pour les filtres multi-sélection
+  const toggleFilter = (value: string, selected: string[], setter: (values: string[]) => void) => {
+    if (selected.includes(value)) {
+      setter(selected.filter((v) => v !== value));
+    } else {
+      setter([...selected, value]);
+    }
   };
 
-  const handleToggleFormat = (format: string) => {
-    setSelectedFormats((prev) =>
-      prev.includes(format) ? prev.filter((item) => item !== format) : [...prev, format],
-    );
-  };
-
+  // Reset tous les filtres
   const handleResetFilters = () => {
     setSearch('');
-    setSelectedTypes([]);
-    setSelectedFormats([]);
-    setSelectedLanguage('');
+    setSelectedAnnouncementType('');
+    setSelectedStrategyVariants([]);
+    setSelectedStrategyFormats([]);
+    setSelectedAbiRanges([]);
+    setSelectedReviewTypes([]);
+    setSelectedReviewFormats([]);
+    setSelectedReviewSupports([]);
+    setSelectedToolNames([]);
+    setSelectedToolObjectives([]);
+    setSelectedMentalFocusAreas([]);
+    setSelectedLanguages([]);
+    setMinPrice(priceRange.min);
+    setMaxPrice(priceRange.max);
+    setShowInactiveCoaches(true); // Reset vers affichage de tous les coachs
   };
 
-  const activeCoachesCount = coaches.length;
-  const formattedActiveCoachesCount = activeCoachesCount > 0
-    ? activeCoachesCount.toLocaleString(locale, {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      })
-    : '—';
+  // Comptage des résultats filtrés
+  const resultsCount = filteredCoaches.length;
+  const formattedResultsCount = resultsCount.toLocaleString(locale, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 
   if (isLoading) {
     return (
@@ -184,123 +248,516 @@ export function CoachsPageContent({ locale }: CoachsPageContentProps) {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#0f172a,_#020617_70%)] text-white">
-      <section className="relative overflow-hidden border-b border-white/5">
-        <div className="absolute inset-0 opacity-20">
-          <Image
-            src="/globe.svg"
-            alt="Globe pattern"
-            fill
-            priority
-            className="object-cover"
-          />
-        </div>
-
-        <div className="container relative mx-auto px-6 py-24">
-          <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-            <div className="space-y-8">
-              <GradientText as="h1" variant="emerald" className="text-4xl leading-tight md:text-5xl">
+      {/* Header compact avec filtres intégrés */}
+      <section className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/95 backdrop-blur-lg">
+        <div className="container mx-auto px-6 py-6">
+          {/* Première ligne : Titre + Stats + CTA */}
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-white md:text-3xl">
                 {t('hero.title')}
-              </GradientText>
-              <p className="max-w-2xl text-lg text-slate-300 md:text-xl">
-                {t('hero.subtitle')}
+              </h1>
+              <p className="mt-1 text-sm text-slate-400">
+                {formattedResultsCount} {resultsCount > 1 ? 'résultats' : 'résultat'}
               </p>
-
-              <div className="flex flex-wrap gap-4">
-                <Link href="#coaches-grid">
-                  <GradientButton size="md" variant="emerald">
-                    {t('hero.ctaPrimary')}
-                  </GradientButton>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    window.dispatchEvent(new CustomEvent('openCoachModal'));
-                  }}
-                >
-                  <GradientButton size="md" variant="ghost">
-                    {t('hero.ctaSecondary')}
-                  </GradientButton>
-                </button>
-              </div>
             </div>
 
-            <div className="grid gap-4">
-              <GlassCard className="border border-emerald-400/20 bg-emerald-500/10">
-                <p className="text-3xl font-semibold text-emerald-200 md:text-4xl">
-                  {formattedActiveCoachesCount}
-                </p>
-                <p className="text-sm text-emerald-100/70 md:text-base">{t('hero.stat1.label')}</p>
-              </GlassCard>
-              <GlassCard>
-                <p className="text-lg font-medium text-slate-100 md:text-xl">
-                  {t('hero.stat2.value')}
-                </p>
-                <p className="text-sm text-slate-300/80 md:text-base">{t('hero.stat2.label')}</p>
-              </GlassCard>
-              <GlassCard className="bg-white/5">
-                <p className="text-lg font-medium text-slate-100 md:text-xl">
-                  {t('hero.stat3.value')}
-                </p>
-                <p className="text-sm text-slate-300/80 md:text-base">{t('hero.stat3.label')}</p>
-              </GlassCard>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="container mx-auto px-6 py-16">
-        <GlassCard className="mb-10 border-white/10 bg-white/5">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-emerald-300">
-                <SlidersHorizontal className="h-4 w-4" />
-                {t('filters.title')}
-              </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                <Input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder={t('filters.searchPlaceholder')}
-                  className="border-white/10 bg-slate-900/60 pl-11 text-sm text-slate-100"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
+            <div className="flex gap-3">
               <Button
                 type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openCoachModal'));
+                }}
                 variant="outline"
-                onClick={handleResetFilters}
-                className="border-white/80 bg-white text-slate-900 hover:bg-white/90 hover:text-slate-900"
+                className="border-emerald-400/50 text-emerald-300 hover:bg-emerald-500/10"
               >
-                <RotateCcw className="mr-2 h-4 w-4 text-slate-900" />
-                {t('filters.reset')}
+                {t('hero.ctaSecondary')}
               </Button>
             </div>
           </div>
 
-          {uniqueFormats.length > 0 && (
-            <div className="mt-8">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                {t('filters.formatsTitle')}
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {uniqueFormats.map((format) => {
-                  const isActive = selectedFormats.includes(format);
+          {/* Deuxième ligne : Recherche + Type d'annonce */}
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            {/* Barre de recherche */}
+            <div className="flex-1 min-w-[250px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder={t('filters.searchPlaceholder')}
+                  className="h-9 border-white/10 bg-slate-900/60 pl-10 text-sm text-slate-100"
+                />
+              </div>
+            </div>
+
+            {/* Type d'annonce - Pills horizontales */}
+            {dynamicFilters.announcementTypes.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {dynamicFilters.announcementTypes.map((type) => {
+                  const isActive = selectedAnnouncementType === type.value;
                   return (
                     <Button
-                      key={format}
+                      key={type.value}
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setSelectedAnnouncementType(isActive ? '' : type.value)}
+                      className={`h-9 border ${
+                        isActive
+                          ? 'border-emerald-400 bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30'
+                          : 'border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500 hover:bg-slate-700'
+                      }`}
+                    >
+                      {type.label}
+                    </Button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Troisième ligne : Filtres permanents (Langue, Prix, Toggle, Actions) */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Bouton Langue avec Popover */}
+            <Popover open={languagePopoverOpen} onOpenChange={setLanguagePopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className={`h-9 border ${
+                    selectedLanguages.length > 0
+                      ? 'border-emerald-400 bg-emerald-500/20 text-emerald-200'
+                      : 'border-slate-600 bg-slate-800 text-slate-200'
+                  }`}
+                >
+                  <Languages className="mr-2 h-3.5 w-3.5" />
+                  Langue {selectedLanguages.length > 0 && `(${selectedLanguages.length})`}
+                  <ChevronDown className="ml-1 h-3 w-3 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 border-white/10 bg-slate-900 p-2" align="start">
+                <div className="space-y-1">
+                  {dynamicFilters.languages.map((language) => {
+                    const isSelected = selectedLanguages.includes(language.value);
+                    return (
+                      <button
+                        key={language.value}
+                        onClick={() => toggleFilter(language.value, selectedLanguages, setSelectedLanguages)}
+                        className={`flex w-full items-center justify-between rounded px-3 py-2 text-sm transition-colors ${
+                          isSelected
+                            ? 'bg-emerald-500/20 text-emerald-200'
+                            : 'text-slate-300 hover:bg-slate-800'
+                        }`}
+                      >
+                        <span>{language.label}</span>
+                        {isSelected && <Check className="h-4 w-4 text-emerald-400" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Bouton Prix avec Popover */}
+            <Popover open={pricePopoverOpen} onOpenChange={setPricePopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className={`h-9 border ${
+                    minPrice > priceRange.min || maxPrice < priceRange.max
+                      ? 'border-emerald-400 bg-emerald-500/20 text-emerald-200'
+                      : 'border-slate-600 bg-slate-800 text-slate-200'
+                  }`}
+                >
+                  <DollarSign className="mr-2 h-3.5 w-3.5" />
+                  Prix {(minPrice > priceRange.min || maxPrice < priceRange.max) && `(${minPrice}-${maxPrice}€)`}
+                  <ChevronDown className="ml-1 h-3 w-3 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 border-white/10 bg-slate-900 p-4" align="start">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+                      Plage de prix
+                    </p>
+                    <p className="text-sm font-medium text-emerald-300">
+                      {minPrice}€ - {maxPrice}€
+                    </p>
+                  </div>
+
+                  <div className="relative px-2 py-6">
+                    {/* Track background */}
+                    <div className="absolute left-2 right-2 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-slate-700" />
+
+                    {/* Active track between thumbs */}
+                    <div
+                      className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+                      style={{
+                        left: `${((minPrice - priceRange.min) / (priceRange.max - priceRange.min)) * 100}%`,
+                        right: `${100 - ((maxPrice - priceRange.min) / (priceRange.max - priceRange.min)) * 100}%`,
+                      }}
+                    />
+
+                    {/* Min range input */}
+                    <input
+                      type="range"
+                      min={priceRange.min}
+                      max={priceRange.max}
+                      value={minPrice}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        if (value <= maxPrice) {
+                          setMinPrice(value);
+                        }
+                      }}
+                      className="pointer-events-none absolute left-0 top-1/2 w-full -translate-y-1/2 appearance-none bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-emerald-400 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-emerald-400 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110"
+                    />
+
+                    {/* Max range input */}
+                    <input
+                      type="range"
+                      min={priceRange.min}
+                      max={priceRange.max}
+                      value={maxPrice}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        if (value >= minPrice) {
+                          setMaxPrice(value);
+                        }
+                      }}
+                      className="pointer-events-none absolute left-0 top-1/2 w-full -translate-y-1/2 appearance-none bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-emerald-400 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:transition-transform [&::-moz-range-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-emerald-400 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110"
+                    />
+                  </div>
+
+                  {/* Min/Max labels */}
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>{priceRange.min}€</span>
+                    <span>{priceRange.max}€</span>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Toggle affichage coachs inactifs */}
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setShowInactiveCoaches(!showInactiveCoaches)}
+              className={`h-9 border ${
+                showInactiveCoaches
+                  ? 'border-blue-400 bg-blue-500/20 text-blue-200 hover:bg-blue-500/30'
+                  : 'border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500 hover:bg-slate-700'
+              }`}
+            >
+              {showInactiveCoaches ? 'Tous' : 'Actifs'}
+            </Button>
+
+            {/* Séparateur */}
+            <div className="h-6 w-px bg-white/10" />
+
+            {/* Bouton Filtres avancés (conditionnel selon le type) */}
+            {selectedAnnouncementType && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="h-9 border-emerald-400/40 bg-emerald-500/10 text-emerald-300 hover:border-emerald-400/60 hover:bg-emerald-500/20"
+              >
+                <SlidersHorizontal className="mr-2 h-3 w-3" />
+                Filtres avancés
+              </Button>
+            )}
+
+            {/* Bouton Reset */}
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleResetFilters}
+              className="h-9 border-slate-600 bg-slate-800 text-slate-200 hover:border-slate-500 hover:bg-slate-700"
+            >
+              <RotateCcw className="mr-2 h-3 w-3" />
+              Réinitialiser
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Filtres avancés collapsibles */}
+      {selectedAnnouncementType && showAdvancedFilters && (
+        <section className="container mx-auto px-6 py-4">
+          <GlassCard className="border-white/10 bg-white/5 p-6">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-400">
+              Filtres spécifiques • {selectedAnnouncementType}
+            </p>
+
+          {/* FILTRES NIVEAU 2 : Filtres STRATEGY (visible uniquement si STRATEGY sélectionné) */}
+          {selectedAnnouncementType === 'STRATEGY' && (
+            <>
+              {dynamicFilters.strategyVariants.length > 0 && (
+                <div className="mt-8">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                    Variante
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {dynamicFilters.strategyVariants.map((variant) => {
+                      const isActive = selectedStrategyVariants.includes(variant.value);
+                      return (
+                        <Button
+                          key={variant.value}
+                          type="button"
+                          variant="outline"
+                          onClick={() => toggleFilter(variant.value, selectedStrategyVariants, setSelectedStrategyVariants)}
+                          className={`border ${
+                            isActive
+                              ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
+                              : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
+                          }`}
+                        >
+                          {variant.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {dynamicFilters.strategyFormats.length > 0 && (
+                <div className="mt-8">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                    Format
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {dynamicFilters.strategyFormats.map((format) => {
+                      const isActive = selectedStrategyFormats.includes(format.value);
+                      return (
+                        <Button
+                          key={format.value}
+                          type="button"
+                          variant="outline"
+                          onClick={() => toggleFilter(format.value, selectedStrategyFormats, setSelectedStrategyFormats)}
+                          className={`border ${
+                            isActive
+                              ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
+                              : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
+                          }`}
+                        >
+                          {format.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {dynamicFilters.abiRanges.length > 0 && (
+                <div className="mt-8">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                    ABI / Buy-in moyen
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {dynamicFilters.abiRanges.map((abi) => {
+                      const isActive = selectedAbiRanges.includes(abi.value);
+                      return (
+                        <Button
+                          key={abi.value}
+                          type="button"
+                          variant="outline"
+                          onClick={() => toggleFilter(abi.value, selectedAbiRanges, setSelectedAbiRanges)}
+                          className={`border ${
+                            isActive
+                              ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
+                              : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
+                          }`}
+                        >
+                          {abi.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* FILTRES NIVEAU 2 : Filtres REVIEW */}
+          {selectedAnnouncementType === 'REVIEW' && (
+            <>
+              {dynamicFilters.reviewTypes.length > 0 && (
+                <div className="mt-8">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                    Type de review
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {dynamicFilters.reviewTypes.map((type) => {
+                      const isActive = selectedReviewTypes.includes(type.value);
+                      return (
+                        <Button
+                          key={type.value}
+                          type="button"
+                          variant="outline"
+                          onClick={() => toggleFilter(type.value, selectedReviewTypes, setSelectedReviewTypes)}
+                          className={`border ${
+                            isActive
+                              ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
+                              : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
+                          }`}
+                        >
+                          {type.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {dynamicFilters.reviewFormats.length > 0 && (
+                <div className="mt-8">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                    Format
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {dynamicFilters.reviewFormats.map((format) => {
+                      const isActive = selectedReviewFormats.includes(format.value);
+                      return (
+                        <Button
+                          key={format.value}
+                          type="button"
+                          variant="outline"
+                          onClick={() => toggleFilter(format.value, selectedReviewFormats, setSelectedReviewFormats)}
+                          className={`border ${
+                            isActive
+                              ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
+                              : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
+                          }`}
+                        >
+                          {format.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {dynamicFilters.reviewSupports.length > 0 && (
+                <div className="mt-8">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                    Support
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {dynamicFilters.reviewSupports.map((support) => {
+                      const isActive = selectedReviewSupports.includes(support.value);
+                      return (
+                        <Button
+                          key={support.value}
+                          type="button"
+                          variant="outline"
+                          onClick={() => toggleFilter(support.value, selectedReviewSupports, setSelectedReviewSupports)}
+                          className={`border ${
+                            isActive
+                              ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
+                              : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
+                          }`}
+                        >
+                          {support.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* FILTRES NIVEAU 2 : Filtres TOOL */}
+          {selectedAnnouncementType === 'TOOL' && (
+            <>
+              {dynamicFilters.toolNames.length > 0 && (
+                <div className="mt-8">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                    Nom de l&apos;outil
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {dynamicFilters.toolNames.map((tool) => {
+                      const isActive = selectedToolNames.includes(tool.value);
+                      return (
+                        <Button
+                          key={tool.value}
+                          type="button"
+                          variant="outline"
+                          onClick={() => toggleFilter(tool.value, selectedToolNames, setSelectedToolNames)}
+                          className={`border ${
+                            isActive
+                              ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
+                              : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
+                          }`}
+                        >
+                          {tool.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {dynamicFilters.toolObjectives.length > 0 && (
+                <div className="mt-8">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                    Objectif
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {dynamicFilters.toolObjectives.map((objective) => {
+                      const isActive = selectedToolObjectives.includes(objective.value);
+                      return (
+                        <Button
+                          key={objective.value}
+                          type="button"
+                          variant="outline"
+                          onClick={() => toggleFilter(objective.value, selectedToolObjectives, setSelectedToolObjectives)}
+                          className={`border ${
+                            isActive
+                              ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
+                              : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
+                          }`}
+                        >
+                          {objective.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* FILTRES NIVEAU 2 : Filtres MENTAL */}
+          {selectedAnnouncementType === 'MENTAL' && dynamicFilters.mentalFocusAreas.length > 0 && (
+            <div className="mt-8">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                Domaine de focus
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {dynamicFilters.mentalFocusAreas.map((focus) => {
+                  const isActive = selectedMentalFocusAreas.includes(focus.value);
+                  return (
+                    <Button
+                      key={focus.value}
                       type="button"
                       variant="outline"
-                      onClick={() => handleToggleFormat(format)}
+                      onClick={() => toggleFilter(focus.value, selectedMentalFocusAreas, setSelectedMentalFocusAreas)}
                       className={`border ${
                         isActive
                           ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
                           : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
                       }`}
                     >
-                      {format}
+                      {focus.label}
                     </Button>
                   );
                 })}
@@ -308,64 +765,13 @@ export function CoachsPageContent({ locale }: CoachsPageContentProps) {
             </div>
           )}
 
-          {uniqueTypes.length > 0 && (
-            <div className="mt-8">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                {t('filters.typesTitle')}
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {uniqueTypes.map((type) => {
-                  const isActive = selectedTypes.includes(type);
-                  return (
-                    <Button
-                      key={type}
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleToggleType(type)}
-                      className={`border ${
-                        isActive
-                          ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
-                          : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
-                      }`}
-                    >
-                      {t(`badges.${type}`, { defaultMessage: type })}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* Fermeture de la GlassCard des filtres avancés */}
+          </GlassCard>
+        </section>
+      )}
 
-          {uniqueLanguages.length > 0 && (
-            <div className="mt-8">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                {t('filters.languagesTitle')}
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {uniqueLanguages.map((language) => {
-                  const isActive = selectedLanguage === language;
-                  return (
-                    <Button
-                      key={language}
-                      type="button"
-                      variant="outline"
-                      onClick={() => setSelectedLanguage(isActive ? '' : language)}
-                      className={`border ${
-                        isActive
-                          ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
-                          : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/20'
-                      }`}
-                    >
-                      {language}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </GlassCard>
-
-        <div id="coaches-grid" className="space-y-6">
+        {/* Grille des Coachs */}
+        <div id="coaches-grid" className="container mx-auto px-6 mt-8 space-y-6">
           {filteredCoaches.length === 0 ? (
             <GlassCard className="border-white/10 bg-white/5 text-center text-slate-200">
               <h2 className="text-xl font-semibold">{t('states.empty.title')}</h2>
@@ -375,6 +781,10 @@ export function CoachsPageContent({ locale }: CoachsPageContentProps) {
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {filteredCoaches.map((coach) => {
                 const initials = `${coach.firstName?.[0] ?? ''}${coach.lastName?.[0] ?? ''}`.toUpperCase();
+                // Calculer les prix min/max des annonces
+                const prices = coach.announcements.map((a) => a.priceCents / 100);
+                const minPrice = Math.min(...prices);
+
                 return (
                   <GlassCard
                     key={coach.id}
@@ -395,15 +805,6 @@ export function CoachsPageContent({ locale }: CoachsPageContentProps) {
                           </div>
                         </div>
                       )}
-
-                      {coach.badges.length > 0 && (
-                        <div className="absolute right-4 top-4">
-                          <Badge className="bg-amber-500/90 text-amber-50">
-                            <Award className="mr-1 h-3 w-3" />
-                            {t('card.topCoach')}
-                          </Badge>
-                        </div>
-                      )}
                     </div>
 
                     <div className="space-y-4 p-6">
@@ -412,29 +813,20 @@ export function CoachsPageContent({ locale }: CoachsPageContentProps) {
                           <h3 className="text-xl font-semibold text-white">
                             {coach.firstName} {coach.lastName}
                           </h3>
-                          {coach.experience ? (
-                            <div className="mt-1 flex items-center gap-2 text-sm text-slate-300">
-                              <Star className="h-4 w-4 text-amber-400" />
-                              {t('card.experience', { count: coach.experience })}
-                            </div>
-                          ) : null}
                         </div>
 
-                        {coach.priceRange ? (
-                          <div className="text-right">
-                            <span className="text-lg font-semibold text-emerald-300">
-                              {coach.priceRange.min.toLocaleString(locale, {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0,
-                              })}
-                              €
-                            </span>
-                            <p className="text-xs text-slate-400">
-                              {t('card.priceFrom')}
-                              {t('card.perHour')}
-                            </p>
-                          </div>
-                        ) : null}
+                        <div className="text-right">
+                          <span className="text-lg font-semibold text-emerald-300">
+                            {minPrice.toLocaleString(locale, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                            })}
+                            €
+                          </span>
+                          <p className="text-xs text-slate-400">
+                            {t('card.priceFrom')}
+                          </p>
+                        </div>
                       </div>
 
                       {coach.bio ? (
@@ -443,35 +835,7 @@ export function CoachsPageContent({ locale }: CoachsPageContentProps) {
                         </p>
                       ) : null}
 
-                      {coach.announcementTypes.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {coach.announcementTypes.slice(0, 3).map((type) => (
-                            <Badge
-                              key={type}
-                              className="border-emerald-400/20 bg-emerald-500/10 text-emerald-200"
-                            >
-                              {t(`badges.${type}`, { defaultMessage: type })}
-                            </Badge>
-                          ))}
-                          {coach.announcementTypes.length > 3 ? (
-                            <Badge variant="secondary">+{coach.announcementTypes.length - 3}</Badge>
-                          ) : null}
-                        </div>
-                      )}
-
                       <div className="space-y-3 text-sm text-slate-300">
-                        {coach.formats.length > 0 && (
-                          <div className="flex items-start gap-2">
-                            <Clock className="mt-0.5 h-4 w-4 text-slate-400" />
-                            <div>
-                              <p className="text-xs uppercase tracking-widest text-slate-400">
-                                {t('card.formats')}
-                              </p>
-                              <p>{coach.formats.join(', ')}</p>
-                            </div>
-                          </div>
-                        )}
-
                         {coach.languages.length > 0 && (
                           <div className="flex items-start gap-2">
                             <Languages className="mt-0.5 h-4 w-4 text-slate-400" />
@@ -479,10 +843,29 @@ export function CoachsPageContent({ locale }: CoachsPageContentProps) {
                               <p className="text-xs uppercase tracking-widest text-slate-400">
                                 {t('card.languages')}
                               </p>
-                              <p>{coach.languages.map((lang) => lang.toUpperCase()).join(', ')}</p>
+                              <p>{coach.languages.map((lang) => getLanguageLabel(lang)).join(', ')}</p>
                             </div>
                           </div>
                         )}
+
+                        <div>
+                          <p className="text-xs uppercase tracking-widest text-slate-400 mb-2">
+                            Annonces ({coach.announcements.length})
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {coach.announcements.slice(0, 3).map((announcement) => (
+                              <Badge
+                                key={announcement.id}
+                                className="border-emerald-400/20 bg-emerald-500/10 text-emerald-200"
+                              >
+                                {announcement.type}
+                              </Badge>
+                            ))}
+                            {coach.announcements.length > 3 ? (
+                              <Badge variant="secondary">+{coach.announcements.length - 3}</Badge>
+                            ) : null}
+                          </div>
+                        </div>
                       </div>
 
                       <div className="flex gap-3">
@@ -507,7 +890,6 @@ export function CoachsPageContent({ locale }: CoachsPageContentProps) {
             </div>
           )}
         </div>
-      </section>
     </main>
   );
 }

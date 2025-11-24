@@ -1,21 +1,14 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { uploadFileToSupabase } from '@/lib/supabase';
 
 /**
- * API Mock pour l'upload de fichiers
- * 
- * TODO: Implémenter l'upload réel avec Supabase Storage
- * 
- * Configuration requise:
- * 1. Créer un projet Supabase
- * 2. Créer un bucket 'coach-media' (public)
- * 3. Ajouter les variables d'environnement:
- *    - NEXT_PUBLIC_SUPABASE_URL
- *    - NEXT_PUBLIC_SUPABASE_ANON_KEY
- *    - SUPABASE_SERVICE_ROLE_KEY
- * 4. Installer le SDK: pnpm add @supabase/supabase-js
- * 5. Implémenter l'upload avec supabase.storage.from('coach-media').upload()
+ * API pour l'upload de fichiers vers Supabase Storage
+ *
+ * Buckets configurés:
+ * - coach-media (public) : avatars et bannières des coachs
+ * - player-media (public) : avatars des joueurs
  */
 
 export async function POST(request: Request) {
@@ -60,18 +53,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // TODO: Implémenter l'upload réel avec Supabase
-    // const supabase = createClient(...)
-    // const { data, error } = await supabase.storage
-    //   .from('coach-media')
-    //   .upload(`${session.user.id}/${type}-${Date.now()}.${ext}`, file)
+    // Déterminer le bucket en fonction du rôle de l'utilisateur
+    // Par défaut coach-media, mais peut être étendu pour les joueurs
+    const bucket = 'coach-media';
 
-    // Pour le MVP, on retourne une URL mock
-    const mockUrl = `https://placeholder.co/600x400?text=${type}`;
+    // Upload vers Supabase Storage
+    const publicUrl = await uploadFileToSupabase(
+      file,
+      bucket,
+      session.user.id,
+      type as 'avatar' | 'banner'
+    );
 
     return NextResponse.json({
-      url: mockUrl,
-      message: 'Upload mock - Supabase non configuré',
+      url: publicUrl,
+      message: 'Fichier uploadé avec succès',
     });
   } catch (error) {
     console.error('Erreur lors de l\'upload:', error);

@@ -54,17 +54,26 @@ export function filterCoachLanguages(languages: string[]): string[] {
 }
 
 // Formater une liste de formats pour l'affichage
-export function formatFormatsList(formats: string[]): string[] {
+export function formatFormatsList(formats: string[] | undefined | null): string[] {
+  if (!formats || !Array.isArray(formats)) {
+    return [];
+  }
   return normalizeFormats(formats).map(getFormatLabel);
 }
 
 // Formater une liste de catégories pour l'affichage
-export function formatCategoriesList(categories: string[]): string[] {
+export function formatCategoriesList(categories: string[] | undefined | null): string[] {
+  if (!categories || !Array.isArray(categories)) {
+    return [];
+  }
   return categories.map(getCategoryLabel);
 }
 
 // Formater une liste de langues pour l'affichage
-export function formatLanguagesList(languages: string[]): string[] {
+export function formatLanguagesList(languages: string[] | undefined | null): string[] {
+  if (!languages || !Array.isArray(languages)) {
+    return [];
+  }
   return normalizeLanguages(languages).map(getLanguageLabel);
 }
 

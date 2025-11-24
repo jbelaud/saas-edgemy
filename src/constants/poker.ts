@@ -74,8 +74,52 @@ export function normalizeFormats(formats: string[]): string[] {
   return [...new Set(normalized)];
 }
 
+// Mappage des alias de langues (pour gérer les anciennes valeurs)
+export const LANGUAGE_ALIASES: Record<string, string> = {
+  'french': 'fr',
+  'français': 'fr',
+  'francais': 'fr',
+  'english': 'en',
+  'anglais': 'en',
+  'spanish': 'es',
+  'espagnol': 'es',
+  'portuguese': 'pt',
+  'portugais': 'pt',
+  'german': 'de',
+  'allemand': 'de',
+  'italian': 'it',
+  'italien': 'it',
+};
+
+// Fonction pour normaliser une langue
+export function normalizeLanguage(language: string): string | null {
+  const trimmed = language.trim().toLowerCase();
+
+  // Vérifier si c'est déjà un code valide
+  if (SUPPORTED_LANGUAGES.some(l => l.value === trimmed)) {
+    return trimmed;
+  }
+
+  // Vérifier les alias
+  if (LANGUAGE_ALIASES[trimmed]) {
+    return LANGUAGE_ALIASES[trimmed];
+  }
+
+  return null; // Invalide
+}
+
 // Fonction pour normaliser les langues (en minuscules)
 export function normalizeLanguages(languages: string[]): string[] {
-  const normalized = languages.map(lang => lang.trim().toLowerCase());
+  const normalized = languages
+    .map(normalizeLanguage)
+    .filter((lang): lang is string => lang !== null);
+
+  // Supprimer les doublons
   return [...new Set(normalized)];
+}
+
+// Fonction pour obtenir le libellé d'affichage d'une langue
+export function getLanguageDisplayLabel(langCode: string): string {
+  const lang = SUPPORTED_LANGUAGES.find(l => l.value === langCode.toLowerCase());
+  return lang ? lang.label : langCode.toUpperCase();
 }

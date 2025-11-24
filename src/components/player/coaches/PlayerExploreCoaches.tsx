@@ -108,6 +108,7 @@ export function PlayerExploreCoaches({ coaches, searchQuery }: PlayerExploreCoac
                   alt={`${coach.firstName} ${coach.lastName}`}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  unoptimized={true}
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
