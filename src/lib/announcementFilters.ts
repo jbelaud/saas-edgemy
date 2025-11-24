@@ -33,7 +33,6 @@ import {
   getToolObjectiveLabel,
   getMentalFocusLabel,
   getLanguageLabel,
-  type AnnouncementType,
 } from '@/constants/announcements';
 import { normalizeLanguages } from '@/constants/poker';
 

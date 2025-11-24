@@ -6,9 +6,9 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { GlassCard, GradientButton, GradientText, Input } from '@/components/ui';
+import { GlassCard, GradientButton, Input } from '@/components/ui';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Loader2, Search, SlidersHorizontal, RotateCcw, Languages, Clock, Star, Award, DollarSign, ChevronDown, Check } from 'lucide-react';
+import { Loader2, Search, SlidersHorizontal, RotateCcw, Languages, DollarSign, ChevronDown, Check } from 'lucide-react';
 import {
   extractDynamicFilters,
   filterCoaches,

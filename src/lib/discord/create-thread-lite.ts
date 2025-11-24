@@ -29,7 +29,6 @@ export async function createDiscordThreadForLite(
     playerName,
     sessionTitle,
     startDate,
-    endDate,
     paymentPreferences,
   } = params;
 
@@ -56,8 +55,8 @@ export async function createDiscordThreadForLite(
     console.log(`[Discord LITE] Date: ${startDate.toLocaleString('fr-FR')}`);
     console.log(`[Discord LITE] Moyens de paiement préférés: ${paymentPreferences.join(', ') || 'À définir'}`);
 
-    // Message à poster dans le salon Discord
-    const welcomeMessage = `🎉 **Nouvelle réservation - Plan LITE**\n\n` +
+    // TODO: Message à poster dans le salon Discord (non implémenté pour l'instant)
+    /* const welcomeMessage = `🎉 **Nouvelle réservation - Plan LITE**\n\n` +
       `👤 **Coach**: ${coachName}\n` +
       `👤 **Joueur**: ${playerName}\n` +
       `📅 **Date**: ${startDate.toLocaleDateString('fr-FR', {
@@ -83,7 +82,7 @@ export async function createDiscordThreadForLite(
       `⚠️ **Important**: Edgemy n'est pas impliqué dans la transaction de paiement.\n` +
       `Vous effectuez le paiement directement au coach selon ses instructions.\n\n` +
       `Une fois le paiement effectué, le coach confirmera votre réservation.\n\n` +
-      `Bon coaching ! 🚀`;
+      `Bon coaching ! 🚀`; */
 
     // TODO: Appeler l'API Discord pour créer le salon
     // const response = await fetch(...)

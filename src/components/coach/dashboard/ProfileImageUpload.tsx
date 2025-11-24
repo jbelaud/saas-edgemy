@@ -16,7 +16,6 @@ interface ProfileImageUploadProps {
 export function ProfileImageUpload({
   currentUrl,
   type,
-  userId,
   onUploadSuccess,
   onDeleteSuccess,
 }: ProfileImageUploadProps) {

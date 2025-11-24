@@ -28,7 +28,7 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
   const [editEnd, setEditEnd] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedAvailability, setSelectedAvailability] = useState<Availability | null>(null);
-  const { alertState, confirmState, showError, showConfirm, closeAlert, closeConfirm } = useAlertDialog();
+  const { alertState, confirmState, showError, closeAlert, closeConfirm } = useAlertDialog();
 
   // Trier par date croissante
   const sortedAvailabilities = [...availabilities].sort(

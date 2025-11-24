@@ -6,6 +6,7 @@ import { headers } from 'next/headers';
 import { CheckCircle, Calendar, Clock, AlertTriangle, MessageSquare, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Réservation confirmée - Plan Lite | Edgemy',
@@ -153,9 +154,11 @@ export default async function ReservationLitePage({ params }: PageProps) {
           <div className="space-y-4">
             <div className="flex items-start gap-4 pb-4 border-b">
               {reservation.coach.avatarUrl && (
-                <img
+                <Image
                   src={reservation.coach.avatarUrl}
                   alt={`${reservation.coach.firstName} ${reservation.coach.lastName}`}
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-full object-cover"
                 />
               )}

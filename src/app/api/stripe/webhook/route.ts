@@ -7,7 +7,7 @@ import { createOrReuseDiscordChannel, DiscordChannelError } from '@/lib/discord/
 import type { DiscordChannelReservation } from '@/lib/discord/channel';
 import { sendSessionReminderDM } from '@/lib/discord/messages';
 import { ensureMemberRole } from '@/lib/discord/roles';
-import { checkLowMargin, alertPaymentFailure, alertSubscriptionPastDue } from '@/lib/stripe/alerts';
+import { checkLowMargin } from '@/lib/stripe/alerts';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',

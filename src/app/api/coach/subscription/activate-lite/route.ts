@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
     // Activer le plan LITE
     // IMPORTANT: L'admin doit confirmer le paiement manuellement
-    const updatedCoach = await prisma.coach.update({
+    await prisma.coach.update({
       where: { id: coach.id },
       data: {
         planKey: 'LITE',

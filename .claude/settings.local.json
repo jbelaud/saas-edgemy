@@ -18,7 +18,9 @@
       "Bash(npx next build)",
       "Bash(git add:*)",
       "Bash(.gitignore)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

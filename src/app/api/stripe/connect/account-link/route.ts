@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { refresh } = await req.json().catch(() => ({ refresh: false }));
+    await req.json().catch(() => ({ refresh: false }));
 
     // Mode développement : bypasser Stripe Connect si non activé
     const isStripeConnectEnabled = process.env.STRIPE_CONNECT_ENABLED === 'true';

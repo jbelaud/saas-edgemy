@@ -289,8 +289,7 @@ export async function refundReservationPartial(
  */
 export async function refundPackageProRata(
   packageId: string,
-  reason: string,
-  initiatedBy?: string
+  reason: string
 ): Promise<{
   success: boolean;
   refundAmount?: number;
@@ -340,7 +339,7 @@ export async function refundPackageProRata(
     }
 
     // Créer le remboursement Stripe
-    const refund = await stripe.refunds.create({
+    await stripe.refunds.create({
       payment_intent: package_.stripePaymentId,
       amount: refundAmount,
       reason: 'requested_by_customer',

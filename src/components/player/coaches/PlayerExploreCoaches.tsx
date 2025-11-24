@@ -36,20 +36,6 @@ interface PlayerExploreCoachesProps {
   searchQuery: string;
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  STRATEGY: 'Stratégie',
-  REVIEW: 'Review',
-  TOOL: 'Outils',
-  MENTAL: 'Mental',
-};
-
-const TYPE_COLORS: Record<string, string> = {
-  STRATEGY: 'bg-blue-100 text-blue-800',
-  REVIEW: 'bg-purple-100 text-purple-800',
-  TOOL: 'bg-orange-100 text-orange-800',
-  MENTAL: 'bg-green-100 text-green-800',
-};
-
 export function PlayerExploreCoaches({ coaches, searchQuery }: PlayerExploreCoachesProps) {
   const locale = useLocale();
 
