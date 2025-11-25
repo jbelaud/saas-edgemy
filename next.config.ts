@@ -16,7 +16,13 @@ const nextConfig: NextConfig = {
         hostname: 'api.dicebear.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'eidfjvxojlthmfibucjc.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
+    formats: ['image/avif', 'image/webp'],
   },
 };
 

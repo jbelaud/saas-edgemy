@@ -101,6 +101,37 @@ model coach {
   channels               CoachPlayerChannel[]
   notifications          CoachNotification[]
   user                   user              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews                Review[]
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  coachId     String
+  playerId    String
+  reservationId String? @unique // Lien optionnel vers la réservation
+  rating      Int      // Note sur 5
+  comment     String?  // Commentaire optionnel
+  isPublic    Boolean  @default(true) // Afficher publiquement
+  isVerified  Boolean  @default(false) // Vérifié = lié à une vraie session
+  source      ReviewSource @default(EXTERNAL) // RESERVATION ou EXTERNAL
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  coach       coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  player      user     @relation("PlayerReviews", fields: [playerId], references: [id], onDelete: Cascade)
+  reservation Reservation? @relation(fields: [reservationId], references: [id])
+
+  @@index([coachId])
+  @@index([playerId])
+  @@index([rating])
+  @@index([createdAt])
+  @@index([isVerified])
+  @@index([source])
+}
+
+enum ReviewSource {
+  RESERVATION // Avis post-session (vérifié automatiquement)
+  EXTERNAL    // Avis externe via lien public (nécessite validation manuelle)
 }
 
 model CoachDraft {
@@ -242,6 +273,7 @@ model Reservation {
   packageSession   PackageSession?
   refundLogs       RefundLog[]
   transferLogs     TransferLog[]
+  review           Review?
   announcement     Announcement      @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   coach            coach             @relation(fields: [coachId], references: [id], onDelete: Cascade)
   pack             AnnouncementPack? @relation(fields: [packId], references: [id])
@@ -439,6 +471,7 @@ model user {
   coachNotes       CoachNote[]
   playerChannels   CoachPlayerChannel[] @relation("PlayerChannels")
   coachNotifications CoachNotification[] @relation("CoachNotifications")
+  reviews          Review[] @relation("PlayerReviews")
   adminLogs        AdminLog[]
   account          account[]
   coach            coach?

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { StructuredData } from "@/components/seo/StructuredData";
+import { generateOrganizationSchema } from "@/lib/seo/structuredData";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +40,23 @@ export const metadata: Metadata = {
   },
 };
 
+// Données structurées de l'organisation Edgemy
+const organizationSchema = generateOrganizationSchema({
+  name: 'Edgemy',
+  url: 'https://edgemy.fr',
+  logo: 'https://edgemy.fr/logo.png',
+  description: 'La plateforme qui connecte joueurs et coachs de poker. Trouvez le coach adapté à vos besoins pour progresser rapidement en MTT, cash game ou mental game.',
+  sameAs: [
+    // TODO: Ajouter les URLs réelles des réseaux sociaux Edgemy
+    // Exemples :
+    // 'https://twitter.com/edgemy',
+    // 'https://www.linkedin.com/company/edgemy',
+    // 'https://www.instagram.com/edgemy',
+    // 'https://www.facebook.com/edgemy',
+    // 'https://www.youtube.com/@edgemy',
+  ],
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -46,6 +65,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <StructuredData data={organizationSchema} />
         {children}
       </body>
     </html>

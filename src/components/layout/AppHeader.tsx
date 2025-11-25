@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from '@/lib/auth-client';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { CoachSignUpModal } from '@/components/auth/CoachSignUpModal';
+import { PlayerSignUpModal } from '@/components/auth/PlayerSignUpModal';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/Logo';
@@ -14,11 +15,33 @@ import { Logo } from '@/components/ui/Logo';
 export function AppHeader() {
   const { data: session, isPending } = useSession();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = (params?.locale as string) || 'fr';
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCoachSignUpModal, setShowCoachSignUpModal] = useState(false);
+  const [showPlayerSignUpModal, setShowPlayerSignUpModal] = useState(false);
   const [signupContext, setSignupContext] = useState<'coach' | 'player'>('player');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [prefilledEmail, setPrefilledEmail] = useState<string>('');
+
+  // Check URL parameters to auto-open authentication modals
+  useEffect(() => {
+    const authParam = searchParams?.get('auth');
+    const emailParam = searchParams?.get('email');
+
+    if (authParam === 'signup') {
+      setSignupContext('player');
+      setShowPlayerSignUpModal(true);
+
+      // Pre-fill email if provided
+      if (emailParam) {
+        setPrefilledEmail(emailParam);
+      }
+    } else if (authParam === 'signin') {
+      setSignupContext('player');
+      setShowLoginModal(true);
+    }
+  }, [searchParams]);
 
   // Listen for custom events from homepage CTAs
   useEffect(() => {
@@ -34,7 +57,7 @@ export function AppHeader() {
 
     const handleOpenSignupModal = () => {
       setSignupContext('player');
-      setShowLoginModal(true);
+      setShowPlayerSignUpModal(true);
     };
 
     window.addEventListener('openLoginModal', handleOpenLoginModal);
@@ -205,22 +228,35 @@ export function AppHeader() {
         )}
       </header>
 
-      <LoginModal 
-        open={showLoginModal} 
+      <LoginModal
+        open={showLoginModal}
         onOpenChange={setShowLoginModal}
         context={signupContext}
         onSwitchToSignup={() => {
           setShowLoginModal(false);
-          setSignupContext('coach');
-          setShowCoachSignUpModal(true);
+          if (signupContext === 'coach') {
+            setShowCoachSignUpModal(true);
+          } else {
+            setShowPlayerSignUpModal(true);
+          }
         }}
       />
-      <CoachSignUpModal 
-        open={showCoachSignUpModal} 
+      <CoachSignUpModal
+        open={showCoachSignUpModal}
         onOpenChange={setShowCoachSignUpModal}
         onSwitchToLogin={() => {
           setShowCoachSignUpModal(false);
           setSignupContext('coach');
+          setShowLoginModal(true);
+        }}
+      />
+      <PlayerSignUpModal
+        open={showPlayerSignUpModal}
+        onOpenChange={setShowPlayerSignUpModal}
+        prefilledEmail={prefilledEmail}
+        onSwitchToLogin={() => {
+          setShowPlayerSignUpModal(false);
+          setSignupContext('player');
           setShowLoginModal(true);
         }}
       />

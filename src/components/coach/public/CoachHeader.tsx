@@ -34,9 +34,14 @@ interface CoachHeaderProps {
       image: string | null;
     } | null;
   };
+  reviewStats?: {
+    averageRating: number;
+    totalReviews: number;
+  };
+  studentsCount?: number;
 }
 
-export function CoachHeader({ coach }: CoachHeaderProps) {
+export function CoachHeader({ coach, reviewStats, studentsCount }: CoachHeaderProps) {
   const avatarUrl = coach.avatarUrl || coach.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(coach.firstName + ' ' + coach.lastName)}&size=200&background=f97316&color=fff&bold=true`;
   const isTopCoach = coach.badges?.includes('TOP_COACH');
   const isInactive = coach.subscriptionStatus !== 'ACTIVE';
@@ -47,9 +52,9 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
   const { data: session } = useSession();
   const locale = useLocale();
 
-  const rating = 4.9; // Mock - à remplacer par vraies données
-  const reviewsCount = 127; // Mock
-  const studentsCount = 45; // Mock
+  // Utiliser les vraies données ou valeurs par défaut
+  const rating = reviewStats?.averageRating || 0;
+  const reviewsCount = reviewStats?.totalReviews || 0;
 
   const handleDiscordContact = () => {
     if (coach.discordUrl) {
@@ -144,7 +149,7 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
                 className="object-cover"
                 sizes="100vw"
                 priority
-                unoptimized
+                quality={85}
               />
             </div>
             {/* Overlay gradient pour meilleure lisibilité avec la bannière */}
@@ -217,25 +222,27 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
                 </div>
               )}
 
-              {/* Rating */}
-              <div className="flex items-center justify-center md:justify-start gap-2 mb-6">
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`h-5 w-5 ${
-                        star <= Math.floor(rating)
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : star - 0.5 <= rating
-                          ? 'fill-yellow-400/50 text-yellow-400'
-                          : 'text-gray-400'
-                      }`}
-                    />
-                  ))}
+              {/* Rating - afficher seulement si on a des avis */}
+              {reviewsCount > 0 && (
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-6">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`h-5 w-5 ${
+                          star <= Math.floor(rating)
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : star - 0.5 <= rating
+                            ? 'fill-yellow-400/50 text-yellow-400'
+                            : 'text-gray-400'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-white font-semibold text-lg">{rating.toFixed(1)}</span>
+                  <span className="text-gray-300">({reviewsCount} {reviewsCount === 1 ? 'avis' : 'avis'})</span>
                 </div>
-                <span className="text-white font-semibold text-lg">{rating}</span>
-                <span className="text-gray-300">({reviewsCount} avis)</span>
-              </div>
+              )}
 
               {/* Stats badges */}
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-8">
@@ -245,10 +252,12 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
                     <div className="text-xs text-gray-300">ans d&apos;expérience</div>
                   </div>
                 )}
-                <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
-                  <div className="text-2xl font-bold text-white">{studentsCount}</div>
-                  <div className="text-xs text-gray-300">élèves</div>
-                </div>
+                {studentsCount !== undefined && studentsCount > 0 && (
+                  <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
+                    <div className="text-2xl font-bold text-white">{studentsCount}</div>
+                    <div className="text-xs text-gray-300">{studentsCount === 1 ? 'élève' : 'élèves'}</div>
+                  </div>
+                )}
                 {coach.roi && (
                   <div className="bg-emerald-500/20 backdrop-blur-sm px-4 py-2 rounded-lg border border-emerald-400/30">
                     <div className="text-2xl font-bold text-emerald-200">{coach.roi}%</div>
@@ -355,10 +364,12 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
                 <p className="font-bold text-gray-900">
                   {coach.firstName} {coach.lastName}
                 </p>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm text-gray-600">{rating}</span>
-                </div>
+                {reviewsCount > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm text-gray-600">{rating.toFixed(1)}</span>
+                  </div>
+                )}
               </div>
             </div>
             <Button

@@ -797,6 +797,9 @@ export function CoachsPageContent({ locale }: CoachsPageContentProps) {
                           alt={`${coach.firstName} ${coach.lastName}`}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          loading="lazy"
+                          quality={80}
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center">

@@ -13,6 +13,7 @@ import {
   Settings,
   Shield,
   TrendingUp,
+  Star,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -43,6 +44,11 @@ const navigationItems = [
     name: "Réservations",
     href: "/admin/sessions",
     icon: Calendar,
+  },
+  {
+    name: "Modération Avis",
+    href: "/admin/reviews",
+    icon: Star,
   },
   {
     name: "Discord",

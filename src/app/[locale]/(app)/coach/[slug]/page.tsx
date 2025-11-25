@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { CoachHeader } from '@/components/coach/public/CoachHeader';
@@ -9,6 +10,9 @@ import { CoachVideo } from '@/components/coach/public/CoachVideo';
 import { CoachCalendar } from '@/components/coach/public/CoachCalendar';
 // import { CoachWhyMe } from '@/components/coach/public/CoachWhyMe'; // Désactivé pour MVP - à réactiver plus tard
 import { TrustBadges } from '@/components/coach/public/TrustBadges';
+import { StructuredData } from '@/components/seo/StructuredData';
+import { generateCoachProfileSchema, generateBreadcrumbSchema } from '@/lib/seo/structuredData';
+import { getCoachReviewStats } from '@/lib/reviews';
 
 interface PageProps {
   params: Promise<{
@@ -65,8 +69,59 @@ async function getCoach(slug: string) {
   return coach as any;
 }
 
+// Métadonnées dynamiques pour SEO
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug, locale } = await params;
+  const coach = await getCoach(slug);
+
+  if (!coach) {
+    return {
+      title: 'Coach non trouvé | Edgemy',
+      description: 'Ce profil de coach n\'existe pas ou n\'est plus disponible.',
+    };
+  }
+
+  const coachName = `${coach.firstName} ${coach.lastName}`;
+  const title = `${coachName} - Coach Poker sur Edgemy`;
+  const description = coach.bio
+    ? `${coach.bio.substring(0, 155)}...`
+    : `Réservez une session de coaching poker avec ${coachName}. ${coach.experience || ''} Formations personnalisées et stratégies gagnantes sur Edgemy.`;
+
+  const url = `https://edgemy.fr/${locale}/coach/${slug}`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'Edgemy',
+      images: coach.avatarUrl ? [
+        {
+          url: coach.avatarUrl,
+          width: 1200,
+          height: 630,
+          alt: `Photo de profil de ${coachName}`,
+        }
+      ] : [],
+      locale: locale,
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: coach.avatarUrl ? [coach.avatarUrl] : [],
+    },
+  };
+}
+
 export default async function CoachPublicPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const coach = await getCoach(slug);
 
   if (!coach) {
@@ -74,6 +129,45 @@ export default async function CoachPublicPage({ params }: PageProps) {
   }
 
   const isInactive = coach.subscriptionStatus !== 'ACTIVE';
+
+  // Récupérer les statistiques d'avis réelles
+  const reviewStats = await getCoachReviewStats(coach.id);
+
+  // Récupérer les avis publics du coach
+  const reviews = await prisma.review.findMany({
+    where: {
+      coachId: coach.id,
+      isPublic: true, // Seulement les avis approuvés
+    },
+    include: {
+      player: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: 20, // Limiter à 20 avis les plus récents
+  });
+
+  // Calculer le nombre d'élèves uniques (joueurs ayant eu au moins une réservation)
+  const uniqueStudents = await prisma.reservation.findMany({
+    where: {
+      coachId: coach.id,
+      status: {
+        in: ['CONFIRMED', 'COMPLETED'], // Seulement les sessions confirmées ou complétées
+      },
+    },
+    select: {
+      playerId: true,
+    },
+    distinct: ['playerId'],
+  });
+
+  const studentsCount = uniqueStudents.length;
 
   // Transformer les annonces pour le composant
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,11 +197,51 @@ export default async function CoachPublicPage({ params }: PageProps) {
     mentalFocus: announcement.mentalFocus,
   }));
 
+  // Données structurées pour SEO/GEO
+  const coachProfileSchemas = generateCoachProfileSchema({
+    coach: {
+      firstName: coach.firstName,
+      lastName: coach.lastName,
+      slug: coach.slug,
+      bio: coach.bio || undefined,
+      avatarUrl: coach.avatarUrl || undefined,
+      twitterUrl: coach.twitterUrl || undefined,
+      twitchUrl: coach.twitchUrl || undefined,
+      youtubeUrl: coach.youtubeUrl || undefined,
+    },
+    locale,
+    announcements: coach.announcements.map((a: {
+      title?: string;
+      description?: string;
+      priceCents?: number;
+      type?: string;
+    }) => ({
+      title: a.title || 'Coaching',
+      description: a.description || '',
+      priceCents: a.priceCents || 0,
+      type: a.type || 'STRATEGY',
+    })),
+    averageRating: reviewStats.averageRating,
+    reviewCount: reviewStats.totalReviews,
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Accueil', url: `https://edgemy.fr/${locale}` },
+    { name: 'Coachs', url: `https://edgemy.fr/${locale}/coachs` },
+    { name: `${coach.firstName} ${coach.lastName}`, url: `https://edgemy.fr/${locale}/coach/${slug}` },
+  ]);
+
   return (
     <PublicLayout>
+      {/* Données structurées JSON-LD */}
+      {coachProfileSchemas.map((schema, index) => (
+        <StructuredData key={`schema-${index}`} data={schema} />
+      ))}
+      <StructuredData data={breadcrumbSchema} />
+
       <div className="min-h-screen bg-gray-50">
         {/* Hero Section */}
-        <CoachHeader coach={coach} />
+        <CoachHeader coach={coach} reviewStats={reviewStats} studentsCount={studentsCount} />
 
         {/* Trust Badges */}
         <div className="container mx-auto px-6 -mt-6 relative z-10">
@@ -160,8 +294,9 @@ export default async function CoachPublicPage({ params }: PageProps) {
             {/* Section 4: Avis des élèves */}
             <CoachReviews
               coachId={coach.id}
-              averageRating={4.9}
-              totalReviews={127}
+              averageRating={reviewStats.averageRating}
+              totalReviews={reviewStats.totalReviews}
+              reviews={reviews}
             />
           </div>
         </div>
