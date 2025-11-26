@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 
+// GET - Récupérer les paramètres du coach
 export async function GET() {
   try {
     const session = await auth.api.getSession({
@@ -21,10 +22,16 @@ export async function GET() {
       where: { userId: session.user.id },
     });
 
-    // Retourner 200 même si pas de profil coach (comportement normal pour un joueur)
-    return NextResponse.json({ coach: coach || null });
+    if (!coach) {
+      return NextResponse.json(
+        { error: 'Coach non trouvé' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ coach });
   } catch (error) {
-    console.error('Erreur lors de la récupération du profil coach:', error);
+    console.error('Erreur lors de la récupération des paramètres coach:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
@@ -32,6 +39,7 @@ export async function GET() {
   }
 }
 
+// PATCH - Mettre à jour les paramètres du coach
 export async function PATCH(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
@@ -79,7 +87,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ coach: updatedCoach });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du profil coach:', error);
+    console.error('Erreur lors de la mise à jour des paramètres coach:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }

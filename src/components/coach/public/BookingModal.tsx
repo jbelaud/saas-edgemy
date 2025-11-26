@@ -12,10 +12,12 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Calendar, Clock, Loader2, AlertCircle, CheckCircle, ChevronRight, Percent, Receipt, PiggyBank } from 'lucide-react';
+import { Calendar, Clock, Loader2, AlertCircle, CheckCircle, ChevronRight, Percent, Receipt, PiggyBank, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { redirectToCheckout } from '@/lib/stripe-client';
+import { useTimezone } from '@/hooks/useTimezone';
+import { formatTimezoneDisplay } from '@/lib/timezone';
 
 interface AnnouncementPack {
   id: string;
@@ -82,6 +84,9 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
   const [checkingDiscord, setCheckingDiscord] = useState(true);
   const [minBookingDate, setMinBookingDate] = useState<Date | null>(null);
 
+  // Détecter le fuseau horaire du joueur
+  const { timezone, toLocalTime, formatLocal, isLoaded: timezoneLoaded } = useTimezone();
+
   // Vérifier si l'utilisateur est membre du serveur Discord ET peut réserver (24h après inscription)
   useEffect(() => {
     if (!isOpen || !session?.user) {
@@ -134,18 +139,21 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
         const response = await fetch(`/api/coach/${coachId}/availability?duration=${announcement.duration}`);
         if (response.ok) {
           const availabilities = await response.json();
-          // Transformer les créneaux en format affichable
+          // Transformer les créneaux en format affichable (dans le fuseau du joueur)
           const slots: TimeSlot[] = (availabilities || [])
             .map((avail: { id: string; start: string; end: string }) => {
-              const start = new Date(avail.start);
-              const end = new Date(avail.end);
-              
+              // Les dates viennent en UTC, les convertir dans le fuseau du joueur
+              const startUTC = new Date(avail.start);
+              const endUTC = new Date(avail.end);
+              const startLocal = toLocalTime(avail.start);
+              const endLocal = toLocalTime(avail.end);
+
               return {
                 id: avail.id,
-                start,
-                end,
-                date: start.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }),
-                time: `${start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+                start: startUTC, // Garder en UTC pour l'envoi au backend
+                end: endUTC,
+                date: startLocal.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }),
+                time: `${formatLocal(avail.start, 'HH:mm')} - ${formatLocal(avail.end, 'HH:mm')}`
               };
             })
             .filter((slot: TimeSlot) => slot.start > new Date()) // Seulement les créneaux futurs
@@ -510,10 +518,20 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
 
             {/* Liste des créneaux */}
             <div className="px-4 md:px-5 py-2">
-              <h3 className="font-semibold text-xs md:text-sm text-gray-900 mb-1.5 flex items-center gap-1">
-                <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5 text-orange-600" />
-                Créneaux disponibles
-              </h3>
+              <div className="flex items-center justify-between mb-1.5">
+                <h3 className="font-semibold text-xs md:text-sm text-gray-900 flex items-center gap-1">
+                  <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5 text-orange-600" />
+                  Créneaux disponibles
+                </h3>
+                {timezoneLoaded && (
+                  <div className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 border border-blue-200 rounded">
+                    <Globe className="h-2.5 w-2.5 text-blue-600" />
+                    <span className="text-[9px] font-medium text-blue-700">
+                      {formatTimezoneDisplay(timezone)}
+                    </span>
+                  </div>
+                )}
+              </div>
               
               {loadingSlots ? (
                 <div className="flex items-center justify-center py-3 md:py-4">

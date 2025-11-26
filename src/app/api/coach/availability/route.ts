@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { convertLocalToUTC } from '@/lib/timezone';
 
 // GET - Récupérer toutes les disponibilités du coach
 export async function GET() {
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { start, end } = body;
+    const { start, end, timezone } = body;
 
     // Validation
     if (!start || !end) {
@@ -76,8 +77,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    // Utiliser le fuseau horaire du coach (depuis son profil ou celui envoyé par le client)
+    const coachTimezone = timezone || coach.timezone || 'UTC';
+
+    // Convertir les dates locales du coach en UTC pour le stockage
+    const startLocal = new Date(start);
+    const endLocal = new Date(end);
+    const startDate = convertLocalToUTC(startLocal, coachTimezone);
+    const endDate = convertLocalToUTC(endLocal, coachTimezone);
 
     if (startDate >= endDate) {
       return NextResponse.json(

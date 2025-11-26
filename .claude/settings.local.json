@@ -23,7 +23,12 @@
       "Bash(git push:*)",
       "Bash(npx tsc:*)",
       "Bash(curl:*)",
-      "Bash($nul)"
+      "Bash($nul)",
+      "Bash(pnpm list:*)",
+      "Bash(Where-Object {$_rocessName -match \"node|next\"})",
+      "Bash(Start-Sleep -Seconds 2)",
+      "Bash(cat:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

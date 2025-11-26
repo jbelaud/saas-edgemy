@@ -57,7 +57,7 @@ export default function CoachSettingsPage() {
   useEffect(() => {
     const fetchCoachData = async () => {
       try {
-        const response = await fetch('/api/coach/profile');
+        const response = await fetch('/api/coach/settings');
         if (response.ok) {
           const data = await response.json();
           const coach = data?.coach ?? data ?? {};
@@ -82,7 +82,7 @@ export default function CoachSettingsPage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/coach/profile', {
+      const response = await fetch('/api/coach/settings', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export default function CoachSettingsPage() {
 
   return (
     <CoachLayout>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
           <GradientText className="text-4xl font-bold mb-2">
             Paramètres
@@ -174,7 +174,8 @@ export default function CoachSettingsPage() {
           </div>
         )}
 
-        <div className="space-y-6">
+        {/* Grille 2 colonnes */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Informations personnelles */}
           <GlassCard className="p-6">
             <div className="flex items-center gap-3 mb-6">
@@ -365,7 +366,7 @@ export default function CoachSettingsPage() {
           </GlassCard>
 
           {/* Notifications */}
-          <GlassCard className="p-6 opacity-60">
+          <GlassCard className="p-6 opacity-60 lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-purple-500/20 rounded-lg">
                 <Bell className="h-5 w-5 text-purple-400" />

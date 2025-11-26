@@ -1,9 +1,11 @@
 'use client';
 
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { format, parseISO, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useTimezone } from '@/hooks/useTimezone';
+import { formatTimezoneDisplay } from '@/lib/timezone';
 
 interface Availability {
   id: string;
@@ -21,6 +23,9 @@ export function CoachCalendar({ coachId, coachName }: CoachCalendarProps) {
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  // Utiliser le fuseau horaire du joueur (détecté automatiquement)
+  const { timezone, toLocalTime, formatLocal, isLoaded: timezoneLoaded } = useTimezone();
 
   useEffect(() => {
     const fetchAvailabilities = async () => {
@@ -44,16 +49,17 @@ export function CoachCalendar({ coachId, coachName }: CoachCalendarProps) {
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  // Filtrer les disponibilités du jour sélectionné
+  // Filtrer les disponibilités du jour sélectionné (en utilisant le fuseau horaire du joueur)
   const selectedDayAvailabilities = availabilities.filter((availability) => {
-    const availabilityDate = parseISO(availability.start);
+    // Convertir l'heure UTC en heure locale du joueur
+    const availabilityDate = toLocalTime(availability.start);
     return isSameDay(availabilityDate, selectedDate);
   });
 
   // Compter les créneaux disponibles par jour
   const getAvailableCount = (day: Date) => {
     return availabilities.filter((availability) => {
-      const availabilityDate = parseISO(availability.start);
+      const availabilityDate = toLocalTime(availability.start);
       return isSameDay(availabilityDate, day) && !availability.isBooked;
     }).length;
   };
@@ -94,9 +100,19 @@ export function CoachCalendar({ coachId, coachName }: CoachCalendarProps) {
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
       <div className="p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <Calendar className="h-5 w-5 text-amber-500" />
-          <h2 className="text-2xl font-bold text-gray-900">Disponibilités</h2>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-amber-500" />
+            <h2 className="text-2xl font-bold text-gray-900">Disponibilités</h2>
+          </div>
+          {timezoneLoaded && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+              <Globe className="h-3.5 w-3.5 text-blue-600" />
+              <span className="text-xs font-medium text-blue-700">
+                {formatTimezoneDisplay(timezone)}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Sélecteur de jour */}
@@ -148,8 +164,9 @@ export function CoachCalendar({ coachId, coachName }: CoachCalendarProps) {
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {selectedDayAvailabilities.map((availability) => {
-                const startTime = format(parseISO(availability.start), 'HH:mm');
-                const endTime = format(parseISO(availability.end), 'HH:mm');
+                // Convertir les heures UTC en heure locale du joueur pour l'affichage
+                const startTime = formatLocal(availability.start, 'HH:mm');
+                const endTime = formatLocal(availability.end, 'HH:mm');
 
                 return (
                   <div
