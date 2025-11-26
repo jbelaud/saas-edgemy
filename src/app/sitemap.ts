@@ -1,6 +1,10 @@
 import { MetadataRoute } from 'next';
 import { prisma } from '@/lib/prisma';
 
+// Force dynamic rendering pour éviter l'erreur Prisma au build
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Revalider toutes les heures
+
 /**
  * Génère le sitemap.xml dynamique pour le SEO
  * https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
@@ -49,28 +53,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Pages dynamiques : profils de coachs actifs
-  const coaches = await prisma.coach.findMany({
-    where: {
-      status: { in: ['ACTIVE', 'PENDING_REVIEW'] }, // Seuls les coachs ACTIVE ou PENDING_REVIEW
-      subscriptionStatus: 'ACTIVE',
-    },
-    select: {
-      slug: true,
-      updatedAt: true,
-    },
-  });
+  try {
+    const coaches = await prisma.coach.findMany({
+      where: {
+        status: { in: ['ACTIVE', 'PENDING_REVIEW'] }, // Seuls les coachs ACTIVE ou PENDING_REVIEW
+        subscriptionStatus: 'ACTIVE',
+      },
+      select: {
+        slug: true,
+        updatedAt: true,
+      },
+    });
 
-  const coachPages: MetadataRoute.Sitemap = [];
-  for (const coach of coaches) {
-    for (const locale of locales) {
-      coachPages.push({
-        url: `${baseUrl}/${locale}/coach/${coach.slug}`,
-        lastModified: coach.updatedAt || new Date(),
-        changeFrequency: 'weekly',
-        priority: 0.8,
-      });
+    const coachPages: MetadataRoute.Sitemap = [];
+    for (const coach of coaches) {
+      for (const locale of locales) {
+        coachPages.push({
+          url: `${baseUrl}/${locale}/coach/${coach.slug}`,
+          lastModified: coach.updatedAt || new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.8,
+        });
+      }
     }
-  }
 
-  return [...staticPages, ...coachPages];
+    return [...staticPages, ...coachPages];
+  } catch (error) {
+    console.error('Erreur lors de la génération du sitemap:', error);
+    // Retourner au moins les pages statiques si Prisma échoue
+    return staticPages;
+  }
 }
