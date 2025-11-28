@@ -8,5 +8,6 @@
       "path": "/api/cron/auto-complete-sessions",
       "schedule": "0 * * * *"
     }
-  ]
+  ],
+  "buildCommand": "pnpm run build"
 }
