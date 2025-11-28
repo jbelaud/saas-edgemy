@@ -464,7 +464,6 @@ export async function POST(req: Request) {
                   name: reservation.player.name,
                   firstName: playerProfile?.firstName ?? null,
                   lastName: playerProfile?.lastName ?? null,
-                  timezone: playerProfile?.timezone ?? null,
                   discordId: reservation.player.discordId,
                 }
               : null,

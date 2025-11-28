@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       },
       data: {
         status: 'CANCELLED',
-        paymentStatus: 'CANCELLED',
+        paymentStatus: 'FAILED',
       },
     });
 

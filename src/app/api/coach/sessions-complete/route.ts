@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Récupérer les PackageSessions planifiées par le coach (sans réservation)
-    const packageSessionWhere: Prisma.PackageSessionWhereInput = {
+    let packageSessionWhere: Prisma.PackageSessionWhereInput = {
       package: {
         coachId: coach.id,
       },
@@ -149,9 +149,12 @@ export async function GET(request: NextRequest) {
 
     // Filtre par élève
     if (studentId) {
-      packageSessionWhere.package = {
-        ...packageSessionWhere.package,
-        playerId: studentId,
+      packageSessionWhere = {
+        ...packageSessionWhere,
+        package: {
+          coachId: coach.id,
+          playerId: studentId,
+        },
       };
     }
 

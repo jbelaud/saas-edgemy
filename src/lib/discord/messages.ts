@@ -47,9 +47,10 @@ function buildSessionEmbed({ reservation, channelId, role }: Omit<SessionReminde
   const locale = 'fr-FR';
 
   // Déterminer le fuseau horaire à utiliser selon le rôle
+  // Note: timezone n'est disponible que pour le coach, pas pour le player (stocké dans table player séparée)
   const timezone = role === 'coach'
     ? reservation.coach?.timezone || 'UTC'
-    : reservation.player?.timezone || 'UTC';
+    : 'UTC';
 
   const dateFormatter = new Intl.DateTimeFormat(locale, {
     dateStyle: 'full',

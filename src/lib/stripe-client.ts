@@ -16,23 +16,17 @@ interface PaymentSessionParams {
 
 /**
  * Redirige vers Stripe Checkout avec un sessionId existant
+ * Note: redirectToCheckout est déprécié, on utilise maintenant l'URL directe
  */
 export async function redirectToCheckoutWithSession(sessionId: string): Promise<void> {
-  try {
-    const stripe = await stripePromise;
-    if (!stripe) {
-      throw new Error('Stripe n\'a pas pu être chargé');
-    }
-
-    const { error } = await stripe.redirectToCheckout({ sessionId });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  } catch (error) {
-    console.error('Erreur redirection Stripe:', error);
-    throw error;
-  }
+  // La méthode redirectToCheckout est dépréciée
+  // On doit maintenant utiliser l'URL de la session directement
+  // Cette fonction est conservée pour compatibilité mais ne devrait plus être utilisée
+  // Préférer redirectToCheckoutUrl avec l'URL de la session
+  console.warn('redirectToCheckoutWithSession est déprécié, utilisez redirectToCheckoutUrl avec l\'URL de session');
+  
+  // Fallback: construire l'URL de checkout Stripe
+  window.location.href = `https://checkout.stripe.com/c/pay/${sessionId}`;
 }
 
 /**

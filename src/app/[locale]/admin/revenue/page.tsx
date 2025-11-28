@@ -27,6 +27,7 @@ async function getRevenueData() {
     },
     select: {
       id: true,
+      packId: true,
       priceCents: true,
       coachNetCents: true,
       coachEarningsCents: true,
@@ -115,10 +116,28 @@ async function getRevenueData() {
     totalStripeFeeCents += pack.stripeFeeCents || 0;
   });
 
+  // Calculer les commissions séparées sessions vs packs pour RevenueStats component compatibility
+  let totalCommissionsSessions = 0;
+  let totalCommissionsPacks = 0;
+
+  // Commissions sur sessions individuelles (réservations sans packId)
+  paidReservations.forEach((reservation) => {
+    if (!reservation.packId) {
+      totalCommissionsSessions += reservation.edgemyFeeCents || 0;
+    }
+  });
+
+  // Commissions sur packs de coaching
+  coachingPackages.forEach((pack) => {
+    totalCommissionsPacks += pack.edgemyFeeCents || 0;
+  });
+
   return {
     coaches,
     monthlySubscriptions,
     annualSubscriptions,
+    totalCommissionsSessions: totalCommissionsSessions / 100, // Convertir en euros
+    totalCommissionsPacks: totalCommissionsPacks / 100, // Convertir en euros
     totalEdgemyMargin: totalEdgemyMarginCents / 100, // Convertir en euros
     totalStripeFees: totalStripeFeeCents / 100,
     totalEdgemyRevenueHT: totalEdgemyRevenueHT / 100,

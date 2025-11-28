@@ -24,7 +24,6 @@ export type DiscordChannelReservation = {
     name: string | null;
     firstName: string | null;
     lastName: string | null;
-    timezone: string | null;
     discordId: string | null;
   } | null;
   announcement: {
@@ -105,7 +104,6 @@ export async function createOrReuseDiscordChannel({
         select: {
           id: true,
           name: true,
-          timezone: true,
           discordId: true,
         },
       },
@@ -452,6 +450,7 @@ export async function createOrReuseDiscordChannel({
             id: reservation.coach.id,
             firstName: reservation.coach.firstName,
             lastName: reservation.coach.lastName,
+            timezone: reservation.coach.timezone,
             user: reservation.coach.user
               ? {
                   id: reservation.coach.user.id,
