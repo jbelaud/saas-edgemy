@@ -290,7 +290,7 @@ export default function CoachSessionsPage() {
 
               <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-400">Période</label>
-                <Select value={periodFilter} onValueChange={(value: any) => setPeriodFilter(value)}>
+                <Select value={periodFilter} onValueChange={(value: string) => setPeriodFilter(value)}>
                   <SelectTrigger className="text-white w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -305,7 +305,7 @@ export default function CoachSessionsPage() {
 
               <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-400">Type</label>
-                <Select value={typeFilter} onValueChange={(value: any) => setTypeFilter(value)}>
+                <Select value={typeFilter} onValueChange={(value: string) => setTypeFilter(value)}>
                   <SelectTrigger className="text-white w-[140px]">
                     <SelectValue />
                   </SelectTrigger>

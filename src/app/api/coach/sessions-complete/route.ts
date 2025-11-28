@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import { Prisma } from '@prisma/client';
 
 /**
  * GET /api/coach/sessions-complete
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Construire le filtre de base pour les réservations
-    const reservationWhere: any = {
+    const reservationWhere: Prisma.ReservationWhereInput = {
       coachId: coach.id,
       status: {
         in: ['CONFIRMED', 'COMPLETED'],
@@ -139,7 +140,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Récupérer les PackageSessions planifiées par le coach (sans réservation)
-    const packageSessionWhere: any = {
+    const packageSessionWhere: Prisma.PackageSessionWhereInput = {
       package: {
         coachId: coach.id,
       },

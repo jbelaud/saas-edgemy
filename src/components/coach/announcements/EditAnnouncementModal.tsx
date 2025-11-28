@@ -113,7 +113,7 @@ export function EditAnnouncementModal({
           <div className="flex items-center gap-2">
             <Pencil className="h-5 w-5 text-orange-500" />
             <DialogTitle className="text-white">
-              Modifier l'annonce
+              Modifier l&apos;annonce
             </DialogTitle>
           </div>
           <DialogDescription className="text-gray-400">

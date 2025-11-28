@@ -47,7 +47,11 @@
       "Bash(done)",
       "Bash(for file in \"c:\\Developpement\\saas-edgemy\\docs\\03-payment\"/*.md)",
       "Bash(del check-free-announcement.mjs check-all-announcements.mjs)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm install:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(where:*)",
+      "Bash(vercel --prod:*)",
+      "Bash(vercel logs:*)"
     ],
     "deny": [],
     "ask": []

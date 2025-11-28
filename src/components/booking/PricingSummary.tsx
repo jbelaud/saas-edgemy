@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { Receipt, AlertCircle, Loader2, CheckCircle, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { calculateForSession, calculateForPack } from '@/lib/stripe/pricing';
+import Link from 'next/link';
 
 interface AnnouncementPack {
   id: string;
@@ -96,7 +97,7 @@ export function PricingSummary({
             <div className="flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-red-700">
-                Cette annonce n'a pas de prix configuré. Veuillez contacter le coach.
+                Cette annonce n&apos;a pas de prix configuré. Veuillez contacter le coach.
               </p>
             </div>
           </div>
@@ -261,13 +262,13 @@ export function PricingSummary({
         <div className="border-t pt-4">
           <p className="text-xs text-gray-500">
             En confirmant, vous acceptez les{' '}
-            <a href="/terms" className="text-amber-600 hover:underline">
+            <Link href="/terms" className="text-amber-600 hover:underline">
               conditions générales
-            </a>{' '}
+            </Link>{' '}
             et la{' '}
-            <a href="/privacy" className="text-amber-600 hover:underline">
+            <Link href="/privacy" className="text-amber-600 hover:underline">
               politique de confidentialité
-            </a>
+            </Link>
             .
           </p>
         </div>

@@ -233,7 +233,7 @@ export function BookingPageClient({
               <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
                 <h3 className="font-semibold text-red-900 mb-2">Rejoignez notre serveur Discord</h3>
                 <p className="text-sm text-red-700 mb-4">
-                  Pour réserver une session, vous devez d'abord rejoindre notre serveur Discord.
+                  Pour réserver une session, vous devez d&apos;abord rejoindre notre serveur Discord.
                 </p>
                 <Button
                   onClick={() => router.push('/api/discord/oauth/authorize')}
