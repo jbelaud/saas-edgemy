@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   Megaphone,
   Calendar,
+  CalendarCheck,
   Euro,
   Settings,
   Package,
@@ -50,7 +51,7 @@ const navItems: NavItem[] = [
     icon: Megaphone,
   },
   {
-    title: "Packs & offres",
+    title: "Packs",
     href: "/coach/packs",
     icon: Package,
   },
@@ -60,9 +61,9 @@ const navItems: NavItem[] = [
     icon: Calendar,
   },
   {
-    title: "Mes élèves",
-    href: "/coach/students",
-    icon: Users,
+    title: "Mes sessions",
+    href: "/coach/sessions",
+    icon: CalendarCheck,
   },
   {
     title: "Revenus",

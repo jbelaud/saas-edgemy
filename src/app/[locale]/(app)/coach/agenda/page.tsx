@@ -33,7 +33,7 @@ export default function CoachAgendaPage() {
       const res = await fetch(`/api/coach/${id}/availability`);
       if (res.ok) {
         const data = await res.json();
-        setAvailabilities(data);
+        setAvailabilities(data.availabilities || []);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des disponibilités:', error);
@@ -67,6 +67,8 @@ export default function CoachAgendaPage() {
   const handleRefresh = useCallback(() => {
     if (coachId) {
       fetchAvailabilities(coachId);
+      // Incrémenter la clé pour forcer le rechargement complet du calendrier
+      // Cela permettra au calendrier de recharger aussi les sessions de pack
       setRefreshKey(prev => prev + 1);
     }
   }, [coachId, fetchAvailabilities]);
@@ -129,7 +131,7 @@ export default function CoachAgendaPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Calendrier (2/3 de l'espace) - Masqué sur mobile */}
           <div className="hidden xl:block xl:col-span-2">
-            <CoachCalendar key={refreshKey} coachId={coachId} />
+            <CoachCalendar key={refreshKey} coachId={coachId} onAvailabilityChange={handleRefresh} />
           </div>
 
           {/* Liste des disponibilités (1/3 de l'espace sur desktop, pleine largeur sur mobile) */}

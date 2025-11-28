@@ -62,9 +62,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Reservation does not belong to this coach' }, { status: 400 });
     }
 
+    // Vérification du prix - Les réservations gratuites ne devraient pas arriver ici
+    // mais nous gardons une validation pour plus de sécurité
     if (!reservation.priceCents || reservation.priceCents <= 0) {
-      console.error('❌ Prix invalide pour la réservation', { reservationId, priceCents: reservation.priceCents });
-      return NextResponse.json({ error: 'Invalid reservation price' }, { status: 400 });
+      console.error('❌ Prix invalide pour la réservation - Les annonces gratuites doivent être gérées directement', { reservationId, priceCents: reservation.priceCents });
+      return NextResponse.json({ error: 'Free reservations should not go through Stripe checkout' }, { status: 400 });
     }
 
     // Récupérer le compte Stripe Connect du coach
@@ -75,6 +77,7 @@ export async function POST(req: Request) {
         id: true,
         firstName: true,
         lastName: true,
+        slug: true,
       },
     });
 
@@ -182,7 +185,7 @@ export async function POST(req: Request) {
         },
       },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/${locale}/session/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/${locale}/session/cancel`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/${locale}/session/cancel?reservationId=${reservationId}${coach.slug ? `&coachSlug=${coach.slug}` : ''}`,
       metadata: {
         ...metadataBase,
       },

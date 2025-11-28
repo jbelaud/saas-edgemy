@@ -7,7 +7,7 @@ import { GlassCard, GradientText } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Package, Clock, Loader2, Calendar, TrendingUp, CheckCircle } from 'lucide-react';
+import { Package, Clock, Loader2, Calendar, TrendingUp, CheckCircle, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Link from 'next/link';
@@ -48,6 +48,7 @@ export default function CoachPacksPage() {
   const [stats, setStats] = useState({ total: 0, active: 0, completed: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+  const [cancellingSessionId, setCancellingSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (session?.user) {
@@ -104,8 +105,41 @@ export default function CoachPacksPage() {
         return <Badge className="bg-green-500/20 text-green-300">Complétée</Badge>;
       case 'SCHEDULED':
         return <Badge className="bg-blue-500/20 text-blue-300">Planifiée</Badge>;
+      case 'CANCELLED':
+        return <Badge className="bg-red-500/20 text-red-300">Annulée</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  const handleCancelSession = async (packageSessionId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir annuler cette session ? Les heures seront re-créditées au pack.')) {
+      return;
+    }
+
+    setCancellingSessionId(packageSessionId);
+    try {
+      const response = await fetch('/api/coach/cancel-pack-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ packageSessionId }),
+      });
+
+      if (response.ok) {
+        // Recharger les packs pour afficher les données mises à jour
+        await fetchPackages();
+        alert('Session annulée avec succès. Les heures ont été re-créditées.');
+      } else {
+        const data = await response.json();
+        alert(`Erreur: ${data.error || 'Impossible d\'annuler la session'}`);
+      }
+    } catch (error) {
+      console.error('Erreur annulation session:', error);
+      alert('Erreur lors de l\'annulation de la session');
+    } finally {
+      setCancellingSessionId(null);
     }
   };
 
@@ -262,25 +296,57 @@ export default function CoachPacksPage() {
                         Sessions ({pkg.sessions.length})
                       </h4>
                       <div className="space-y-2">
-                        {pkg.sessions.map((session) => (
-                          <div
-                            key={session.id}
-                            className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10"
-                          >
-                            <div className="flex items-center gap-3">
-                              <Clock className="h-4 w-4 text-gray-400" />
-                              <div>
-                                <p className="text-sm font-medium text-white">
-                                  {format(new Date(session.startDate), 'PPP', { locale: fr })}
-                                </p>
-                                <p className="text-xs text-gray-400">
-                                  {format(new Date(session.startDate), 'HH:mm', { locale: fr })} - {format(new Date(session.endDate), 'HH:mm', { locale: fr })}
-                                </p>
+                        {pkg.sessions.map((session, index) => {
+                          // La session la plus ancienne (index le plus élevé car tri par desc) est la première
+                          const isFirstSession = index === pkg.sessions.length - 1;
+
+                          const canCancel = session.status === 'SCHEDULED' && new Date(session.startDate) > new Date();
+
+                          return (
+                            <div
+                              key={session.id}
+                              className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10"
+                            >
+                              <div className="flex items-center gap-3 flex-1">
+                                <Clock className="h-4 w-4 text-gray-400" />
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm font-medium text-white">
+                                      {format(new Date(session.startDate), 'PPP', { locale: fr })}
+                                    </p>
+                                    {isFirstSession && (
+                                      <Badge className="bg-amber-500/20 text-amber-300 text-xs">
+                                        1ère session
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-gray-400">
+                                    {format(new Date(session.startDate), 'HH:mm', { locale: fr })} - {format(new Date(session.endDate), 'HH:mm', { locale: fr })}
+                                    {' '}({session.durationMinutes}min)
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {getSessionStatusBadge(session.status)}
+                                {canCancel && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleCancelSession(session.id)}
+                                    disabled={cancellingSessionId === session.id}
+                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                  >
+                                    {cancellingSessionId === session.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <X className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                )}
                               </div>
                             </div>
-                            {getSessionStatusBadge(session.status)}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

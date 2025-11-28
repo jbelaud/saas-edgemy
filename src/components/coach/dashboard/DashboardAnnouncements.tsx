@@ -8,6 +8,7 @@ import { AnnouncementPacksSection } from '@/components/coach/announcements/Annou
 import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
 import { useAlertDialog } from '@/hooks/useAlertDialog';
 import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
+import { EditAnnouncementModal } from '@/components/coach/announcements/EditAnnouncementModal';
 
 interface Announcement {
   id: string;
@@ -68,7 +69,9 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const hasActiveSubscription = coach.subscriptionStatus === 'ACTIVE';
-  const { alertState, confirmState, showWarning, showConfirm, closeAlert, closeConfirm } = useAlertDialog();
+  const { alertState, confirmState, showWarning, showConfirm, closeAlert, closeConfirm} = useAlertDialog();
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     fetchAnnouncements();
@@ -284,7 +287,10 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
             {/* Actions */}
             <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
               <button
-                onClick={() => showWarning('Fonctionnalité en développement', 'La modification d\'annonces sera bientôt disponible.')}
+                onClick={() => {
+                  setEditingAnnouncement(announcement);
+                  setIsEditModalOpen(true);
+                }}
                 className="flex-1 min-w-[120px] px-4 py-2.5 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-white rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
               >
                 <Edit className="w-4 h-4" />
@@ -349,6 +355,14 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
         cancelText="Annuler"
         onConfirm={confirmState.onConfirm}
         showCancel={true}
+      />
+
+      {/* Modale d'édition */}
+      <EditAnnouncementModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        announcement={editingAnnouncement}
+        onSuccess={fetchAnnouncements}
       />
     </SubscriptionGate>
   );

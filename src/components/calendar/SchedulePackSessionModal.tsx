@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { X, Users, Package, Clock, Calendar as CalendarIcon } from "lucide-react";
+import { useAlertDialog } from '@/hooks/useAlertDialog';
+import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
+import { fromZonedTime } from 'date-fns-tz';
 
 interface Player {
   id: string;
@@ -42,6 +45,26 @@ export default function SchedulePackSessionModal({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [coachTimezone, setCoachTimezone] = useState<string>('Europe/Paris');
+  const { alertState, confirmState, showSuccess, showError, closeAlert, closeConfirm } = useAlertDialog();
+
+  // Récupérer le fuseau horaire du coach
+  useEffect(() => {
+    const fetchCoachTimezone = async () => {
+      try {
+        const res = await fetch('/api/coach/profile');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.coach?.timezone) {
+            setCoachTimezone(data.coach.timezone);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du fuseau horaire:', error);
+      }
+    };
+    fetchCoachTimezone();
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -66,21 +89,32 @@ export default function SchedulePackSessionModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedPackage) {
-      alert("❌ Veuillez sélectionner un pack");
+      showError("Sélection requise", "Veuillez sélectionner un pack");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      // Les dates sont au format "YYYY-MM-DDTHH:mm" depuis les inputs datetime-local
+      // On les traite comme des heures locales du coach, puis on convertit en UTC
+      const startLocal = new Date(startDate);
+      const endLocal = new Date(endDate);
+
+      // Convertir au fuseau horaire du coach puis en UTC
+      // fromZonedTime lit les getters de la date et les interprète comme étant dans le fuseau du coach
+      const startUTC = fromZonedTime(startLocal, coachTimezone);
+      const endUTC = fromZonedTime(endLocal, coachTimezone);
+
+      const durationHours = (endUTC.getTime() - startUTC.getTime()) / (1000 * 60 * 60);
 
       if (durationHours > selectedPackage.remainingHours) {
-        alert(`❌ Heures insuffisantes. Restant: ${selectedPackage.remainingHours}h, Demandé: ${durationHours}h`);
+        showError(
+          "Heures insuffisantes",
+          `Restant: ${selectedPackage.remainingHours}h\nDemandé: ${durationHours}h`
+        );
         setIsSubmitting(false);
         return;
       }
@@ -90,23 +124,26 @@ export default function SchedulePackSessionModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           packageId: selectedPackage.id,
-          startDate: start,
-          endDate: end,
+          startDate: startUTC,
+          endDate: endUTC,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        alert(`✅ ${data.message}\n\n⏱️ Heures restantes: ${data.remainingHours}h`);
+        showSuccess(
+          "Session planifiée avec succès",
+          `${data.message}\n\nHeures restantes: ${data.remainingHours.toFixed(1)}h`
+        );
         onSuccess();
         handleClose();
       } else {
         const error = await res.json();
-        alert(`❌ ${error.error || 'Erreur lors de la planification'}`);
+        showError("Erreur de planification", error.error || 'Erreur lors de la planification');
       }
     } catch (error) {
       console.error('Erreur:', error);
-      alert('❌ Erreur lors de la planification');
+      showError("Erreur de planification", "Une erreur est survenue lors de la planification");
     } finally {
       setIsSubmitting(false);
     }
@@ -314,6 +351,27 @@ export default function SchedulePackSessionModal({
           </form>
         )}
       </div>
+
+      {/* Modals de notification */}
+      <AlertDialogCustom
+        open={alertState.open}
+        onOpenChange={closeAlert}
+        title={alertState.title}
+        description={alertState.description}
+        type={alertState.type}
+      />
+
+      <AlertDialogCustom
+        open={confirmState.open}
+        onOpenChange={closeConfirm}
+        title={confirmState.title}
+        description={confirmState.description}
+        type="warning"
+        confirmText="Confirmer"
+        cancelText="Annuler"
+        onConfirm={confirmState.onConfirm}
+        showCancel={true}
+      />
     </div>
   );
 }

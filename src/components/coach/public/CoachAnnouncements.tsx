@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, Euro, Calendar, Package, Check, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { BookingModal } from './BookingModal';
 
 interface AnnouncementPack {
   id: string;
@@ -70,16 +71,19 @@ const FORMAT_LABELS: Record<string, string> = {
 };
 
 export function CoachAnnouncements({ announcements, coachId, isInactive = false }: CoachAnnouncementsProps) {
+  const router = useRouter();
+  const locale = useLocale();
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   // État pour chaque annonce : { announcementId: packId | null }
   const [selectedPacks, setSelectedPacks] = useState<Record<string, string | null>>({});
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  const handleBooking = (announcement: Announcement) => {
+  const handleBooking = (announcement: Announcement, packId?: string) => {
     if (isInactive) return;
-    setSelectedAnnouncement(announcement);
-    setIsBookingOpen(true);
+    const url = packId
+      ? `/${locale}/booking/${coachId}/${announcement.id}?packId=${packId}`
+      : `/${locale}/booking/${coachId}/${announcement.id}`;
+    router.push(url);
   };
 
   if (announcements.length === 0) {
@@ -325,7 +329,7 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
                       <div className="pt-4 border-t border-gray-200">
                         <Button
                           size="lg"
-                          onClick={() => handleBooking(announcement)}
+                          onClick={() => handleBooking(announcement, selectedPacks[announcement.id] || undefined)}
                           className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold text-lg py-6 shadow-lg hover:shadow-xl transition-all"
                         >
                           <Calendar className="mr-2 h-5 w-5" />
@@ -403,17 +407,6 @@ export function CoachAnnouncements({ announcements, coachId, isInactive = false 
             </div>
           </DialogContent>
         </Dialog>
-      )}
-
-      {/* Modal de réservation */}
-      {selectedAnnouncement && (
-        <BookingModal
-          isOpen={isBookingOpen}
-          onClose={() => setIsBookingOpen(false)}
-          announcement={selectedAnnouncement}
-          coachId={coachId}
-          selectedPackId={selectedPacks[selectedAnnouncement.id]}
-        />
       )}
     </>
   );

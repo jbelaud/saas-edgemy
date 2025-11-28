@@ -7,7 +7,7 @@ import { CoachAnnouncements } from '@/components/coach/public/CoachAnnouncements
 import { CoachAbout } from '@/components/coach/public/CoachAbout';
 import { CoachReviews } from '@/components/coach/public/CoachReviews';
 import { CoachVideo } from '@/components/coach/public/CoachVideo';
-import { CoachCalendar } from '@/components/coach/public/CoachCalendar';
+import { CoachAvailabilityPreview } from '@/components/coach/public/CoachAvailabilityPreview';
 // import { CoachWhyMe } from '@/components/coach/public/CoachWhyMe'; // Désactivé pour MVP - à réactiver plus tard
 import { TrustBadges } from '@/components/coach/public/TrustBadges';
 import { StructuredData } from '@/components/seo/StructuredData';
@@ -45,6 +45,7 @@ async function getCoach(slug: string) {
       presentationVideoUrl: true,
       bio: true,
       methodology: true,
+      timezone: true,
       announcements: {
         where: { isActive: true },
         orderBy: { createdAt: 'desc' },
@@ -266,9 +267,9 @@ export default async function CoachPublicPage({ params }: PageProps) {
                     coachName={`${coach.firstName} ${coach.lastName}`}
                   />
                 ) : (
-                  <CoachCalendar
+                  <CoachAvailabilityPreview
                     coachId={coach.id}
-                    coachName={`${coach.firstName} ${coach.lastName}`}
+                    coachTimezone={coach.timezone || 'Europe/Paris'}
                   />
                 )}
               </div>
@@ -276,9 +277,9 @@ export default async function CoachPublicPage({ params }: PageProps) {
 
             {/* Section 2: Calendrier (si vidéo présente) */}
             {coach.presentationVideoUrl && (
-              <CoachCalendar
+              <CoachAvailabilityPreview
                 coachId={coach.id}
-                coachName={`${coach.firstName} ${coach.lastName}`}
+                coachTimezone={coach.timezone || 'Europe/Paris'}
               />
             )}
 

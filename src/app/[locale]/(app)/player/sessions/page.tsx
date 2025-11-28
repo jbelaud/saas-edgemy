@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Clock, User, Loader2, Package } from 'lucide-react';
+import { Calendar, Clock, User, Loader2, Package, Globe } from 'lucide-react';
 import { SessionActionsButtons } from '@/components/sessions/SessionActionsButtons';
 import Image from 'next/image';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 import { GlassCard, GradientText } from '@/components/ui';
+import { useTimezone } from '@/hooks/useTimezone';
+import { formatTimezoneDisplay } from '@/lib/timezone';
+import { Tooltip } from '@/components/ui/Tooltip';
 
 interface Reservation {
   id: string;
@@ -42,6 +45,7 @@ export default function PlayerSessionsPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [playerDiscordId, setPlayerDiscordId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { timezone, formatLocal, isLoaded: timezoneLoaded } = useTimezone();
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -90,6 +94,14 @@ export default function PlayerSessionsPage() {
         pack?: {
           hours: number;
         };
+        coachingPackage?: {
+          id: string;
+          totalHours: number;
+          remainingHours: number;
+          sessionsCompletedCount: number;
+          sessionsTotalCount: number;
+          progressPercent: number;
+        };
       }) => ({
         id: r.id,
         startDate: new Date(r.startDate),
@@ -109,9 +121,9 @@ export default function PlayerSessionsPage() {
           title: r.announcement.title,
           durationMin: r.announcement.durationMin,
         },
-        packageInfo: r.pack ? {
-          totalHours: r.pack.hours,
-          remainingHours: r.pack.hours, // TODO: calculer les heures restantes
+        packageInfo: r.coachingPackage ? {
+          totalHours: r.coachingPackage.totalHours,
+          remainingHours: r.coachingPackage.remainingHours,
         } : undefined,
       }));
 
@@ -146,12 +158,26 @@ export default function PlayerSessionsPage() {
     <PlayerLayout>
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">
-          <GradientText variant="emerald">Mes Sessions</GradientText>
-        </h1>
-        <p className="text-gray-400 text-lg">
-          Consultez vos sessions de coaching réservées
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">
+              <GradientText variant="emerald">Mes Sessions</GradientText>
+            </h1>
+            <p className="text-gray-400 text-lg">
+              Consultez vos sessions de coaching réservées
+            </p>
+          </div>
+          {timezoneLoaded && (
+            <Tooltip content="Les horaires sont affichés dans votre fuseau horaire" position="bottom">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg cursor-help">
+                <Globe className="h-3.5 w-3.5 text-blue-600" />
+                <span className="text-xs font-medium text-blue-700">
+                  {formatTimezoneDisplay(timezone)}
+                </span>
+              </div>
+            </Tooltip>
+          )}
+        </div>
       </div>
 
       <div className="space-y-8">
@@ -205,9 +231,19 @@ export default function PlayerSessionsPage() {
                             avec {reservation.coach.firstName} {reservation.coach.lastName}
                           </p>
                           {reservation.packageInfo && (
-                            <p className="text-xs text-purple-400 mt-1">
-                              Heures restantes: {reservation.packageInfo.remainingHours}h / {reservation.packageInfo.totalHours}h
-                            </p>
+                            <div className="mt-2 p-2 bg-purple-500/10 rounded-lg border border-purple-500/30">
+                              <p className="text-xs text-purple-300 mb-1">
+                                Pack: {reservation.packageInfo.remainingHours.toFixed(1)}h restantes / {reservation.packageInfo.totalHours}h
+                              </p>
+                              <div className="w-full bg-purple-900/50 rounded-full h-1.5">
+                                <div
+                                  className="bg-gradient-to-r from-purple-500 to-blue-500 h-1.5 rounded-full transition-all"
+                                  style={{
+                                    width: `${((reservation.packageInfo.totalHours - reservation.packageInfo.remainingHours) / reservation.packageInfo.totalHours) * 100}%`
+                                  }}
+                                />
+                              </div>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -215,13 +251,13 @@ export default function PlayerSessionsPage() {
                       <div className="flex items-center gap-4 text-sm text-gray-300 mt-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          {format(new Date(reservation.startDate), "EEEE d MMMM yyyy", { locale: fr })}
+                          {formatLocal(reservation.startDate, "EEEE d MMMM yyyy")}
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          {format(new Date(reservation.startDate), "HH:mm", { locale: fr })}
+                          {formatLocal(reservation.startDate, "HH:mm")}
                           {' - '}
-                          {format(new Date(reservation.endDate), "HH:mm", { locale: fr })}
+                          {formatLocal(reservation.endDate, "HH:mm")}
                         </div>
                       </div>
                     </div>
@@ -286,11 +322,11 @@ export default function PlayerSessionsPage() {
                       <div className="flex items-center gap-4 text-sm text-gray-400 mt-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          {format(new Date(reservation.startDate), "d MMMM yyyy", { locale: fr })}
+                          {formatLocal(reservation.startDate, "d MMMM yyyy")}
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          {format(new Date(reservation.startDate), "HH:mm", { locale: fr })}
+                          {formatLocal(reservation.startDate, "HH:mm")}
                         </div>
                       </div>
                     </div>

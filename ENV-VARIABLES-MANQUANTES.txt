@@ -1,0 +1,57 @@
+# 🔧 VARIABLES D'ENVIRONNEMENT MANQUANTES
+
+## À ajouter dans .env ET .env.local
+
+# Stripe Connect - CRITIQUE
+STRIPE_CONNECT_ENABLED=true
+
+## Explication
+
+Cette variable active Stripe Connect en mode production.
+
+Sans cette variable:
+- Le système crée des comptes "mock" (acct_mock_XXXXX)
+- Les coachs ne peuvent pas accéder au dashboard Stripe
+- Aucun transfert ne peut être effectué
+- Le bouton "Voir mon dashboard Stripe" déconnecte l'utilisateur
+
+Avec cette variable à "true":
+- Le système crée de vrais comptes Stripe Connect (acct_XXXXX)
+- Les coachs peuvent accéder au dashboard Stripe Express
+- Les transferts sont effectués automatiquement après validation
+- Le workflow fonctionne correctement
+
+## Instructions
+
+1. Ouvrir .env
+2. Ajouter la ligne: STRIPE_CONNECT_ENABLED=true
+3. Ouvrir .env.local (si différent)
+4. Ajouter la ligne: STRIPE_CONNECT_ENABLED=true
+5. Redémarrer l'application Next.js
+
+## Vérification
+
+Après avoir ajouté la variable, vérifiez dans les logs de l'application:
+- Ne devrait PLUS voir: "ℹ️ Stripe Connect désactivé - Mode développement"
+- Devrait voir: Création de vrais comptes Stripe Connect
+
+## Fichiers concernés
+
+- src/app/api/stripe/connect/account-link/route.ts (ligne 42)
+- src/app/api/stripe/connect/status/route.ts (ligne 72)
+
+## Impact
+
+SANS la variable (état actuel):
+❌ Comptes mock créés
+❌ Dashboard inaccessible
+❌ Transfers impossibles
+❌ Status INACTIVE
+❌ isOnboarded false
+
+AVEC la variable:
+✅ Vrais comptes Stripe
+✅ Dashboard accessible
+✅ Transfers automatiques
+✅ Status ACTIVE
+✅ isOnboarded true

@@ -1,14 +1,75 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { XCircle, ArrowLeft, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { XCircle, ArrowLeft, RefreshCw, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function PaymentCancelPage() {
   const router = useRouter();
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const [isRetrying, setIsRetrying] = useState(false);
+
+  // Récupérer le slug du coach et la reservation depuis l'URL
+  const coachSlug = searchParams.get('coachSlug');
+  const reservationId = searchParams.get('reservationId');
+
+  const handleRetryPayment = async () => {
+    if (!reservationId) {
+      // Pas de reservationId, rediriger vers les sessions
+      router.push(`/${locale}/player/sessions`);
+      return;
+    }
+
+    setIsRetrying(true);
+
+    try {
+      // Récupérer les infos de la réservation pour recréer la session Stripe
+      const response = await fetch(`/api/reservations/${reservationId}/details`);
+
+      if (!response.ok) {
+        throw new Error('Réservation introuvable ou expirée');
+      }
+
+      const reservation = await response.json();
+
+      // Recréer la session Stripe
+      const stripeResponse = await fetch('/api/stripe/create-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reservationId: reservation.id,
+          coachId: reservation.coachId,
+          coachName: `${reservation.coach.firstName} ${reservation.coach.lastName}`,
+          playerEmail: reservation.player.email,
+          type: reservation.type,
+          locale,
+        }),
+      });
+
+      if (!stripeResponse.ok) {
+        throw new Error('Erreur lors de la création de la session de paiement');
+      }
+
+      const { url } = await stripeResponse.json();
+
+      if (url) {
+        // Rediriger vers Stripe Checkout
+        window.location.href = url;
+      } else {
+        throw new Error('URL de paiement manquante');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la reprise du paiement:', error);
+      alert('Impossible de reprendre le paiement. Votre réservation a peut-être expiré.');
+      router.push(`/${locale}/player/sessions`);
+    } finally {
+      setIsRetrying(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
@@ -36,28 +97,41 @@ export default function PaymentCancelPage() {
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-amber-900">
-              <strong>⚠️ Important</strong>
-              <br />
-              Votre créneau horaire sera automatiquement annulé si le paiement n&apos;est pas effectué dans les prochaines heures.
-            </p>
+            <div className="flex items-start gap-2">
+              <Clock className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-amber-900">
+                  Créneau réservé temporairement
+                </p>
+                <p className="text-sm text-amber-800 mt-1">
+                  Votre créneau horaire est bloqué pendant <strong>15 minutes</strong>. Passé ce délai, il sera automatiquement libéré et pourra être réservé par un autre joueur.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col gap-2 pt-4">
             <Button
-              onClick={() => router.push(`/${locale}/player/sessions`)}
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              onClick={handleRetryPayment}
+              disabled={isRetrying}
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:opacity-50"
             >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Réessayer le paiement
+              <RefreshCw className={`mr-2 h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
+              {isRetrying ? 'Redirection...' : 'Réessayer le paiement'}
             </Button>
             <Button
               variant="outline"
-              onClick={() => router.push(`/${locale}/explore`)}
+              onClick={() => {
+                if (coachSlug) {
+                  router.push(`/${locale}/coach/${coachSlug}`);
+                } else {
+                  router.push(`/${locale}/explore`);
+                }
+              }}
               className="w-full"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour à l&apos;accueil
+              {coachSlug ? 'Retour au profil du coach' : 'Retour à l\'accueil'}
             </Button>
           </div>
         </CardContent>

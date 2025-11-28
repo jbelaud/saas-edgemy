@@ -15,6 +15,34 @@ interface PaymentSessionParams {
 }
 
 /**
+ * Redirige vers Stripe Checkout avec un sessionId existant
+ */
+export async function redirectToCheckoutWithSession(sessionId: string): Promise<void> {
+  try {
+    const stripe = await stripePromise;
+    if (!stripe) {
+      throw new Error('Stripe n\'a pas pu être chargé');
+    }
+
+    const { error } = await stripe.redirectToCheckout({ sessionId });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  } catch (error) {
+    console.error('Erreur redirection Stripe:', error);
+    throw error;
+  }
+}
+
+/**
+ * Redirige vers Stripe Checkout avec une URL de session
+ */
+export async function redirectToCheckoutUrl(url: string): Promise<void> {
+  window.location.href = url;
+}
+
+/**
  * Redirige vers la page de paiement Stripe pour une session/pack
  */
 export async function redirectToCheckout(params: PaymentSessionParams): Promise<void> {
@@ -36,15 +64,11 @@ export async function redirectToCheckout(params: PaymentSessionParams): Promise<
 
     const data = await response.json();
 
-    // Rediriger vers Stripe Checkout
-    const stripe = await stripePromise;
-    if (!stripe) {
-      throw new Error('Stripe n\'a pas pu être chargé');
-    }
-
     // Rediriger vers Stripe Checkout via URL (méthode recommandée)
     if (data.url) {
       window.location.href = data.url;
+    } else if (data.sessionId) {
+      await redirectToCheckoutWithSession(data.sessionId);
     } else {
       throw new Error('URL de session de paiement manquante');
     }

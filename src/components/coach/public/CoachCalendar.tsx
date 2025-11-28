@@ -17,9 +17,10 @@ interface Availability {
 interface CoachCalendarProps {
   coachId: string;
   coachName: string;
+  sessionDuration?: number; // Durée par défaut des sessions en minutes (optionnel)
 }
 
-export function CoachCalendar({ coachId, coachName }: CoachCalendarProps) {
+export function CoachCalendar({ coachId, coachName, sessionDuration = 60 }: CoachCalendarProps) {
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -30,7 +31,8 @@ export function CoachCalendar({ coachId, coachName }: CoachCalendarProps) {
   useEffect(() => {
     const fetchAvailabilities = async () => {
       try {
-        const response = await fetch(`/api/calendar?coachId=${coachId}`);
+        // Découper les disponibilités en créneaux de la durée spécifiée
+        const response = await fetch(`/api/coach/${coachId}/availability?duration=${sessionDuration}`);
         if (response.ok) {
           const data = await response.json();
           setAvailabilities(data.availabilities || []);
@@ -43,7 +45,7 @@ export function CoachCalendar({ coachId, coachName }: CoachCalendarProps) {
     };
 
     fetchAvailabilities();
-  }, [coachId]);
+  }, [coachId, sessionDuration]);
 
   // Obtenir les 7 prochains jours
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });

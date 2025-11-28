@@ -35,6 +35,7 @@ export async function GET() {
         status: true,
         packId: true,
         discordChannelId: true,
+        type: true,
         coach: {
           select: {
             id: true,
@@ -45,6 +46,7 @@ export async function GET() {
         },
         announcement: {
           select: {
+            id: true,
             title: true,
             durationMin: true,
           },
@@ -54,21 +56,76 @@ export async function GET() {
             hours: true,
           },
         },
+        packageSession: {
+          select: {
+            id: true,
+            packageId: true,
+            durationMinutes: true,
+          },
+        },
       },
       orderBy: {
         startDate: 'asc',
       },
     });
 
+    // Récupérer les informations des packs pour les sessions de pack
+    const packageIds = reservations
+      .filter(r => r.packageSession?.packageId)
+      .map(r => r.packageSession!.packageId);
+
+    const uniquePackageIds = [...new Set(packageIds)];
+
+    const coachingPackages = await prisma.coachingPackage.findMany({
+      where: {
+        id: { in: uniquePackageIds },
+      },
+      select: {
+        id: true,
+        totalHours: true,
+        remainingHours: true,
+        sessionsCompletedCount: true,
+        sessionsTotalCount: true,
+        coachId: true,
+        announcementId: true,
+      },
+    });
+
+    // Créer un map pour accès rapide
+    const packagesMap = new Map(
+      coachingPackages.map(p => [p.id, p])
+    );
+
+    // Enrichir les réservations avec les infos du pack
+    const enrichedReservations = reservations.map(reservation => {
+      const packageInfo = reservation.packageSession?.packageId
+        ? packagesMap.get(reservation.packageSession.packageId)
+        : null;
+
+      return {
+        ...reservation,
+        coachingPackage: packageInfo ? {
+          id: packageInfo.id,
+          totalHours: packageInfo.totalHours,
+          remainingHours: packageInfo.remainingHours,
+          sessionsCompletedCount: packageInfo.sessionsCompletedCount,
+          sessionsTotalCount: packageInfo.sessionsTotalCount,
+          progressPercent: packageInfo.totalHours > 0
+            ? ((packageInfo.totalHours - packageInfo.remainingHours) / packageInfo.totalHours) * 100
+            : 0,
+        } : null,
+      };
+    });
+
     // Séparer les sessions à venir et passées
     const now = new Date();
     // Une session est "upcoming" si elle n'a pas encore commencé OU si elle est en cours
-    const upcoming = reservations.filter(r => new Date(r.endDate) > now);
+    const upcoming = enrichedReservations.filter(r => new Date(r.endDate) > now);
     // Une session est "past" si elle est terminée
-    const past = reservations.filter(r => new Date(r.endDate) <= now);
+    const past = enrichedReservations.filter(r => new Date(r.endDate) <= now);
 
-    return NextResponse.json({ 
-      upcoming, 
+    return NextResponse.json({
+      upcoming,
       past,
       playerDiscordId: player?.discordId || null,
     });

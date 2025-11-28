@@ -25,7 +25,18 @@ async function getRevenueData() {
     where: {
       paymentStatus: "PAID",
     },
-    include: {
+    select: {
+      id: true,
+      priceCents: true,
+      coachNetCents: true,
+      coachEarningsCents: true,
+      stripeFeeCents: true,
+      edgemyFeeCents: true,
+      serviceFeeCents: true,
+      edgemyRevenueHT: true,
+      edgemyRevenueTVACents: true,
+      type: true,
+      createdAt: true,
       pack: {
         select: {
           hours: true,
@@ -54,6 +65,11 @@ async function getRevenueData() {
     select: {
       id: true,
       priceCents: true,
+      coachNetCents: true,
+      coachEarningsCents: true,
+      stripeFeeCents: true,
+      edgemyFeeCents: true,
+      serviceFeeCents: true,
       totalHours: true,
       createdAt: true,
       player: {
@@ -79,35 +95,34 @@ async function getRevenueData() {
     c.subscriptionId?.includes("annual")
   ).length;
 
-  // Calculer les commissions
-  // Phase 1: 5% sur sessions uniques, 3€ + 2% sur packs
-  let totalCommissionsSessions = 0;
-  let totalCommissionsPacks = 0;
+  // Calculer les marges Edgemy (6.5% uniforme - frais Stripe)
+  let totalEdgemyMarginCents = 0;
+  let totalStripeFeeCents = 0;
+  let totalEdgemyRevenueHT = 0;
+  let totalEdgemyRevenueTVACents = 0;
 
   paidReservations.forEach((reservation) => {
-    if (reservation.pack) {
-      // Pack: 3€ + 2%
-      const commission = 300 + reservation.priceCents * 0.02; // 300 centimes = 3€
-      totalCommissionsPacks += commission;
-    } else {
-      // Session unique: 5%
-      const commission = reservation.priceCents * 0.05;
-      totalCommissionsSessions += commission;
-    }
+    // Utiliser les champs déjà calculés dans la DB
+    totalEdgemyMarginCents += reservation.edgemyFeeCents || 0;
+    totalStripeFeeCents += reservation.stripeFeeCents || 0;
+    totalEdgemyRevenueHT += reservation.edgemyRevenueHT || 0;
+    totalEdgemyRevenueTVACents += reservation.edgemyRevenueTVACents || 0;
   });
 
-  // Commissions sur les packs de coaching (3€ + 2%)
+  // Marges sur les packs de coaching
   coachingPackages.forEach((pack) => {
-    const commission = 300 + pack.priceCents * 0.02;
-    totalCommissionsPacks += commission;
+    totalEdgemyMarginCents += pack.edgemyFeeCents || 0;
+    totalStripeFeeCents += pack.stripeFeeCents || 0;
   });
 
   return {
     coaches,
     monthlySubscriptions,
     annualSubscriptions,
-    totalCommissionsSessions: totalCommissionsSessions / 100, // Convertir en euros
-    totalCommissionsPacks: totalCommissionsPacks / 100,
+    totalEdgemyMargin: totalEdgemyMarginCents / 100, // Convertir en euros
+    totalStripeFees: totalStripeFeeCents / 100,
+    totalEdgemyRevenueHT: totalEdgemyRevenueHT / 100,
+    totalEdgemyRevenueTVA: totalEdgemyRevenueTVACents / 100,
     paidReservations,
     coachingPackages,
   };

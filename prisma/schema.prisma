@@ -308,8 +308,8 @@ model CoachingPackage {
   playerId        String
   coachId         String
   announcementId  String
-  totalHours      Int
-  remainingHours  Int
+  totalHours      Float
+  remainingHours  Float
   priceCents      Int              // Prix total payé par le joueur
   commissionCents Int              @default(0) // Commission Edgemy
   coachEarningsCents Int           @default(0) // Total que doit recevoir le coach

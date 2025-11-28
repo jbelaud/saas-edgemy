@@ -8,6 +8,8 @@ import type { DiscordChannelReservation } from '@/lib/discord/channel';
 import { sendSessionReminderDM } from '@/lib/discord/messages';
 import { ensureMemberRole } from '@/lib/discord/roles';
 import { checkLowMargin } from '@/lib/stripe/alerts';
+import { sendEmail } from '@/lib/email/brevo';
+import { generateSessionConfirmationEmail, generateCoachSessionNotificationEmail } from '@/lib/email/templates';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -38,9 +40,11 @@ const reservationSelect = Prisma.validator<Prisma.ReservationSelect>()({
       id: true,
       firstName: true,
       lastName: true,
+      timezone: true,
       user: {
         select: {
           id: true,
+          email: true,
           discordId: true,
         },
       },
@@ -50,6 +54,7 @@ const reservationSelect = Prisma.validator<Prisma.ReservationSelect>()({
     select: {
       id: true,
       name: true,
+      email: true,
       discordId: true,
     },
   },
@@ -147,6 +152,7 @@ export async function POST(req: Request) {
             select: {
               firstName: true,
               lastName: true,
+              timezone: true,
             },
           });
 
@@ -237,6 +243,106 @@ export async function POST(req: Request) {
           console.log(`✅ Réservation ${reservationId} marquée comme PAID et CONFIRMED`);
           console.log(`⏳ transferStatus: PENDING - Le transfer sera fait via /api/reservations/${reservationId}/complete`);
 
+          // Envoi des emails de confirmation
+          const formatCurrency = (cents: number) => {
+            return new Intl.NumberFormat('fr-FR', {
+              style: 'currency',
+              currency: 'EUR',
+            }).format(cents / 100);
+          };
+
+          const formatDate = (date: Date) => {
+            return new Intl.DateTimeFormat('fr-FR', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }).format(date);
+          };
+
+          const formatTime = (date: Date) => {
+            return new Intl.DateTimeFormat('fr-FR', {
+              hour: '2-digit',
+              minute: '2-digit',
+              timeZoneName: 'short',
+            }).format(date);
+          };
+
+          const playerEmail = reservation.player?.email;
+          const playerName = reservation.player?.name || 'Joueur';
+          const coachEmail = reservation.coach?.user?.email;
+          const coachName = `${reservation.coach?.firstName || ''} ${reservation.coach?.lastName || ''}`.trim();
+          const sessionTitle = reservation.announcement?.title || 'Session de coaching';
+          const duration = reservation.announcement?.durationMin || 60;
+
+          // Email au joueur
+          if (playerEmail) {
+            try {
+              const playerEmailData = generateSessionConfirmationEmail({
+                playerName,
+                coachName,
+                sessionTitle,
+                sessionDate: formatDate(reservation.startDate),
+                sessionTime: formatTime(reservation.startDate),
+                duration,
+                amount: formatCurrency(totalCustomerCents),
+                isPackage,
+                sessionsCount: sessionsCountValue > 0 ? sessionsCountValue : undefined,
+                sessionUrl: `${process.env.NEXT_PUBLIC_APP_URL}/fr/player/sessions`,
+              });
+
+              const emailSent = await sendEmail({
+                to: playerEmail,
+                toName: playerName,
+                subject: `🎉 Réservation confirmée - ${sessionTitle}`,
+                htmlContent: playerEmailData.html,
+                textContent: playerEmailData.text,
+              });
+
+              if (emailSent) {
+                console.log(`✅ Email de confirmation envoyé au joueur: ${playerEmail}`);
+              } else {
+                console.error(`❌ Échec de l'envoi de l'email au joueur: ${playerEmail}`);
+              }
+            } catch (error) {
+              console.error(`❌ Erreur lors de l'envoi de l'email au joueur:`, error);
+            }
+          }
+
+          // Email au coach
+          if (coachEmail) {
+            try {
+              const coachEmailData = generateCoachSessionNotificationEmail({
+                coachName,
+                playerName,
+                sessionTitle,
+                sessionDate: formatDate(reservation.startDate),
+                sessionTime: formatTime(reservation.startDate),
+                duration,
+                amount: formatCurrency(coachNetCents),
+                isPackage,
+                sessionsCount: sessionsCountValue > 0 ? sessionsCountValue : undefined,
+                sessionUrl: `${process.env.NEXT_PUBLIC_APP_URL}/fr/coach/sessions`,
+              });
+
+              const emailSent = await sendEmail({
+                to: coachEmail,
+                toName: coachName,
+                subject: `💰 Nouvelle réservation - ${playerName}`,
+                htmlContent: coachEmailData.html,
+                textContent: coachEmailData.text,
+              });
+
+              if (emailSent) {
+                console.log(`✅ Email de notification envoyé au coach: ${coachEmail}`);
+              } else {
+                console.error(`❌ Échec de l'envoi de l'email au coach: ${coachEmail}`);
+              }
+            } catch (error) {
+              console.error(`❌ Erreur lors de l'envoi de l'email au coach:`, error);
+            }
+          }
+
           if (isPackage) {
             const existingSession = await prisma.packageSession.findUnique({
               where: { reservationId },
@@ -261,12 +367,17 @@ export async function POST(req: Request) {
             }
 
             if (!coachingPackage) {
+              // Calculer la durée de la première session pour déduire les heures
+              const durationMinutes = reservation.announcement?.durationMin
+                ?? Math.max(0, Math.round((reservation.endDate.getTime() - reservation.startDate.getTime()) / 60000));
+              const durationHours = durationMinutes / 60;
+
               const coachingPackageCreateData: Prisma.CoachingPackageUncheckedCreateInput = {
                 playerId: reservation.playerId,
                 coachId: reservation.coachId,
                 announcementId: reservation.announcementId,
                 totalHours,
-                remainingHours: totalHours,
+                remainingHours: totalHours - durationHours, // ✅ Déduire la première session immédiatement
                 priceCents: reservation.priceCents,
                 stripePaymentId: stripePaymentId ?? undefined,
                 status: 'ACTIVE',
@@ -285,6 +396,8 @@ export async function POST(req: Request) {
                 data: coachingPackageCreateData,
               });
               shouldUpdateExistingPackage = false;
+
+              console.log(`✅ CoachingPackage créé avec ${totalHours}h total, ${totalHours - durationHours}h restantes (première session de ${durationHours}h déduite)`);
             }
 
             if (!existingSession && coachingPackage) {
@@ -336,6 +449,7 @@ export async function POST(req: Request) {
                   id: reservation.coach.id,
                   firstName: reservation.coach.firstName,
                   lastName: reservation.coach.lastName,
+                  timezone: reservation.coach.timezone,
                   user: reservation.coach.user
                     ? {
                         id: reservation.coach.user.id,
@@ -350,6 +464,7 @@ export async function POST(req: Request) {
                   name: reservation.player.name,
                   firstName: playerProfile?.firstName ?? null,
                   lastName: playerProfile?.lastName ?? null,
+                  timezone: playerProfile?.timezone ?? null,
                   discordId: reservation.player.discordId,
                 }
               : null,

@@ -9,26 +9,42 @@ import { GlassCard, GradientButton, GradientText } from '@/components/ui';
 import Link from 'next/link';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
 
+interface PlayerStats {
+  totalHours: number;
+  coachesCount: number;
+  upcomingSessionsCount: number;
+  completedSessionsCount: number;
+  totalReservations: number;
+}
+
+interface PlayerDashboardData {
+  player: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+  };
+  stats: PlayerStats;
+}
+
 export default function PlayerDashboardPage() {
   const router = useRouter();
   const locale = useLocale();
   const { data: session, isPending } = useSession();
-  const [playerData, setPlayerData] = useState<{ player?: { firstName?: string; lastName?: string } } | null>(null);
+  const [dashboardData, setDashboardData] = useState<PlayerDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPlayerData = async () => {
+    const fetchDashboard = async () => {
       try {
-        // Récupérer le profil joueur
-        const response = await fetch('/api/player/profile');
-        
+        const response = await fetch('/api/player/dashboard');
+
         if (!response.ok) {
-          throw new Error('Erreur lors du chargement du profil');
+          throw new Error('Erreur lors du chargement du dashboard');
         }
 
         const data = await response.json();
-        setPlayerData(data);
+        setDashboardData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Une erreur est survenue');
       } finally {
@@ -37,7 +53,7 @@ export default function PlayerDashboardPage() {
     };
 
     if (session?.user) {
-      fetchPlayerData();
+      fetchDashboard();
     }
   }, [session]);
 
@@ -65,7 +81,14 @@ export default function PlayerDashboardPage() {
     );
   }
 
-  const firstName = playerData?.player?.firstName || session.user.name?.split(' ')[0] || 'Joueur';
+  const firstName = dashboardData?.player?.firstName || session.user.name?.split(' ')[0] || 'Joueur';
+  const stats = dashboardData?.stats || {
+    totalHours: 0,
+    coachesCount: 0,
+    upcomingSessionsCount: 0,
+    completedSessionsCount: 0,
+    totalReservations: 0,
+  };
 
   return (
     <PlayerLayout>
@@ -87,9 +110,9 @@ export default function PlayerDashboardPage() {
             <h3 className="text-sm font-medium text-gray-400">Heures coachées</h3>
             <Clock className="h-4 w-4 text-emerald-400" />
           </div>
-          <div className="text-3xl font-bold text-white">0h</div>
+          <div className="text-3xl font-bold text-white">{stats.totalHours}h</div>
           <p className="text-xs text-gray-500 mt-1">
-            Total cumulé
+            {stats.completedSessionsCount} session{stats.completedSessionsCount > 1 ? 's' : ''} complétée{stats.completedSessionsCount > 1 ? 's' : ''}
           </p>
         </GlassCard>
 
@@ -98,9 +121,12 @@ export default function PlayerDashboardPage() {
             <h3 className="text-sm font-medium text-gray-400">Coachs suivis</h3>
             <Users className="h-4 w-4 text-blue-400" />
           </div>
-          <div className="text-3xl font-bold text-white">0</div>
+          <div className="text-3xl font-bold text-white">{stats.coachesCount}</div>
           <p className="text-xs text-gray-500 mt-1">
-            Aucun coach pour le moment
+            {stats.coachesCount === 0
+              ? 'Aucun coach pour le moment'
+              : `Coach${stats.coachesCount > 1 ? 's' : ''} actif${stats.coachesCount > 1 ? 's' : ''}`
+            }
           </p>
         </GlassCard>
 
@@ -109,7 +135,7 @@ export default function PlayerDashboardPage() {
             <h3 className="text-sm font-medium text-gray-400">Sessions planifiées</h3>
             <TrendingUp className="h-4 w-4 text-purple-400" />
           </div>
-          <div className="text-3xl font-bold text-white">0</div>
+          <div className="text-3xl font-bold text-white">{stats.upcomingSessionsCount}</div>
           <p className="text-xs text-gray-500 mt-1">
             À venir
           </p>
@@ -120,15 +146,18 @@ export default function PlayerDashboardPage() {
       <GlassCard className="mb-8 border-emerald-500/20 bg-gradient-to-r from-emerald-500/10 to-teal-500/10">
         <div className="mb-6">
           <h2 className="text-white text-2xl font-bold mb-3">
-            Trouve ton prochain coach
+            {stats.coachesCount === 0 ? 'Trouve ton premier coach' : 'Trouve ton prochain coach'}
           </h2>
           <p className="text-gray-300 text-base">
-            Explore notre sélection de coachs professionnels et réserve ta première session de coaching.
+            {stats.coachesCount === 0
+              ? 'Explore notre sélection de coachs professionnels et réserve ta première session de coaching.'
+              : 'Continue ton apprentissage avec de nouveaux coachs ou réserve une nouvelle session.'
+            }
           </p>
         </div>
         <Link href={`/${locale}/player/coaches/explore`}>
-          <GradientButton 
-            size="lg" 
+          <GradientButton
+            size="lg"
             variant="emerald"
           >
             <Search className="mr-2 h-5 w-5" />

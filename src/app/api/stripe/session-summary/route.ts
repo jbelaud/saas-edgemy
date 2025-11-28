@@ -30,6 +30,8 @@ type SuccessSummaryResponse = {
   coachLastName: string;
   announcementTitle: string;
   durationMinutes: number | null;
+  startDate: string | null;
+  endDate: string | null;
 };
 
 function parseMetadataInt(metadata: StripeMetadata, key: string): number | null {
@@ -88,6 +90,8 @@ export async function GET(request: NextRequest) {
         edgemyFeeCents: true,
         serviceFeeCents: true,
         sessionsCount: true,
+        startDate: true,
+        endDate: true,
         coach: {
           select: {
             firstName: true,
@@ -141,6 +145,8 @@ export async function GET(request: NextRequest) {
       coachLastName,
       announcementTitle,
       durationMinutes: durationMinutes ?? null,
+      startDate: reservation?.startDate?.toISOString() ?? null,
+      endDate: reservation?.endDate?.toISOString() ?? null,
     };
 
     return NextResponse.json(responsePayload);

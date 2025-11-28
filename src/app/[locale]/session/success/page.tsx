@@ -3,25 +3,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { CheckCircle, Loader2, ArrowRight, ExternalLink, PiggyBank, Receipt, Percent, CalendarDays } from 'lucide-react';
+import { CheckCircle, Loader2, ArrowRight, ExternalLink, CalendarDays, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 interface SuccessSummary {
   reservationId: string;
-  coachNetCents: number;
-  stripeFeeCents: number;
-  edgemyFeeCents: number;
-  serviceFeeCents: number;
   totalCustomerCents: number;
   isPackage: boolean;
   sessionsCount: number | null;
-  sessionPayoutCents: number | null;
   coachFirstName: string;
   coachLastName: string;
   announcementTitle: string;
   durationMinutes: number;
+  startDate: string | null;
+  endDate: string | null;
 }
 
 export default function PaymentSuccessPage() {
@@ -78,6 +75,27 @@ export default function PaymentSuccessPage() {
   };
 
   const coachFullName = summary ? `${summary.coachFirstName} ${summary.coachLastName}` : '';
+
+  const formatSessionDate = (dateString: string | null) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat(locale, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(date);
+  };
+
+  const formatSessionTime = (dateString: string | null) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    }).format(date);
+  };
 
   if (isLoading) {
     return (
@@ -146,58 +164,55 @@ export default function PaymentSuccessPage() {
           {summary && (
             <div className="space-y-3 bg-white border border-orange-100 rounded-lg p-4 shadow-sm">
               <div className="flex items-start gap-3">
-                <PiggyBank className="h-5 w-5 text-emerald-600 mt-0.5" />
+                <CalendarDays className="h-5 w-5 text-orange-500 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900">Montant versé au coach</p>
-                  <p className="text-lg font-bold text-emerald-600">{formatAmount(summary.coachNetCents)}</p>
-                  {summary.isPackage && summary.sessionPayoutCents ? (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Paiement par session : <strong>{formatAmount(summary.sessionPayoutCents)}</strong>
-                      {summary.sessionsCount ? ` × ${summary.sessionsCount}` : ''}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Receipt className="h-5 w-5 text-orange-500 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900">Frais</p>
-                  <div className="text-xs text-gray-600 space-y-1 mt-1">
-                    <p>Service Edgemy : <strong>{formatAmount(summary.edgemyFeeCents)}</strong></p>
-                    <p>Frais Stripe estimés : <strong>{formatAmount(summary.stripeFeeCents)}</strong></p>
-                    <p>Total frais : <strong>{formatAmount(summary.serviceFeeCents)}</strong></p>
+                  <p className="text-sm font-semibold text-gray-900">Détails de la session</p>
+                  <div className="mt-2 space-y-1">
+                    {summary.announcementTitle && (
+                      <p className="text-sm text-gray-700">
+                        <strong>Offre :</strong> {summary.announcementTitle}
+                      </p>
+                    )}
+                    {summary.isPackage ? (
+                      <div className="space-y-1">
+                        <Badge className="bg-blue-100 text-blue-700 border-blue-200">Pack d&apos;heures</Badge>
+                        {summary.sessionsCount && (
+                          <p className="text-sm text-gray-600">
+                            {summary.sessionsCount} session{summary.sessionsCount > 1 ? 's' : ''} à planifier
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <Badge className="bg-orange-100 text-orange-700 border-orange-200">Session unique</Badge>
+                        {summary.startDate && (
+                          <div className="mt-2 space-y-1">
+                            <p className="text-sm text-gray-700 flex items-center gap-2">
+                              <CalendarDays className="h-4 w-4" />
+                              {formatSessionDate(summary.startDate)}
+                            </p>
+                            <p className="text-sm text-gray-700 flex items-center gap-2">
+                              <Clock className="h-4 w-4" />
+                              {formatSessionTime(summary.startDate)}
+                              {summary.endDate && ` - ${formatSessionTime(summary.endDate)}`}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {summary.durationMinutes && (
+                      <p className="text-sm text-gray-600">
+                        <strong>Durée :</strong> {summary.durationMinutes} minutes
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <Percent className="h-5 w-5 text-blue-500 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900">Montant payé</p>
-                  <p className="text-lg font-bold text-blue-600">{formatAmount(summary.totalCustomerCents)}</p>
-                  {summary.isPackage ? (
-                    <Badge className="mt-1 bg-blue-100 text-blue-700 border-blue-200">Pack d&apos;heures</Badge>
-                  ) : (
-                    <Badge className="mt-1 bg-orange-100 text-orange-700 border-orange-200">Session unique</Badge>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <CalendarDays className="h-5 w-5 text-gray-500 mt-0.5" />
-                <div className="flex-1 text-xs text-gray-600">
-                  <p className="font-semibold text-sm text-gray-900">Session</p>
-                  {summary.announcementTitle && (
-                    <p className="mt-0.5">Offre : {summary.announcementTitle}</p>
-                  )}
-                  {summary.durationMinutes ? (
-                    <p>Durée : {summary.durationMinutes} minutes</p>
-                  ) : null}
-                  {summary.sessionsCount ? (
-                    <p>Nombre de sessions prévues : {summary.sessionsCount}</p>
-                  ) : null}
-                </div>
+              <div className="pt-3 border-t border-gray-100">
+                <p className="text-lg font-bold text-gray-900">
+                  Montant payé : <span className="text-orange-600">{formatAmount(summary.totalCustomerCents)}</span>
+                </p>
               </div>
             </div>
           )}
@@ -237,10 +252,10 @@ export default function PaymentSuccessPage() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => router.push(`/${locale}/explore`)}
+              onClick={() => router.push(`/${locale}/player/dashboard`)}
               className="w-full"
             >
-              Retour à l&apos;accueil
+              Retour au dashboard
             </Button>
           </div>
 

@@ -16,7 +16,10 @@ import {
 import {
   Search,
   ExternalLink,
+  FileText,
 } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ReservationDetailsDrawer } from "./ReservationDetailsDrawer";
@@ -65,6 +68,8 @@ const paymentColors = {
 };
 
 export function ReservationsTable({ reservations }: ReservationsTableProps) {
+  const params = useParams();
+  const locale = params.locale as string;
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [paymentFilter, setPaymentFilter] = useState<string>("all");
@@ -292,6 +297,19 @@ export function ReservationsTable({ reservations }: ReservationsTableProps) {
                     {/* Actions */}
                     <td className="py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          asChild
+                        >
+                          <Link href={`/${locale}/admin/sessions/${reservation.id}`}>
+                            <FileText className="h-4 w-4" />
+                          </Link>
+                        </Button>
                         {reservation.discordChannelId && (
                           <Button
                             size="sm"

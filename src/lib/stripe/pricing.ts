@@ -139,9 +139,11 @@ export function calculateForSession(priceCents: number): SessionPricingBreakdown
   const config = getConfig();
   const coachNetCents = priceCents;
 
-  // Commission TOUT COMPRIS (Stripe + Edgemy) : 6.5% uniforme
-  const serviceFeeCents = computeEdgemyServiceFee(priceCents, config);
-  const totalCustomerCents = coachNetCents + serviceFeeCents;
+  // Calculer le total que paie le client (prix coach + 6.5% de commission)
+  // Si le coach veut recevoir 100€, le client paie 106.50€
+  const serviceFeeMultiplier = 1 + (config.edgemyServiceFeePercent / 100);
+  const totalCustomerCents = applyRounding(coachNetCents * serviceFeeMultiplier, config.roundingMode);
+  const serviceFeeCents = totalCustomerCents - coachNetCents;
 
   // IMPORTANT: Stripe prélève ses frais sur le MONTANT TOTAL (pas juste le prix coach)
   const actualStripeFee = computeStripeFee(totalCustomerCents, config);
@@ -175,9 +177,11 @@ export function calculateForPack(priceCents: number, sessionsCount: number): Pac
   const config = getConfig();
   const coachNetCents = priceCents;
 
-  // Commission TOUT COMPRIS (Stripe + Edgemy) : 6.5% uniforme
-  const serviceFeeCents = computeEdgemyServiceFee(priceCents, config);
-  const totalCustomerCents = coachNetCents + serviceFeeCents;
+  // Calculer le total que paie le client (prix coach + 6.5% de commission)
+  // Si le coach veut recevoir 450€, le client paie 479.25€
+  const serviceFeeMultiplier = 1 + (config.edgemyServiceFeePercent / 100);
+  const totalCustomerCents = applyRounding(coachNetCents * serviceFeeMultiplier, config.roundingMode);
+  const serviceFeeCents = totalCustomerCents - coachNetCents;
 
   // IMPORTANT: Stripe prélève ses frais sur le MONTANT TOTAL (pas juste le prix coach)
   const actualStripeFee = computeStripeFee(totalCustomerCents, config);

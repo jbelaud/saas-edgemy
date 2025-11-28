@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui";
 import { Plus, Clock, Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
+import { fromZonedTime } from 'date-fns-tz';
 import { useAlertDialog } from '@/hooks/useAlertDialog';
 import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
+import { convertLocalToUTC } from '@/lib/timezone';
+import { useCoachTimezone } from '@/hooks/useTimezone';
 
 interface QuickAddAvailabilityProps {
   coachId: string;
@@ -17,33 +20,71 @@ export default function QuickAddAvailability({ coachId, onSuccess }: QuickAddAva
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { alertState, confirmState, showError, closeAlert, closeConfirm } = useAlertDialog();
+  const [coachTimezone, setCoachTimezone] = useState<string>('Europe/Paris');
+  const { alertState, confirmState, showError, showSuccess, closeAlert, closeConfirm } = useAlertDialog();
+
+  // Récupérer le fuseau horaire du coach
+  useEffect(() => {
+    const fetchCoachTimezone = async () => {
+      try {
+        const res = await fetch('/api/coach/profile');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.coach?.timezone) {
+            setCoachTimezone(data.coach.timezone);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du fuseau horaire:', error);
+      }
+    };
+    fetchCoachTimezone();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const start = new Date(`${date}T${startTime}`);
-      const end = new Date(`${date}T${endTime}`);
+      // Parser les valeurs du formulaire
+      const [year, month, day] = date.split('-').map(Number);
+      const [startHour, startMinute] = startTime.split(':').map(Number);
+      const [endHour, endMinute] = endTime.split(':').map(Number);
 
-      if (end <= start) {
+      // Validation
+      if (endHour < startHour || (endHour === startHour && endMinute <= startMinute)) {
         showError("Erreur de validation", "L'heure de fin doit être après l'heure de début");
         setIsSubmitting(false);
         return;
       }
 
+      // Créer des objets Date où les getters (.getHours(), .getDate(), etc.) retournent
+      // les valeurs entrées dans le formulaire
+      // fromZonedTime va lire ces getters et interpréter les valeurs comme étant dans le fuseau du coach
+      const startLocal = new Date(year, month - 1, day, startHour, startMinute, 0);
+      const endLocal = new Date(year, month - 1, day, endHour, endMinute, 0);
+
+      // Convertir au timezone du coach puis en UTC
+      // fromZonedTime lit startLocal.getHours() (qui retourne 9), l'interprète comme 9h Bangkok,
+      // et retourne l'équivalent UTC (02:00 UTC)
+      const startUTC = fromZonedTime(startLocal, coachTimezone);
+      const endUTC = fromZonedTime(endLocal, coachTimezone);
+
       const res = await fetch(`/api/coach/${coachId}/availability`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ start, end }),
+        body: JSON.stringify({
+          start: startUTC.toISOString(),
+          end: endUTC.toISOString()
+        }),
       });
 
       if (res.ok) {
+        showSuccess("Disponibilité ajoutée", "La disponibilité a été ajoutée avec succès");
         onSuccess();
         // Réinitialiser le formulaire avec la même date mais horaires suivants
-        const nextStart = format(end, "HH:mm");
-        const nextEnd = format(new Date(end.getTime() + 60 * 60 * 1000), "HH:mm");
+        const nextStart = format(endLocal, "HH:mm");
+        const nextEnd = format(new Date(endLocal.getTime() + 60 * 60 * 1000), "HH:mm");
         setStartTime(nextStart);
         setEndTime(nextEnd);
       } else {

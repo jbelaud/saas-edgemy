@@ -75,12 +75,12 @@ export async function GET() {
     );
 
     const totalRevenue = completedReservations.reduce(
-      (sum, r) => sum + r.priceCents,
+      (sum, r) => sum + (r.coachNetCents || r.coachEarningsCents || r.priceCents),
       0
     );
 
     const monthlyRevenue = recentReservations.reduce(
-      (sum, r) => sum + r.priceCents,
+      (sum, r) => sum + (r.coachNetCents || r.coachEarningsCents || r.priceCents),
       0
     );
 
@@ -107,7 +107,7 @@ export async function GET() {
 
       const monthRevenue = completedReservations
         .filter((r) => r.createdAt >= monthStart && r.createdAt <= monthEnd)
-        .reduce((sum, r) => sum + r.priceCents, 0);
+        .reduce((sum, r) => sum + (r.coachNetCents || r.coachEarningsCents || r.priceCents), 0);
 
       monthlyRevenueData.push({
         month: monthStart.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }),

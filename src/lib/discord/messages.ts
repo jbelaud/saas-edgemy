@@ -45,17 +45,57 @@ function buildSessionEmbed({ reservation, channelId, role }: Omit<SessionReminde
   const start = new Date(reservation.startDate);
   const end = new Date(reservation.endDate);
   const locale = 'fr-FR';
+
+  // Déterminer le fuseau horaire à utiliser selon le rôle
+  const timezone = role === 'coach'
+    ? reservation.coach?.timezone || 'UTC'
+    : reservation.player?.timezone || 'UTC';
+
   const dateFormatter = new Intl.DateTimeFormat(locale, {
     dateStyle: 'full',
+    timeZone: timezone,
   });
   const timeFormatter = new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: timezone,
   });
 
   const dateLabel = dateFormatter.format(start);
   const startTime = timeFormatter.format(start);
   const endTime = timeFormatter.format(end);
+
+  // Obtenir l'offset UTC pour le fuseau horaire spécifique
+  const getUTCOffset = (date: Date, tz: string): string => {
+    try {
+      // Utiliser Intl pour obtenir l'offset correct du fuseau horaire
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz,
+        timeZoneName: 'shortOffset'
+      });
+      const parts = formatter.formatToParts(date);
+      const offsetPart = parts.find(part => part.type === 'timeZoneName');
+
+      if (offsetPart?.value && offsetPart.value.startsWith('GMT')) {
+        // Convertir GMT+7 en UTC+7
+        return offsetPart.value.replace('GMT', 'UTC');
+      }
+
+      // Fallback : calculer manuellement
+      const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+      const tzDate = new Date(date.toLocaleString('en-US', { timeZone: tz }));
+      const offset = (tzDate.getTime() - utcDate.getTime()) / (1000 * 60);
+      const hours = Math.floor(Math.abs(offset) / 60);
+      const minutes = Math.abs(offset) % 60;
+      const sign = offset >= 0 ? '+' : '-';
+      return `UTC${sign}${hours}${minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : ''}`;
+    } catch (error) {
+      console.error('Erreur calcul offset UTC:', error);
+      return 'UTC';
+    }
+  };
+
+  const utcOffset = getUTCOffset(start, timezone);
 
   const coachName = `${reservation.coach?.firstName ?? ''} ${reservation.coach?.lastName ?? ''}`.trim();
   const playerName = reservation.player?.name ?? 'Joueur';
@@ -81,7 +121,7 @@ function buildSessionEmbed({ reservation, channelId, role }: Omit<SessionReminde
     },
     {
       name: '🕒 Horaire',
-      value: `${startTime} → ${endTime}`,
+      value: `${startTime} → ${endTime}\n${utcOffset}`,
       inline: true,
     },
     {

@@ -97,8 +97,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier les chevauchements avec d'autres sessions du coach
-    const overlapping = await prisma.packageSession.findFirst({
+    // Vérifier les chevauchements avec d'autres sessions de pack du coach
+    const overlappingPackageSession = await prisma.packageSession.findFirst({
       where: {
         package: {
           coachId: coach.id,
@@ -129,9 +129,46 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (overlapping) {
+    if (overlappingPackageSession) {
       return NextResponse.json(
-        { error: 'Ce créneau chevauche une session existante' },
+        { error: 'Ce créneau chevauche une session de pack existante' },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier aussi les chevauchements avec les réservations confirmées
+    const overlappingReservation = await prisma.reservation.findFirst({
+      where: {
+        coachId: coach.id,
+        status: {
+          in: ['CONFIRMED', 'COMPLETED'],
+        },
+        OR: [
+          {
+            AND: [
+              { startDate: { lte: start } },
+              { endDate: { gt: start } },
+            ],
+          },
+          {
+            AND: [
+              { startDate: { lt: end } },
+              { endDate: { gte: end } },
+            ],
+          },
+          {
+            AND: [
+              { startDate: { gte: start } },
+              { endDate: { lte: end } },
+            ],
+          },
+        ],
+      },
+    });
+
+    if (overlappingReservation) {
+      return NextResponse.json(
+        { error: 'Ce créneau chevauche une réservation existante' },
         { status: 400 }
       );
     }

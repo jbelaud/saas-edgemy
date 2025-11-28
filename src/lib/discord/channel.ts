@@ -13,6 +13,7 @@ export type DiscordChannelReservation = {
     id: string;
     firstName: string | null;
     lastName: string | null;
+    timezone: string | null;
     user: {
       id: string;
       discordId: string | null;
@@ -23,6 +24,7 @@ export type DiscordChannelReservation = {
     name: string | null;
     firstName: string | null;
     lastName: string | null;
+    timezone: string | null;
     discordId: string | null;
   } | null;
   announcement: {
@@ -90,6 +92,7 @@ export async function createOrReuseDiscordChannel({
           id: true,
           firstName: true,
           lastName: true,
+          timezone: true,
           user: {
             select: {
               id: true,
@@ -102,6 +105,7 @@ export async function createOrReuseDiscordChannel({
         select: {
           id: true,
           name: true,
+          timezone: true,
           discordId: true,
         },
       },

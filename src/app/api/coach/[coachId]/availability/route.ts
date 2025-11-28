@@ -37,40 +37,94 @@ export async function GET(
       },
     });
 
+    // Récupérer les réservations confirmées ou en attente pour ce coach
+    // Pour les PENDING : uniquement celles de moins de 15 minutes (protection temporaire pendant paiement)
+    const now = new Date();
+    const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000);
+
+    const reservations = await prisma.reservation.findMany({
+      where: {
+        coachId,
+        endDate: {
+          gte: now,
+        },
+        OR: [
+          // Réservations confirmées (toujours bloquées)
+          { status: 'CONFIRMED' },
+          // Réservations en attente de moins de 15 minutes (protection temporaire)
+          {
+            status: 'PENDING',
+            createdAt: {
+              gte: fifteenMinutesAgo,
+            },
+          },
+        ],
+      },
+      select: {
+        startDate: true,
+        endDate: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+
+    // Fonction pour vérifier si un créneau chevauche une réservation
+    const isSlotBooked = (slotStart: Date, slotEnd: Date): boolean => {
+      return reservations.some(reservation => {
+        const resStart = new Date(reservation.startDate);
+        const resEnd = new Date(reservation.endDate);
+
+        // Vérifier le chevauchement
+        return (
+          (slotStart >= resStart && slotStart < resEnd) ||
+          (slotEnd > resStart && slotEnd <= resEnd) ||
+          (slotStart <= resStart && slotEnd >= resEnd)
+        );
+      });
+    };
+
     // Si duration est fourni, découper les disponibilités en créneaux
     if (duration && duration > 0) {
       const slots = [];
-      
+
       for (const availability of availabilities) {
         const start = new Date(availability.start);
         const end = new Date(availability.end);
         const durationMs = duration * 60 * 1000; // Convertir minutes en ms
-        
+
         let currentSlotStart = start;
-        
+
         // Générer des créneaux de la durée spécifiée
         while (currentSlotStart < end) {
           const currentSlotEnd = new Date(currentSlotStart.getTime() + durationMs);
-          
+
           // Ne pas dépasser la fin de la disponibilité
           if (currentSlotEnd <= end) {
+            const isBooked = isSlotBooked(currentSlotStart, currentSlotEnd);
+
             slots.push({
               id: `${availability.id}-${currentSlotStart.getTime()}`,
               start: currentSlotStart.toISOString(),
               end: currentSlotEnd.toISOString(),
+              isBooked,
             });
           }
-          
+
           // Passer au créneau suivant
           currentSlotStart = currentSlotEnd;
         }
       }
-      
-      return NextResponse.json(slots);
+
+      return NextResponse.json({ availabilities: slots });
     }
 
-    // Sinon, retourner les disponibilités brutes
-    return NextResponse.json(availabilities);
+    // Sinon, retourner les disponibilités brutes avec indicateur de réservation
+    const availabilitiesWithBooking = availabilities.map(availability => ({
+      ...availability,
+      isBooked: isSlotBooked(new Date(availability.start), new Date(availability.end)),
+    }));
+
+    return NextResponse.json({ availabilities: availabilitiesWithBooking });
   } catch (error) {
     console.error('Erreur lors de la récupération des disponibilités:', error);
     return NextResponse.json(

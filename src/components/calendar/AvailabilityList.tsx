@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui";
 import { List, Trash2, Edit2, Calendar, Clock, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
@@ -8,6 +8,7 @@ import { fr } from "date-fns/locale";
 import { useAlertDialog } from '@/hooks/useAlertDialog';
 import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
 import DeleteAvailabilityModal from './DeleteAvailabilityModal';
+import { formatInTimezone } from '@/lib/timezone';
 
 interface Availability {
   id: string;
@@ -28,7 +29,26 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
   const [editEnd, setEditEnd] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedAvailability, setSelectedAvailability] = useState<Availability | null>(null);
+  const [coachTimezone, setCoachTimezone] = useState<string>('Europe/Paris');
   const { alertState, confirmState, showError, closeAlert, closeConfirm } = useAlertDialog();
+
+  // Récupérer le fuseau horaire du coach
+  useEffect(() => {
+    const fetchCoachTimezone = async () => {
+      try {
+        const res = await fetch('/api/coach/profile');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.coach?.timezone) {
+            setCoachTimezone(data.coach.timezone);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du fuseau horaire:', error);
+      }
+    };
+    fetchCoachTimezone();
+  }, []);
 
   // Trier par date croissante
   const sortedAvailabilities = [...availabilities].sort(
@@ -226,11 +246,11 @@ export default function AvailabilityList({ availabilities, coachId, onUpdate }: 
                     <div className="flex-1">
                       <div className="flex items-center gap-2 text-white font-medium mb-1">
                         <Calendar className="w-4 h-4 text-purple-400" />
-                        {format(new Date(availability.start), "EEEE d MMMM yyyy", { locale: fr })}
+                        {formatInTimezone(availability.start, coachTimezone, "EEEE d MMMM yyyy")}
                       </div>
                       <div className="flex items-center gap-2 text-gray-300 text-sm">
                         <Clock className="w-4 h-4 text-gray-400" />
-                        {format(new Date(availability.start), "HH:mm")} - {format(new Date(availability.end), "HH:mm")}
+                        {formatInTimezone(availability.start, coachTimezone, "HH:mm")} - {formatInTimezone(availability.end, coachTimezone, "HH:mm")}
                         <span className="text-gray-500">
                           ({Math.round((new Date(availability.end).getTime() - new Date(availability.start).getTime()) / (1000 * 60))} min)
                         </span>

@@ -121,7 +121,10 @@ export function formatInTimezone(
 ): string {
   try {
     const date = typeof utcDate === 'string' ? parseISO(utcDate) : utcDate;
-    return formatTz(date, formatString, { timeZone: timezone, locale: fr });
+    // D'abord convertir vers le fuseau horaire cible
+    const zonedDate = toZonedTime(date, timezone);
+    // Puis formater la date convertie
+    return format(zonedDate, formatString, { locale: fr });
   } catch (error) {
     console.error('Erreur lors du formatage de la date:', error);
     const date = typeof utcDate === 'string' ? parseISO(utcDate) : utcDate;
@@ -138,10 +141,12 @@ export function formatInTimezone(
  */
 export function getTimezoneOffset(timezone: string, date: Date = new Date()): number {
   try {
-    const zonedDate = toZonedTime(date, timezone);
-    const utcDate = fromZonedTime(zonedDate, timezone);
-    const offsetMs = zonedDate.getTime() - utcDate.getTime();
-    return offsetMs / (1000 * 60 * 60);
+    // Utiliser l'API Intl pour obtenir l'offset correct
+    const dateString = date.toLocaleString('en-US', { timeZone: timezone });
+    const tzDate = new Date(dateString);
+    const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+    const offsetMs = tzDate.getTime() - utcDate.getTime();
+    return Math.round(offsetMs / (1000 * 60 * 60));
   } catch (error) {
     console.error('Erreur lors du calcul du décalage horaire:', error);
     return 0;

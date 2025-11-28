@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { createDiscordThreadForLite } from '@/lib/discord/create-thread-lite';
+import { calculateForSession, calculateForPack } from '@/lib/stripe/pricing';
 
 /**
  * API centralisée pour créer des réservations
@@ -140,22 +141,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier que le créneau est toujours disponible
+    // Pour les PENDING : uniquement celles de moins de 15 minutes (protection temporaire)
+    const now = new Date();
+    const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000);
+
     const existingReservation = await prisma.reservation.findFirst({
       where: {
         coachId,
-        status: { in: ['CONFIRMED', 'PENDING'] },
         OR: [
+          // Réservations confirmées
+          { status: 'CONFIRMED' },
+          // Réservations en attente de moins de 15 minutes
           {
-            startDate: { lte: start },
-            endDate: { gt: start },
+            status: 'PENDING',
+            createdAt: { gte: fifteenMinutesAgo },
           },
+        ],
+        AND: [
           {
-            startDate: { lt: end },
-            endDate: { gte: end },
-          },
-          {
-            startDate: { gte: start },
-            endDate: { lte: end },
+            OR: [
+              {
+                startDate: { lte: start },
+                endDate: { gt: start },
+              },
+              {
+                startDate: { lt: end },
+                endDate: { gte: end },
+              },
+              {
+                startDate: { gte: start },
+                endDate: { lte: end },
+              },
+            ],
           },
         ],
       },
@@ -330,12 +347,96 @@ export async function POST(request: NextRequest) {
         // ====================================================================
         console.log(`💳 [PRO] Création réservation avec Stripe pour coach ${coach.id}`);
 
-        // Vérifier que le coach a un compte Stripe Connect valide
+        // Vérifier si c'est une annonce gratuite (0€)
+        const isFreeAnnouncement = reservationPriceCents === 0;
+
+        if (isFreeAnnouncement) {
+          console.log(`🎁 [FREE] Annonce gratuite détectée - Création réservation sans paiement`);
+
+          // Créer directement la réservation comme CONFIRMED et PAID
+          const reservation = await prisma.$transaction(async (tx) => {
+            const res = await tx.reservation.create({
+              data: {
+                announcementId,
+                coachId,
+                playerId: session.user.id,
+                packId: packageId || null,
+                sessionNumber,
+                startDate: start,
+                endDate: end,
+                status: 'CONFIRMED', // Confirmé immédiatement
+                paymentStatus: 'PAID', // Marqué comme "payé" (gratuit)
+                type: reservationType,
+                priceCents: 0,
+                coachNetCents: 0,
+                stripeFeeCents: 0,
+                edgemyFeeCents: 0,
+                serviceFeeCents: 0,
+                commissionCents: 0,
+              },
+            });
+
+            if (coachingPackageId) {
+              await tx.packageSession.create({
+                data: {
+                  packageId: coachingPackageId,
+                  reservationId: res.id,
+                  startDate: start,
+                  endDate: end,
+                  durationMinutes: announcement.durationMin,
+                  status: 'SCHEDULED',
+                },
+              });
+
+              const durationHours = announcement.durationMin / 60;
+              await tx.coachingPackage.update({
+                where: { id: coachingPackageId },
+                data: {
+                  remainingHours: {
+                    decrement: durationHours,
+                  },
+                },
+              });
+            }
+
+            return res;
+          });
+
+          console.log(`✅ [FREE] Réservation gratuite créée: ${reservation.id}`);
+
+          return NextResponse.json(
+            {
+              mode: 'FREE',
+              reservationId: reservation.id,
+              message: 'Réservation gratuite confirmée',
+            },
+            { status: 201 }
+          );
+        }
+
+        // Vérifier que le coach a un compte Stripe Connect valide pour les annonces payantes
         if (!coach.stripeAccountId || coach.stripeAccountId.startsWith('acct_mock_')) {
           return NextResponse.json(
             { error: 'Le coach n\'a pas configuré son compte Stripe' },
             { status: 400 }
           );
+        }
+
+        // Calculer le pricing dès maintenant pour stocker le bon montant
+        let pricingBreakdown;
+        if (reservationType === 'PACK' && packageId) {
+          const announcementPack = await prisma.announcementPack.findUnique({
+            where: { id: packageId },
+            select: { hours: true },
+          });
+
+          if (announcementPack && announcementPack.hours > 0) {
+            pricingBreakdown = calculateForPack(reservationPriceCents, announcementPack.hours);
+          } else {
+            pricingBreakdown = calculateForSession(reservationPriceCents);
+          }
+        } else {
+          pricingBreakdown = calculateForSession(reservationPriceCents);
         }
 
         const reservation = await prisma.$transaction(async (tx) => {
@@ -348,10 +449,18 @@ export async function POST(request: NextRequest) {
               sessionNumber,
               startDate: start,
               endDate: end,
-              status: 'CONFIRMED',
+              // PENDING jusqu'à validation du paiement Stripe (webhook)
+              status: coachingPackageId ? 'CONFIRMED' : 'PENDING',
               paymentStatus: coachingPackageId ? 'PAID' : 'PENDING',
               type: reservationType,
               priceCents: reservationPriceCents,
+              // Stocker le breakdown pricing dès la création
+              coachNetCents: pricingBreakdown.coachNetCents,
+              stripeFeeCents: pricingBreakdown.stripeFeeCents,
+              edgemyFeeCents: pricingBreakdown.edgemyFeeCents,
+              serviceFeeCents: pricingBreakdown.serviceFeeCents,
+              commissionCents: pricingBreakdown.edgemyFeeCents,
+              sessionsCount: 'sessionsCount' in pricingBreakdown ? pricingBreakdown.sessionsCount : null,
             },
           });
 
