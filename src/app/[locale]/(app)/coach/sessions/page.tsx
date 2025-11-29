@@ -53,6 +53,9 @@ interface Session {
   reservationType: 'SINGLE' | 'PACK';
   discordChannelId: string | null;
   durationMinutes: number;
+  // Infos spécifiques aux packs
+  sessionNumber: number | null;
+  remainingHoursAtSession: number | null;
   player: {
     id: string;
     name: string | null;
@@ -480,17 +483,36 @@ export default function CoachSessionsPage() {
                           {session.coachingPackage && (
                             <div className="mt-3 p-3 bg-purple-500/10 rounded-lg border border-purple-500/30">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-medium text-purple-300">
-                                  Pack - {session.coachingPackage.remainingHours.toFixed(1)}h restantes / {session.coachingPackage.totalHours}h
-                                </span>
-                                <span className="text-xs text-purple-400">
-                                  {session.coachingPackage.sessionsCompletedCount} / {session.coachingPackage.sessionsTotalCount} sessions
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  {/* Badge 1ère session */}
+                                  {session.sessionNumber === 1 && (
+                                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs">
+                                      🎯 1ère session
+                                    </Badge>
+                                  )}
+                                  {/* Numéro de session si pas la 1ère */}
+                                  {session.sessionNumber && session.sessionNumber > 1 && (
+                                    <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">
+                                      Session {session.sessionNumber}
+                                    </Badge>
+                                  )}
+                                  {/* Heures restantes AU MOMENT de cette session */}
+                                  {session.remainingHoursAtSession !== null && (
+                                    <span className="text-xs font-medium text-purple-300">
+                                      Reste {session.remainingHoursAtSession.toFixed(1)}h / {session.coachingPackage.totalHours}h
+                                    </span>
+                                  )}
+                                </div>
                               </div>
+                              {/* Barre de progression basée sur les heures restantes de cette session */}
                               <div className="w-full bg-purple-900/50 rounded-full h-2">
                                 <div
                                   className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all"
-                                  style={{ width: `${session.coachingPackage.progressPercent}%` }}
+                                  style={{ 
+                                    width: `${session.remainingHoursAtSession !== null 
+                                      ? ((session.coachingPackage.totalHours - session.remainingHoursAtSession) / session.coachingPackage.totalHours) * 100 
+                                      : session.coachingPackage.progressPercent}%` 
+                                  }}
                                 />
                               </div>
                             </div>

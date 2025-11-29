@@ -244,6 +244,63 @@ export async function GET(request: NextRequest) {
       coachingPackages.map(p => [p.id, p])
     );
 
+    // Récupérer TOUTES les sessions de chaque pack pour calculer le numéro de session
+    // et les heures restantes au moment de chaque session
+    const allPackageSessions = await prisma.reservation.findMany({
+      where: {
+        packId: { in: uniquePackageIds },
+        type: 'PACK',
+      },
+      select: {
+        id: true,
+        packId: true,
+        startDate: true,
+        endDate: true,
+        status: true,
+      },
+      orderBy: {
+        startDate: 'asc', // Ordre chronologique pour numéroter
+      },
+    });
+
+    // Créer un map packId -> sessions triées par date
+    const packSessionsMap = new Map<string, typeof allPackageSessions>();
+    for (const ps of allPackageSessions) {
+      if (ps.packId) {
+        const existing = packSessionsMap.get(ps.packId) || [];
+        existing.push(ps);
+        packSessionsMap.set(ps.packId, existing);
+      }
+    }
+
+    // Fonction pour calculer le numéro de session et les heures restantes
+    const getSessionInfo = (reservationId: string, packId: string | null) => {
+      if (!packId) return { sessionNumber: null, remainingHoursAtSession: null };
+      
+      const packSessions = packSessionsMap.get(packId) || [];
+      const packageInfo = packagesMap.get(packId);
+      if (!packageInfo) return { sessionNumber: null, remainingHoursAtSession: null };
+
+      // Trouver l'index de cette session (1-indexed)
+      const sessionIndex = packSessions.findIndex(s => s.id === reservationId);
+      const sessionNumber = sessionIndex >= 0 ? sessionIndex + 1 : null;
+
+      // Calculer les heures restantes AU MOMENT de cette session
+      // = totalHours - (heures consommées par les sessions précédentes)
+      let hoursConsumedBefore = 0;
+      for (let i = 0; i < sessionIndex; i++) {
+        const prevSession = packSessions[i];
+        // Calculer la durée de la session précédente
+        const durationMs = new Date(prevSession.endDate).getTime() - new Date(prevSession.startDate).getTime();
+        const durationHours = durationMs / (1000 * 60 * 60);
+        hoursConsumedBefore += durationHours;
+      }
+
+      const remainingHoursAtSession = packageInfo.totalHours - hoursConsumedBefore;
+
+      return { sessionNumber, remainingHoursAtSession };
+    };
+
     // Enrichir les réservations avec les infos du pack
     const enrichedReservations = reservations.map(reservation => {
       const packageInfo = reservation.packageSession?.packageId
@@ -252,6 +309,12 @@ export async function GET(request: NextRequest) {
 
       // Calculer le montant pour le coach
       const coachAmount = reservation.coachNetCents || reservation.coachEarningsCents || reservation.priceCents;
+
+      // Récupérer le numéro de session et les heures restantes au moment de cette session
+      const { sessionNumber, remainingHoursAtSession } = getSessionInfo(
+        reservation.id, 
+        reservation.packId
+      );
 
       return {
         id: reservation.id,
@@ -267,6 +330,9 @@ export async function GET(request: NextRequest) {
         player: reservation.player,
         announcement: reservation.announcement,
         durationMinutes: reservation.announcement.durationMin,
+        // Infos spécifiques aux packs
+        sessionNumber: sessionNumber,
+        remainingHoursAtSession: remainingHoursAtSession,
         coachingPackage: packageInfo ? {
           id: packageInfo.id,
           totalHours: packageInfo.totalHours,
@@ -284,6 +350,8 @@ export async function GET(request: NextRequest) {
     const enrichedPackageSessions = packageSessions.map(ps => {
       const packageInfo = packagesMap.get(ps.packageId);
 
+      // Pour les PackageSessions sans réservation, on ne peut pas calculer le numéro
+      // car elles ne sont pas encore dans le système de réservation
       return {
         id: ps.id,
         startDate: ps.startDate,
@@ -298,6 +366,9 @@ export async function GET(request: NextRequest) {
         player: ps.package.player,
         announcement: ps.package.announcement,
         durationMinutes: ps.durationMinutes,
+        // Pour les sessions planifiées sans réservation, on affiche les heures actuelles
+        sessionNumber: null,
+        remainingHoursAtSession: packageInfo?.remainingHours || null,
         coachingPackage: packageInfo ? {
           id: packageInfo.id,
           totalHours: packageInfo.totalHours,
