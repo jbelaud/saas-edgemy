@@ -66,6 +66,34 @@ export async function GET(request: NextRequest) {
         break;
     }
 
+    // Mettre à jour automatiquement les sessions passées
+    // Sessions de pack SCHEDULED → COMPLETED si la date est passée
+    await prisma.packageSession.updateMany({
+      where: {
+        package: {
+          coachId: coach.id,
+        },
+        status: 'SCHEDULED',
+        endDate: { lt: now },
+      },
+      data: {
+        status: 'COMPLETED',
+      },
+    });
+
+    // Réservations CONFIRMED → COMPLETED si la date est passée et payée
+    await prisma.reservation.updateMany({
+      where: {
+        coachId: coach.id,
+        status: 'CONFIRMED',
+        endDate: { lt: now },
+        paymentStatus: 'PAID',
+      },
+      data: {
+        status: 'COMPLETED',
+      },
+    });
+
     // Construire le filtre de base pour les réservations
     const reservationWhere: Prisma.ReservationWhereInput = {
       coachId: coach.id,

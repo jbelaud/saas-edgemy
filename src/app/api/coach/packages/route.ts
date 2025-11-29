@@ -6,6 +6,8 @@ import { prisma } from '@/lib/prisma';
 /**
  * GET /api/coach/packages
  * Récupère tous les packs de coaching réservés par les joueurs pour ce coach
+ * 
+ * Note: Met à jour automatiquement les sessions SCHEDULED passées en statut approprié
  */
 export async function GET() {
   try {
@@ -32,6 +34,37 @@ export async function GET() {
         { status: 404 }
       );
     }
+
+    const now = new Date();
+
+    // Mettre à jour les sessions SCHEDULED dont la date est passée
+    // On les passe en COMPLETED car la session a eu lieu
+    await prisma.packageSession.updateMany({
+      where: {
+        package: {
+          coachId: coach.id,
+        },
+        status: 'SCHEDULED',
+        endDate: { lt: now },
+      },
+      data: {
+        status: 'COMPLETED',
+      },
+    });
+
+    // Mettre à jour aussi les réservations liées (si elles existent)
+    await prisma.reservation.updateMany({
+      where: {
+        coachId: coach.id,
+        type: 'PACK',
+        status: 'CONFIRMED',
+        endDate: { lt: now },
+        paymentStatus: 'PAID',
+      },
+      data: {
+        status: 'COMPLETED',
+      },
+    });
 
     // Récupérer tous les packs de ce coach
     const packages = await prisma.coachingPackage.findMany({
