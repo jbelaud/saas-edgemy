@@ -95,10 +95,11 @@ export default function CoachSessionsPage() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
   // Filtres
+  // Par défaut, afficher uniquement les sessions payées pour le coach
   const [periodFilter, setPeriodFilter] = useState<'all' | 'week' | 'month' | 'year'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'upcoming' | 'past'>('all');
   const [studentFilter, setStudentFilter] = useState<string>('all');
-  const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('paid');
 
   useEffect(() => {
     if (session?.user) {

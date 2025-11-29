@@ -276,9 +276,230 @@ interface TransferPackInstallmentParams {
   reservationId: string;
   packageId: string;
   packageSessionId: string;
+  sessionDurationMinutes?: number; // Durée réelle de la session pour déduction heures
 }
 
+/**
+ * ============================================
+ * SYSTÈME A - PAIEMENT INTÉGRAL APRÈS 1ÈRE SESSION (ACTIF)
+ * ============================================
+ * 
+ * Logique :
+ * - 1ère session du pack → Transfer INTÉGRAL au coach
+ * - Sessions suivantes → Pas de transfer, juste déduction des heures
+ * - Déduction basée sur la durée réelle (heures), pas le nombre de sessions
+ */
 export async function transferPackInstallment(
+  params: TransferPackInstallmentParams,
+): Promise<{
+  success: boolean;
+  transferId?: string;
+  error?: string;
+  amount?: number;
+  isFirstTransfer?: boolean;
+  isFinalTransfer?: boolean;
+  hoursDeducted?: number;
+}> {
+  const { reservationId, packageId, packageSessionId, sessionDurationMinutes } = params;
+
+  try {
+    const reservation = await prisma.reservation.findUnique({
+      where: { id: reservationId },
+      include: {
+        coach: {
+          select: {
+            id: true,
+            stripeAccountId: true,
+          },
+        },
+        packageSession: {
+          select: {
+            id: true,
+            status: true,
+            packageId: true,
+            durationMinutes: true,
+          },
+        },
+      },
+    });
+
+    if (!reservation) {
+      return { success: false, error: 'Réservation non trouvée' };
+    }
+
+    if (reservation.type !== 'PACK') {
+      return { success: false, error: 'Réservation non liée à un pack' };
+    }
+
+    if (!reservation.packageSession || reservation.packageSession.id !== packageSessionId) {
+      return { success: false, error: 'Session de pack introuvable pour cette réservation' };
+    }
+
+    if (!reservation.coach.stripeAccountId || reservation.coach.stripeAccountId.startsWith('acct_mock_')) {
+      return { success: false, error: 'Compte Stripe Connect du coach non configuré' };
+    }
+
+    const coachingPackage = await prisma.coachingPackage.findUnique({
+      where: { id: packageId },
+      select: {
+        id: true,
+        coachId: true,
+        playerId: true,
+        status: true,
+        transferStatus: true,
+        stripePaymentId: true,
+        coachEarningsCents: true,
+        coachNetCents: true,
+        remainingHours: true,
+        totalHours: true,
+        sessionsCompletedCount: true,
+        sessionsTotalCount: true,
+      },
+    });
+
+    if (!coachingPackage) {
+      return { success: false, error: 'Pack introuvable' };
+    }
+
+    if (!coachingPackage.stripePaymentId) {
+      return { success: false, error: 'Identifiant de paiement Stripe manquant pour le pack' };
+    }
+
+    // Calcul de la durée de la session en heures
+    const durationMinutes = sessionDurationMinutes 
+      || reservation.packageSession.durationMinutes 
+      || 60; // Défaut 1h
+    const hoursToDeduct = durationMinutes / 60;
+
+    // Vérifier qu'il reste assez d'heures
+    if (coachingPackage.remainingHours < hoursToDeduct) {
+      return { 
+        success: false, 
+        error: `Heures insuffisantes dans le pack (${coachingPackage.remainingHours}h restantes, ${hoursToDeduct}h demandées)` 
+      };
+    }
+
+    const isFirstSession = coachingPackage.transferStatus === 'PENDING';
+    const newRemainingHours = coachingPackage.remainingHours - hoursToDeduct;
+    const isLastSession = newRemainingHours <= 0;
+    const nextCompletedCount = coachingPackage.sessionsCompletedCount + 1;
+
+    // SYSTÈME A : Transfer INTÉGRAL après la 1ère session uniquement
+    let transferId: string | undefined;
+    let transferAmount = 0;
+
+    if (isFirstSession) {
+      // 1ère session → Transfer INTÉGRAL au coach
+      const coachNetTotal = coachingPackage.coachEarningsCents 
+        || coachingPackage.coachNetCents 
+        || 0;
+
+      if (coachNetTotal <= 0) {
+        return { success: false, error: 'Montant du transfert invalide pour ce pack' };
+      }
+
+      transferAmount = coachNetTotal;
+
+      console.log(`💰 [SYSTÈME A] 1ère session du pack - Transfer INTÉGRAL: ${transferAmount / 100}€`);
+
+      const transferResult = await createStripeTransfer({
+        amount: transferAmount,
+        destinationAccountId: reservation.coach.stripeAccountId!,
+        sourceTransaction: coachingPackage.stripePaymentId,
+        reservationId: reservation.id,
+        transferType: TRANSFER_TYPES.PACK_SESSION_PAYOUT,
+        metadata: {
+          coachId: reservation.coach.id,
+          packageId,
+          packageSessionId,
+          paymentSystem: 'A',
+          transferType: 'FULL_PACK_AFTER_FIRST_SESSION',
+        },
+      });
+
+      transferId = transferResult.transferId;
+    } else {
+      console.log(`📦 [SYSTÈME A] Session suivante du pack - Pas de transfer (déjà fait)`);
+      console.log(`   Déduction: ${hoursToDeduct}h | Reste: ${newRemainingHours}h`);
+    }
+
+    // Mise à jour en transaction
+    await prisma.$transaction(async (tx) => {
+      // Mettre à jour la réservation
+      await tx.reservation.update({
+        where: { id: reservationId },
+        data: {
+          status: 'COMPLETED',
+          transferStatus: isFirstSession ? 'TRANSFERRED' : 'PENDING', // PENDING car pas de transfer pour cette session
+          stripeTransferId: transferId || undefined,
+          transferredAt: isFirstSession ? new Date() : undefined,
+        },
+      });
+
+      // Mettre à jour le pack
+      const packageUpdateData: Prisma.CoachingPackageUncheckedUpdateInput = {
+        sessionsCompletedCount: nextCompletedCount,
+        remainingHours: newRemainingHours,
+      };
+
+      if (isFirstSession) {
+        // Marquer comme transféré après la 1ère session
+        packageUpdateData.transferStatus = PackageTransferStatus.FULLY_TRANSFERRED;
+        packageUpdateData.finalTransferId = transferId;
+        packageUpdateData.finalTransferredAt = new Date();
+      }
+
+      if (isLastSession) {
+        packageUpdateData.status = PackageStatus.COMPLETED;
+      }
+
+      await tx.coachingPackage.update({
+        where: { id: packageId },
+        data: packageUpdateData,
+      });
+
+      // Mettre à jour la session du pack
+      await tx.packageSession.update({
+        where: { id: packageSessionId },
+        data: {
+          status: PackageSessionStatus.COMPLETED,
+        },
+      });
+    });
+
+    console.log(`✅ Session pack complétée: ${packageSessionId}`);
+    console.log(`   Heures déduites: ${hoursToDeduct}h | Reste: ${newRemainingHours}h`);
+    if (isFirstSession) {
+      console.log(`   💸 Transfer intégral: ${transferAmount / 100}€`);
+    }
+
+    return {
+      success: true,
+      transferId,
+      amount: transferAmount,
+      isFirstTransfer: isFirstSession,
+      isFinalTransfer: isLastSession,
+      hoursDeducted: hoursToDeduct,
+    };
+  } catch (error) {
+    console.error('❌ Erreur transfert pack:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur inconnue',
+    };
+  }
+}
+
+/* ========== DÉBUT SYSTÈME B - PAIEMENT FRACTIONNÉ (COMMENTÉ) ==========
+
+/**
+ * SYSTÈME B - Paiement fractionné par session
+ * 
+ * Logique :
+ * - Chaque session → Transfer d'une fraction du montant total
+ * - Dernière session → Transfer du reste (pour gérer les arrondis)
+ * /
+export async function transferPackInstallment_SystemB(
   params: TransferPackInstallmentParams,
 ): Promise<{
   success: boolean;
@@ -363,6 +584,7 @@ export async function transferPackInstallment(
       return { success: false, error: 'Toutes les sessions du pack ont déjà été complétées' };
     }
 
+    // Calcul du montant par session (fractionné)
     const basePayout = coachingPackage.sessionPayoutCents
       || Math.floor(coachNetTotal / totalSessions);
     const remainder = coachNetTotal - basePayout * totalSessions;
@@ -388,6 +610,7 @@ export async function transferPackInstallment(
         coachId: reservation.coach.id,
         packageId,
         packageSessionId,
+        paymentSystem: 'B',
       },
     });
 
@@ -428,7 +651,7 @@ export async function transferPackInstallment(
       });
     });
 
-    console.log(`✅ Transfert pack réalisé pour la session ${packageSessionId} (${transferAmount / 100}€)`);
+    console.log(`✅ [SYSTÈME B] Transfert pack fractionné: ${transferAmount / 100}€`);
 
     return {
       success: true,
@@ -445,6 +668,8 @@ export async function transferPackInstallment(
     };
   }
 }
+
+========== FIN SYSTÈME B (COMMENTÉ) ==========*/
 
 /**
  * Transfer de compensation au coach en cas d'annulation tardive par le joueur
