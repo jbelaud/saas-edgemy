@@ -17,6 +17,9 @@ import {
   MessageCircle,
   TrendingUp,
   Calendar as CalendarIcon,
+  Euro,
+  AlertCircle,
+  CreditCard,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -43,6 +46,9 @@ interface Session {
   startDate: string;
   endDate: string;
   status: string;
+  paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED' | 'EXTERNAL_PENDING' | 'EXTERNAL_PAID';
+  priceCents: number;
+  coachAmountCents: number;
   type: 'reservation' | 'package_session';
   reservationType: 'SINGLE' | 'PACK';
   discordChannelId: string | null;
@@ -92,6 +98,7 @@ export default function CoachSessionsPage() {
   const [periodFilter, setPeriodFilter] = useState<'all' | 'week' | 'month' | 'year'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'upcoming' | 'past'>('all');
   const [studentFilter, setStudentFilter] = useState<string>('all');
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
 
   useEffect(() => {
     if (session?.user) {
@@ -141,11 +148,20 @@ export default function CoachSessionsPage() {
   const getStatusBadge = (session: Session) => {
     const isPast = new Date(session.endDate) <= new Date();
 
-    if (session.status === 'COMPLETED' || (isPast && session.status === 'CONFIRMED')) {
+    if (session.status === 'COMPLETED') {
       return (
         <Badge className="bg-green-500/20 text-green-300 border-green-500/40">
           <CheckCircle className="h-3 w-3 mr-1" />
           Complétée
+        </Badge>
+      );
+    }
+
+    if (isPast && session.status === 'CONFIRMED') {
+      return (
+        <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Terminée
         </Badge>
       );
     }
@@ -165,6 +181,46 @@ export default function CoachSessionsPage() {
         À venir
       </Badge>
     );
+  };
+
+  const getPaymentBadge = (session: Session) => {
+    if (session.paymentStatus === 'PAID') {
+      return (
+        <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
+          <CreditCard className="h-3 w-3 mr-1" />
+          Payé
+        </Badge>
+      );
+    }
+
+    if (session.paymentStatus === 'EXTERNAL_PAID') {
+      return (
+        <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/30">
+          <CreditCard className="h-3 w-3 mr-1" />
+          Payé (externe)
+        </Badge>
+      );
+    }
+
+    if (session.paymentStatus === 'PENDING' || session.paymentStatus === 'EXTERNAL_PENDING') {
+      return (
+        <Badge className="bg-orange-500/10 text-orange-400 border-orange-500/30">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          Non payé
+        </Badge>
+      );
+    }
+
+    if (session.paymentStatus === 'FAILED') {
+      return (
+        <Badge className="bg-red-500/10 text-red-400 border-red-500/30">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          Échoué
+        </Badge>
+      );
+    }
+
+    return null;
   };
 
   if (isPending || isLoading) {
@@ -189,6 +245,10 @@ export default function CoachSessionsPage() {
 
     // Filtre par élève
     if (studentFilter !== 'all' && session.player.id !== studentFilter) return false;
+
+    // Filtre par statut de paiement
+    if (paymentFilter === 'paid' && session.paymentStatus !== 'PAID' && session.paymentStatus !== 'EXTERNAL_PAID') return false;
+    if (paymentFilter === 'unpaid' && (session.paymentStatus === 'PAID' || session.paymentStatus === 'EXTERNAL_PAID')) return false;
 
     // Filtre par période
     if (periodFilter !== 'all') {
@@ -333,6 +393,20 @@ export default function CoachSessionsPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-400">Paiement</label>
+                <Select value={paymentFilter} onValueChange={(value) => setPaymentFilter(value as 'all' | 'paid' | 'unpaid')}>
+                  <SelectTrigger className="text-white w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous</SelectItem>
+                    <SelectItem value="paid">Payées</SelectItem>
+                    <SelectItem value="unpaid">Non payées</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </GlassCard>
 
@@ -369,18 +443,25 @@ export default function CoachSessionsPage() {
                         </Avatar>
 
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <p className="font-semibold text-white">
                               {session.player.name || 'Joueur'}
                             </p>
                             {getStatusBadge(session)}
+                            {getPaymentBadge(session)}
+                            {session.coachAmountCents > 0 && (
+                              <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                                <Euro className="h-3 w-3 mr-1" />
+                                {(session.coachAmountCents / 100).toFixed(0)}€
+                              </Badge>
+                            )}
                           </div>
 
                           <p className="text-sm text-gray-400 mb-2">
                             {session.announcement.title}
                           </p>
 
-                          <div className="flex items-center gap-4 text-xs text-gray-400">
+                          <div className="flex items-center gap-4 text-xs text-gray-400 flex-wrap">
                             <div className="flex items-center gap-1">
                               <CalendarIcon className="h-3 w-3" />
                               {format(new Date(session.startDate), 'PPP', { locale: fr })}

@@ -102,6 +102,10 @@ export async function GET(request: NextRequest) {
         startDate: true,
         endDate: true,
         status: true,
+        paymentStatus: true,
+        priceCents: true,
+        coachNetCents: true,
+        coachEarningsCents: true,
         type: true,
         packId: true,
         discordChannelId: true,
@@ -246,11 +250,17 @@ export async function GET(request: NextRequest) {
         ? packagesMap.get(reservation.packageSession.packageId)
         : null;
 
+      // Calculer le montant pour le coach
+      const coachAmount = reservation.coachNetCents || reservation.coachEarningsCents || reservation.priceCents;
+
       return {
         id: reservation.id,
         startDate: reservation.startDate,
         endDate: reservation.endDate,
         status: reservation.status,
+        paymentStatus: reservation.paymentStatus,
+        priceCents: reservation.priceCents,
+        coachAmountCents: coachAmount,
         type: 'reservation' as const,
         reservationType: reservation.type,
         discordChannelId: reservation.discordChannelId,
@@ -279,6 +289,9 @@ export async function GET(request: NextRequest) {
         startDate: ps.startDate,
         endDate: ps.endDate,
         status: ps.status,
+        paymentStatus: 'PAID' as const, // Les PackageSessions sont toujours payées via le pack
+        priceCents: 0,
+        coachAmountCents: 0,
         type: 'package_session' as const,
         reservationType: 'PACK' as const,
         discordChannelId: null,
