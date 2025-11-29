@@ -63,28 +63,30 @@ export async function GET() {
 
     // Calculer les stats
     const now = new Date();
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-    const completedReservations = coach.reservations.filter(
-      (r) => r.status === 'COMPLETED'
+    // Sessions comptabilisées pour les revenus :
+    // - Status COMPLETED (session terminée et validée)
+    // - OU status CONFIRMED avec paymentStatus PAID et endDate passée (session terminée mais pas encore validée)
+    const paidCompletedReservations = coach.reservations.filter(
+      (r) => r.status === 'COMPLETED' ||
+        (r.status === 'CONFIRMED' && r.paymentStatus === 'PAID' && r.endDate < now)
     );
 
-    const recentReservations = completedReservations.filter(
-      (r) => r.createdAt >= sixMonthsAgo
-    );
-
-    const totalRevenue = completedReservations.reduce(
+    const totalRevenue = paidCompletedReservations.reduce(
       (sum, r) => sum + (r.coachNetCents || r.coachEarningsCents || r.priceCents),
       0
     );
 
-    const monthlyRevenue = recentReservations.reduce(
-      (sum, r) => sum + (r.coachNetCents || r.coachEarningsCents || r.priceCents),
-      0
-    );
+    // Revenu du mois en cours
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthlyRevenue = paidCompletedReservations
+      .filter((r) => r.endDate >= currentMonthStart)
+      .reduce(
+        (sum, r) => sum + (r.coachNetCents || r.coachEarningsCents || r.priceCents),
+        0
+      );
 
-    const totalHours = completedReservations.reduce((sum, r) => {
+    const totalHours = paidCompletedReservations.reduce((sum, r) => {
       const duration = (r.endDate.getTime() - r.startDate.getTime()) / (1000 * 60 * 60);
       return sum + duration;
     }, 0);
@@ -98,15 +100,16 @@ export async function GET() {
     );
 
     // Revenus mensuels pour le graphique (6 derniers mois)
+    // Utilise endDate (date de la session) au lieu de createdAt
     const monthlyRevenueData = [];
     for (let i = 5; i >= 0; i--) {
       const monthDate = new Date();
       monthDate.setMonth(monthDate.getMonth() - i);
       const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
-      const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+      const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59, 999);
 
-      const monthRevenue = completedReservations
-        .filter((r) => r.createdAt >= monthStart && r.createdAt <= monthEnd)
+      const monthRevenue = paidCompletedReservations
+        .filter((r) => r.endDate >= monthStart && r.endDate <= monthEnd)
         .reduce((sum, r) => sum + (r.coachNetCents || r.coachEarningsCents || r.priceCents), 0);
 
       monthlyRevenueData.push({
@@ -118,7 +121,7 @@ export async function GET() {
     const stats = {
       totalRevenue: totalRevenue / 100,
       monthlyRevenue: monthlyRevenue / 100,
-      totalReservations: completedReservations.length,
+      totalReservations: paidCompletedReservations.length,
       totalHours: Math.round(totalHours * 10) / 10,
       pendingReservations,
       upcomingReservations: upcomingReservations.length,
