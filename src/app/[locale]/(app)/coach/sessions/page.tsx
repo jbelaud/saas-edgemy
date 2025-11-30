@@ -101,11 +101,9 @@ export default function CoachSessionsPage() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
 
   // Filtres
-  // Par défaut, afficher uniquement les sessions payées pour le coach
   const [periodFilter, setPeriodFilter] = useState<'all' | 'week' | 'month' | 'year'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'upcoming' | 'past'>('all');
   const [studentFilter, setStudentFilter] = useState<string>('all');
-  const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'unpaid'>('paid');
 
   useEffect(() => {
     if (session?.user) {
@@ -191,7 +189,22 @@ export default function CoachSessionsPage() {
   };
 
   const getPaymentBadge = (session: Session) => {
-    if (session.paymentStatus === 'PAID') {
+    const now = new Date();
+    const sessionEnd = new Date(session.endDate);
+    const isUpcoming = sessionEnd > now;
+
+    // Session future payée = "Confirmée" (le joueur a payé, session garantie)
+    if (isUpcoming && (session.paymentStatus === 'PAID' || session.paymentStatus === 'EXTERNAL_PAID')) {
+      return (
+        <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
+          <CreditCard className="h-3 w-3 mr-1" />
+          Confirmée
+        </Badge>
+      );
+    }
+
+    // Session passée payée = "Payé" (le coach a été/sera payé)
+    if (!isUpcoming && session.paymentStatus === 'PAID') {
       return (
         <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
           <CreditCard className="h-3 w-3 mr-1" />
@@ -200,29 +213,11 @@ export default function CoachSessionsPage() {
       );
     }
 
-    if (session.paymentStatus === 'EXTERNAL_PAID') {
+    if (!isUpcoming && session.paymentStatus === 'EXTERNAL_PAID') {
       return (
         <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/30">
           <CreditCard className="h-3 w-3 mr-1" />
           Payé (externe)
-        </Badge>
-      );
-    }
-
-    if (session.paymentStatus === 'PENDING' || session.paymentStatus === 'EXTERNAL_PENDING') {
-      return (
-        <Badge className="bg-orange-500/10 text-orange-400 border-orange-500/30">
-          <AlertCircle className="h-3 w-3 mr-1" />
-          Non payé
-        </Badge>
-      );
-    }
-
-    if (session.paymentStatus === 'FAILED') {
-      return (
-        <Badge className="bg-red-500/10 text-red-400 border-red-500/30">
-          <AlertCircle className="h-3 w-3 mr-1" />
-          Échoué
         </Badge>
       );
     }
@@ -253,9 +248,6 @@ export default function CoachSessionsPage() {
     // Filtre par élève
     if (studentFilter !== 'all' && session.player.id !== studentFilter) return false;
 
-    // Filtre par statut de paiement
-    if (paymentFilter === 'paid' && session.paymentStatus !== 'PAID' && session.paymentStatus !== 'EXTERNAL_PAID') return false;
-    if (paymentFilter === 'unpaid' && (session.paymentStatus === 'PAID' || session.paymentStatus === 'EXTERNAL_PAID')) return false;
 
     // Filtre par période
     if (periodFilter !== 'all') {
@@ -397,20 +389,6 @@ export default function CoachSessionsPage() {
                         {student.name || student.email}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Paiement</label>
-                <Select value={paymentFilter} onValueChange={(value) => setPaymentFilter(value as 'all' | 'paid' | 'unpaid')}>
-                  <SelectTrigger className="text-white w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    <SelectItem value="paid">Payées</SelectItem>
-                    <SelectItem value="unpaid">Non payées</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -637,19 +615,21 @@ export default function CoachSessionsPage() {
                     </span>
                   </div>
                   {selectedSession.cumulativeHoursUsed !== null && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Heures utilisées (cumul)</span>
-                      <span className="text-white font-semibold">
-                        {selectedSession.cumulativeHoursUsed.toFixed(1)}h / {selectedSession.coachingPackage.totalHours}h
-                      </span>
-                    </div>
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Heures utilisées (cumul)</span>
+                        <span className="text-white font-semibold">
+                          {selectedSession.cumulativeHoursUsed.toFixed(1)}h / {selectedSession.coachingPackage.totalHours}h
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Heures restantes</span>
+                        <span className="text-white font-semibold">
+                          {(selectedSession.coachingPackage.totalHours - selectedSession.cumulativeHoursUsed).toFixed(1)}h
+                        </span>
+                      </div>
+                    </>
                   )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Heures restantes (pack)</span>
-                    <span className="text-white font-semibold">
-                      {selectedSession.coachingPackage.remainingHours.toFixed(1)}h
-                    </span>
-                  </div>
                   <div className="mt-2">
                     <div className="flex justify-between text-xs text-gray-400 mb-1">
                       <span>Progression</span>

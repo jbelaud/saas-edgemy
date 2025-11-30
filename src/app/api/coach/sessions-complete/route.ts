@@ -95,10 +95,14 @@ export async function GET(request: NextRequest) {
     });
 
     // Construire le filtre de base pour les réservations
+    // Exclure les sessions non payées (réservations annulées/échouées)
     const reservationWhere: Prisma.ReservationWhereInput = {
       coachId: coach.id,
       status: {
         in: ['CONFIRMED', 'COMPLETED'],
+      },
+      paymentStatus: {
+        in: ['PAID', 'EXTERNAL_PAID'],
       },
     };
 
