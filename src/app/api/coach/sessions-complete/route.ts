@@ -272,8 +272,10 @@ export async function GET(request: NextRequest) {
       coachingPackages.map(p => [p.id, p])
     );
 
-    // Récupérer TOUTES les réservations de type PACK pour calculer les heures cumulatives
-    // On utilise packageSession.packageId (CoachingPackage) pour regrouper les sessions
+    // Récupérer TOUTES les sessions d'un pack (réservations + PackageSessions)
+    // pour calculer les heures cumulatives correctement
+    
+    // 1. Réservations de type PACK
     const allPackReservations = await prisma.reservation.findMany({
       where: {
         type: 'PACK',
@@ -288,28 +290,70 @@ export async function GET(request: NextRequest) {
         status: true,
         packageSession: {
           select: {
+            id: true,
             packageId: true,
           },
         },
       },
       orderBy: {
-        startDate: 'asc', // Ordre chronologique pour numéroter
+        startDate: 'asc',
       },
     });
 
-    // Créer un map coachingPackageId -> réservations triées par date
-    const packReservationsMap = new Map<string, typeof allPackReservations>();
-    for (const res of allPackReservations) {
-      const coachingPackageId = res.packageSession?.packageId;
-      if (coachingPackageId) {
-        const existing = packReservationsMap.get(coachingPackageId) || [];
-        existing.push(res);
-        packReservationsMap.set(coachingPackageId, existing);
-      }
+    // 2. PackageSessions (toutes, y compris celles avec réservation)
+    const allPackageSessions = await prisma.packageSession.findMany({
+      where: {
+        packageId: { in: uniquePackageIds },
+      },
+      select: {
+        id: true,
+        packageId: true,
+        startDate: true,
+        endDate: true,
+        durationMinutes: true,
+        reservationId: true,
+      },
+      orderBy: {
+        startDate: 'asc',
+      },
+    });
+
+    // Type unifié pour les sessions de pack
+    type UnifiedPackSession = {
+      id: string;
+      type: 'reservation' | 'package_session';
+      packageId: string;
+      startDate: Date;
+      endDate: Date;
+      durationHours: number;
+    };
+
+    // Créer un map coachingPackageId -> sessions unifiées triées par date
+    const packSessionsMap = new Map<string, UnifiedPackSession[]>();
+    
+    // Ajouter les PackageSessions (source de vérité pour les sessions planifiées)
+    for (const ps of allPackageSessions) {
+      const existing = packSessionsMap.get(ps.packageId) || [];
+      const durationHours = ps.durationMinutes / 60;
+      existing.push({
+        id: ps.reservationId || ps.id, // Utiliser l'ID de réservation si existe, sinon l'ID de PackageSession
+        type: ps.reservationId ? 'reservation' : 'package_session',
+        packageId: ps.packageId,
+        startDate: ps.startDate,
+        endDate: ps.endDate,
+        durationHours,
+      });
+      packSessionsMap.set(ps.packageId, existing);
+    }
+
+    // Trier chaque liste par date
+    for (const [packageId, sessions] of packSessionsMap) {
+      sessions.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+      packSessionsMap.set(packageId, sessions);
     }
 
     // Fonction pour calculer les heures cumulatives utilisées (incluant cette session)
-    const getSessionInfo = (reservationId: string, coachingPackageId: string | null) => {
+    const getSessionInfo = (sessionId: string, coachingPackageId: string | null, sessionType: 'reservation' | 'package_session') => {
       if (!coachingPackageId) return { 
         sessionNumber: null, 
         isFirstSession: false,
@@ -318,9 +362,9 @@ export async function GET(request: NextRequest) {
         progressPercent: null,
       };
       
-      const packReservations = packReservationsMap.get(coachingPackageId) || [];
+      const allSessions = packSessionsMap.get(coachingPackageId) || [];
       const packageInfo = packagesMap.get(coachingPackageId);
-      if (!packageInfo) return { 
+      if (!packageInfo || allSessions.length === 0) return { 
         sessionNumber: null, 
         isFirstSession: false,
         cumulativeHoursUsed: null,
@@ -329,26 +373,19 @@ export async function GET(request: NextRequest) {
       };
 
       // Trouver l'index de cette session (1-indexed)
-      const sessionIndex = packReservations.findIndex(s => s.id === reservationId);
+      const sessionIndex = allSessions.findIndex(s => s.id === sessionId);
       const sessionNumber = sessionIndex >= 0 ? sessionIndex + 1 : null;
       const isFirstSession = sessionIndex === 0;
 
       // Calculer les heures cumulatives INCLUANT cette session
       let cumulativeHoursUsed = 0;
-      for (let i = 0; i <= sessionIndex && i < packReservations.length; i++) {
-        const session = packReservations[i];
-        const durationMs = new Date(session.endDate).getTime() - new Date(session.startDate).getTime();
-        const durationHours = durationMs / (1000 * 60 * 60);
-        cumulativeHoursUsed += durationHours;
+      for (let i = 0; i <= sessionIndex && i < allSessions.length; i++) {
+        cumulativeHoursUsed += allSessions[i].durationHours;
       }
 
       // Durée de cette session spécifique
-      const currentSession = packReservations[sessionIndex];
-      let sessionDurationHours = 0;
-      if (currentSession) {
-        const durationMs = new Date(currentSession.endDate).getTime() - new Date(currentSession.startDate).getTime();
-        sessionDurationHours = durationMs / (1000 * 60 * 60);
-      }
+      const currentSession = allSessions[sessionIndex];
+      const sessionDurationHours = currentSession?.durationHours || 0;
 
       // Pourcentage de progression basé sur les heures cumulatives
       const progressPercent = packageInfo.totalHours > 0 
@@ -375,7 +412,7 @@ export async function GET(request: NextRequest) {
 
       // Récupérer les infos de progression du pack (utiliser packageSession.packageId = CoachingPackage)
       const coachingPackageId = reservation.packageSession?.packageId || null;
-      const sessionInfo = getSessionInfo(reservation.id, coachingPackageId);
+      const sessionInfo = getSessionInfo(reservation.id, coachingPackageId, 'reservation');
 
       return {
         id: reservation.id,
@@ -414,14 +451,8 @@ export async function GET(request: NextRequest) {
     const enrichedPackageSessions = packageSessions.map(ps => {
       const packageInfo = packagesMap.get(ps.packageId);
 
-      // Calculer la durée de cette session en heures
-      const sessionDurationHours = ps.durationMinutes / 60;
-      
-      // Pour les PackageSessions, calculer les heures utilisées jusqu'à présent
-      const hoursUsed = packageInfo ? (packageInfo.totalHours - packageInfo.remainingHours) : 0;
-      const progressPercent = packageInfo && packageInfo.totalHours > 0 
-        ? (hoursUsed / packageInfo.totalHours) * 100 
-        : 0;
+      // Utiliser getSessionInfo pour calculer les heures cumulatives correctement
+      const sessionInfo = getSessionInfo(ps.id, ps.packageId, 'package_session');
 
       return {
         id: ps.id,
@@ -438,18 +469,18 @@ export async function GET(request: NextRequest) {
         announcement: ps.package.announcement,
         durationMinutes: ps.durationMinutes,
         // Infos spécifiques aux packs - heures cumulatives
-        sessionNumber: null,
-        isFirstSession: false,
-        cumulativeHoursUsed: hoursUsed + sessionDurationHours, // Heures après cette session
-        sessionDurationHours: sessionDurationHours,
-        packProgressPercent: progressPercent,
+        sessionNumber: sessionInfo.sessionNumber,
+        isFirstSession: sessionInfo.isFirstSession,
+        cumulativeHoursUsed: sessionInfo.cumulativeHoursUsed,
+        sessionDurationHours: sessionInfo.sessionDurationHours,
+        packProgressPercent: sessionInfo.progressPercent,
         coachingPackage: packageInfo ? {
           id: packageInfo.id,
           totalHours: packageInfo.totalHours,
           remainingHours: packageInfo.remainingHours,
           sessionsCompletedCount: packageInfo.sessionsCompletedCount,
           sessionsTotalCount: packageInfo.sessionsTotalCount,
-          progressPercent: progressPercent,
+          progressPercent: sessionInfo.progressPercent ?? 0,
         } : null,
       };
     });

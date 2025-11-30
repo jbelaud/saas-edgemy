@@ -617,6 +617,11 @@ export default function CoachSessionsPage() {
                 <h3 className="text-sm font-semibold text-purple-300 mb-3 flex items-center gap-2">
                   <TrendingUp className="h-4 w-4" />
                   Informations du pack
+                  {selectedSession.isFirstSession && (
+                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs ml-2">
+                      1ère session
+                    </Badge>
+                  )}
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
@@ -626,26 +631,34 @@ export default function CoachSessionsPage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Heures restantes</span>
+                    <span className="text-gray-400">Cette session</span>
                     <span className="text-white font-semibold">
-                      {selectedSession.coachingPackage.remainingHours.toFixed(1)}h
+                      {selectedSession.sessionDurationHours?.toFixed(1) || (selectedSession.durationMinutes / 60).toFixed(1)}h
                     </span>
                   </div>
+                  {selectedSession.cumulativeHoursUsed !== null && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Heures utilisées (cumul)</span>
+                      <span className="text-white font-semibold">
+                        {selectedSession.cumulativeHoursUsed.toFixed(1)}h / {selectedSession.coachingPackage.totalHours}h
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Sessions complétées</span>
+                    <span className="text-gray-400">Heures restantes (pack)</span>
                     <span className="text-white font-semibold">
-                      {selectedSession.coachingPackage.sessionsCompletedCount} / {selectedSession.coachingPackage.sessionsTotalCount}
+                      {selectedSession.coachingPackage.remainingHours.toFixed(1)}h
                     </span>
                   </div>
                   <div className="mt-2">
                     <div className="flex justify-between text-xs text-gray-400 mb-1">
                       <span>Progression</span>
-                      <span>{selectedSession.coachingPackage.progressPercent.toFixed(0)}%</span>
+                      <span>{(selectedSession.packProgressPercent ?? selectedSession.coachingPackage.progressPercent).toFixed(0)}%</span>
                     </div>
                     <div className="w-full bg-purple-900/50 rounded-full h-2">
                       <div
                         className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all"
-                        style={{ width: `${selectedSession.coachingPackage.progressPercent}%` }}
+                        style={{ width: `${Math.min(selectedSession.packProgressPercent ?? selectedSession.coachingPackage.progressPercent, 100)}%` }}
                       />
                     </div>
                   </div>
