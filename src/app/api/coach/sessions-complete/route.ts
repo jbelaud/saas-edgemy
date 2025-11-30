@@ -301,32 +301,60 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Fonction pour calculer le numéro de session et les heures restantes
+    // Fonction pour calculer les heures cumulatives utilisées (incluant cette session)
     const getSessionInfo = (reservationId: string, packId: string | null) => {
-      if (!packId) return { sessionNumber: null, remainingHoursAtSession: null };
+      if (!packId) return { 
+        sessionNumber: null, 
+        isFirstSession: false,
+        cumulativeHoursUsed: null,
+        sessionDurationHours: null,
+        progressPercent: null,
+      };
       
       const packSessions = packSessionsMap.get(packId) || [];
       const packageInfo = packagesMap.get(packId);
-      if (!packageInfo) return { sessionNumber: null, remainingHoursAtSession: null };
+      if (!packageInfo) return { 
+        sessionNumber: null, 
+        isFirstSession: false,
+        cumulativeHoursUsed: null,
+        sessionDurationHours: null,
+        progressPercent: null,
+      };
 
       // Trouver l'index de cette session (1-indexed)
       const sessionIndex = packSessions.findIndex(s => s.id === reservationId);
       const sessionNumber = sessionIndex >= 0 ? sessionIndex + 1 : null;
+      const isFirstSession = sessionIndex === 0;
 
-      // Calculer les heures restantes AU MOMENT de cette session
-      // = totalHours - (heures consommées par les sessions précédentes)
-      let hoursConsumedBefore = 0;
-      for (let i = 0; i < sessionIndex; i++) {
-        const prevSession = packSessions[i];
-        // Calculer la durée de la session précédente
-        const durationMs = new Date(prevSession.endDate).getTime() - new Date(prevSession.startDate).getTime();
+      // Calculer les heures cumulatives INCLUANT cette session
+      let cumulativeHoursUsed = 0;
+      for (let i = 0; i <= sessionIndex && i < packSessions.length; i++) {
+        const session = packSessions[i];
+        const durationMs = new Date(session.endDate).getTime() - new Date(session.startDate).getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
-        hoursConsumedBefore += durationHours;
+        cumulativeHoursUsed += durationHours;
       }
 
-      const remainingHoursAtSession = packageInfo.totalHours - hoursConsumedBefore;
+      // Durée de cette session spécifique
+      const currentSession = packSessions[sessionIndex];
+      let sessionDurationHours = 0;
+      if (currentSession) {
+        const durationMs = new Date(currentSession.endDate).getTime() - new Date(currentSession.startDate).getTime();
+        sessionDurationHours = durationMs / (1000 * 60 * 60);
+      }
 
-      return { sessionNumber, remainingHoursAtSession };
+      // Pourcentage de progression basé sur les heures cumulatives
+      const progressPercent = packageInfo.totalHours > 0 
+        ? (cumulativeHoursUsed / packageInfo.totalHours) * 100 
+        : 0;
+
+      return { 
+        sessionNumber, 
+        isFirstSession,
+        cumulativeHoursUsed,
+        sessionDurationHours,
+        progressPercent,
+      };
     };
 
     // Enrichir les réservations avec les infos du pack
@@ -338,11 +366,8 @@ export async function GET(request: NextRequest) {
       // Calculer le montant pour le coach
       const coachAmount = reservation.coachNetCents || reservation.coachEarningsCents || reservation.priceCents;
 
-      // Récupérer le numéro de session et les heures restantes au moment de cette session
-      const { sessionNumber, remainingHoursAtSession } = getSessionInfo(
-        reservation.id, 
-        reservation.packId
-      );
+      // Récupérer les infos de progression du pack
+      const sessionInfo = getSessionInfo(reservation.id, reservation.packId);
 
       return {
         id: reservation.id,
@@ -358,9 +383,12 @@ export async function GET(request: NextRequest) {
         player: reservation.player,
         announcement: reservation.announcement,
         durationMinutes: reservation.announcement.durationMin,
-        // Infos spécifiques aux packs
-        sessionNumber: sessionNumber,
-        remainingHoursAtSession: remainingHoursAtSession,
+        // Infos spécifiques aux packs - heures cumulatives
+        sessionNumber: sessionInfo.sessionNumber,
+        isFirstSession: sessionInfo.isFirstSession,
+        cumulativeHoursUsed: sessionInfo.cumulativeHoursUsed,
+        sessionDurationHours: sessionInfo.sessionDurationHours,
+        packProgressPercent: sessionInfo.progressPercent,
         coachingPackage: packageInfo ? {
           id: packageInfo.id,
           totalHours: packageInfo.totalHours,
@@ -378,8 +406,15 @@ export async function GET(request: NextRequest) {
     const enrichedPackageSessions = packageSessions.map(ps => {
       const packageInfo = packagesMap.get(ps.packageId);
 
-      // Pour les PackageSessions sans réservation, on ne peut pas calculer le numéro
-      // car elles ne sont pas encore dans le système de réservation
+      // Calculer la durée de cette session en heures
+      const sessionDurationHours = ps.durationMinutes / 60;
+      
+      // Pour les PackageSessions, calculer les heures utilisées jusqu'à présent
+      const hoursUsed = packageInfo ? (packageInfo.totalHours - packageInfo.remainingHours) : 0;
+      const progressPercent = packageInfo && packageInfo.totalHours > 0 
+        ? (hoursUsed / packageInfo.totalHours) * 100 
+        : 0;
+
       return {
         id: ps.id,
         startDate: ps.startDate,
@@ -394,18 +429,19 @@ export async function GET(request: NextRequest) {
         player: ps.package.player,
         announcement: ps.package.announcement,
         durationMinutes: ps.durationMinutes,
-        // Pour les sessions planifiées sans réservation, on affiche les heures actuelles
+        // Infos spécifiques aux packs - heures cumulatives
         sessionNumber: null,
-        remainingHoursAtSession: packageInfo?.remainingHours || null,
+        isFirstSession: false,
+        cumulativeHoursUsed: hoursUsed + sessionDurationHours, // Heures après cette session
+        sessionDurationHours: sessionDurationHours,
+        packProgressPercent: progressPercent,
         coachingPackage: packageInfo ? {
           id: packageInfo.id,
           totalHours: packageInfo.totalHours,
           remainingHours: packageInfo.remainingHours,
           sessionsCompletedCount: packageInfo.sessionsCompletedCount,
           sessionsTotalCount: packageInfo.sessionsTotalCount,
-          progressPercent: packageInfo.totalHours > 0
-            ? ((packageInfo.totalHours - packageInfo.remainingHours) / packageInfo.totalHours) * 100
-            : 0,
+          progressPercent: progressPercent,
         } : null,
       };
     });

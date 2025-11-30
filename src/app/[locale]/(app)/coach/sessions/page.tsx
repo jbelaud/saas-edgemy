@@ -53,9 +53,12 @@ interface Session {
   reservationType: 'SINGLE' | 'PACK';
   discordChannelId: string | null;
   durationMinutes: number;
-  // Infos spécifiques aux packs
+  // Infos spécifiques aux packs - heures cumulatives
   sessionNumber: number | null;
-  remainingHoursAtSession: number | null;
+  isFirstSession: boolean;
+  cumulativeHoursUsed: number | null;
+  sessionDurationHours: number | null;
+  packProgressPercent: number | null;
   player: {
     id: string;
     name: string | null;
@@ -479,38 +482,38 @@ export default function CoachSessionsPage() {
                             </div>
                           </div>
 
-                          {/* Info pack si applicable */}
+                          {/* Info pack si applicable - Affichage heures cumulatives */}
                           {session.coachingPackage && (
                             <div className="mt-3 p-3 bg-purple-500/10 rounded-lg border border-purple-500/30">
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
                                   {/* Badge 1ère session */}
-                                  {session.sessionNumber === 1 && (
+                                  {session.isFirstSession && (
                                     <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs">
                                       🎯 1ère session
                                     </Badge>
                                   )}
-                                  {/* Numéro de session si pas la 1ère */}
-                                  {session.sessionNumber && session.sessionNumber > 1 && (
-                                    <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">
-                                      Session {session.sessionNumber}
-                                    </Badge>
-                                  )}
-                                  {/* Heures restantes AU MOMENT de cette session */}
-                                  {session.remainingHoursAtSession !== null && (
+                                  {/* Heures cumulatives utilisées */}
+                                  {session.cumulativeHoursUsed !== null && (
                                     <span className="text-xs font-medium text-purple-300">
-                                      Reste {session.remainingHoursAtSession.toFixed(1)}h / {session.coachingPackage.totalHours}h
+                                      {session.cumulativeHoursUsed.toFixed(1)}h utilisées / {session.coachingPackage.totalHours}h
                                     </span>
                                   )}
                                 </div>
+                                {/* Durée de cette session */}
+                                {session.sessionDurationHours !== null && (
+                                  <span className="text-xs text-gray-400">
+                                    Cette session: {session.sessionDurationHours.toFixed(1)}h
+                                  </span>
+                                )}
                               </div>
-                              {/* Barre de progression basée sur les heures restantes de cette session */}
+                              {/* Barre de progression basée sur les heures cumulatives */}
                               <div className="w-full bg-purple-900/50 rounded-full h-2">
                                 <div
                                   className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all"
                                   style={{ 
-                                    width: `${session.remainingHoursAtSession !== null 
-                                      ? ((session.coachingPackage.totalHours - session.remainingHoursAtSession) / session.coachingPackage.totalHours) * 100 
+                                    width: `${session.packProgressPercent !== null 
+                                      ? Math.min(session.packProgressPercent, 100)
                                       : session.coachingPackage.progressPercent}%` 
                                   }}
                                 />
