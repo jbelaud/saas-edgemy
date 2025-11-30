@@ -272,38 +272,45 @@ export async function GET(request: NextRequest) {
       coachingPackages.map(p => [p.id, p])
     );
 
-    // Récupérer TOUTES les sessions de chaque pack pour calculer le numéro de session
-    // et les heures restantes au moment de chaque session
-    const allPackageSessions = await prisma.reservation.findMany({
+    // Récupérer TOUTES les réservations de type PACK pour calculer les heures cumulatives
+    // On utilise packageSession.packageId (CoachingPackage) pour regrouper les sessions
+    const allPackReservations = await prisma.reservation.findMany({
       where: {
-        packId: { in: uniquePackageIds },
         type: 'PACK',
+        packageSession: {
+          packageId: { in: uniquePackageIds },
+        },
       },
       select: {
         id: true,
-        packId: true,
         startDate: true,
         endDate: true,
         status: true,
+        packageSession: {
+          select: {
+            packageId: true,
+          },
+        },
       },
       orderBy: {
         startDate: 'asc', // Ordre chronologique pour numéroter
       },
     });
 
-    // Créer un map packId -> sessions triées par date
-    const packSessionsMap = new Map<string, typeof allPackageSessions>();
-    for (const ps of allPackageSessions) {
-      if (ps.packId) {
-        const existing = packSessionsMap.get(ps.packId) || [];
-        existing.push(ps);
-        packSessionsMap.set(ps.packId, existing);
+    // Créer un map coachingPackageId -> réservations triées par date
+    const packReservationsMap = new Map<string, typeof allPackReservations>();
+    for (const res of allPackReservations) {
+      const coachingPackageId = res.packageSession?.packageId;
+      if (coachingPackageId) {
+        const existing = packReservationsMap.get(coachingPackageId) || [];
+        existing.push(res);
+        packReservationsMap.set(coachingPackageId, existing);
       }
     }
 
     // Fonction pour calculer les heures cumulatives utilisées (incluant cette session)
-    const getSessionInfo = (reservationId: string, packId: string | null) => {
-      if (!packId) return { 
+    const getSessionInfo = (reservationId: string, coachingPackageId: string | null) => {
+      if (!coachingPackageId) return { 
         sessionNumber: null, 
         isFirstSession: false,
         cumulativeHoursUsed: null,
@@ -311,8 +318,8 @@ export async function GET(request: NextRequest) {
         progressPercent: null,
       };
       
-      const packSessions = packSessionsMap.get(packId) || [];
-      const packageInfo = packagesMap.get(packId);
+      const packReservations = packReservationsMap.get(coachingPackageId) || [];
+      const packageInfo = packagesMap.get(coachingPackageId);
       if (!packageInfo) return { 
         sessionNumber: null, 
         isFirstSession: false,
@@ -322,21 +329,21 @@ export async function GET(request: NextRequest) {
       };
 
       // Trouver l'index de cette session (1-indexed)
-      const sessionIndex = packSessions.findIndex(s => s.id === reservationId);
+      const sessionIndex = packReservations.findIndex(s => s.id === reservationId);
       const sessionNumber = sessionIndex >= 0 ? sessionIndex + 1 : null;
       const isFirstSession = sessionIndex === 0;
 
       // Calculer les heures cumulatives INCLUANT cette session
       let cumulativeHoursUsed = 0;
-      for (let i = 0; i <= sessionIndex && i < packSessions.length; i++) {
-        const session = packSessions[i];
+      for (let i = 0; i <= sessionIndex && i < packReservations.length; i++) {
+        const session = packReservations[i];
         const durationMs = new Date(session.endDate).getTime() - new Date(session.startDate).getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
         cumulativeHoursUsed += durationHours;
       }
 
       // Durée de cette session spécifique
-      const currentSession = packSessions[sessionIndex];
+      const currentSession = packReservations[sessionIndex];
       let sessionDurationHours = 0;
       if (currentSession) {
         const durationMs = new Date(currentSession.endDate).getTime() - new Date(currentSession.startDate).getTime();
@@ -366,8 +373,9 @@ export async function GET(request: NextRequest) {
       // Calculer le montant pour le coach
       const coachAmount = reservation.coachNetCents || reservation.coachEarningsCents || reservation.priceCents;
 
-      // Récupérer les infos de progression du pack
-      const sessionInfo = getSessionInfo(reservation.id, reservation.packId);
+      // Récupérer les infos de progression du pack (utiliser packageSession.packageId = CoachingPackage)
+      const coachingPackageId = reservation.packageSession?.packageId || null;
+      const sessionInfo = getSessionInfo(reservation.id, coachingPackageId);
 
       return {
         id: reservation.id,
