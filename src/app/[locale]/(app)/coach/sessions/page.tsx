@@ -367,7 +367,7 @@ export default function CoachSessionsPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Type</label>
+                <label className="text-sm text-gray-400">Statut</label>
                 <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as 'all' | 'upcoming' | 'past')}>
                   <SelectTrigger className="text-white w-[140px]">
                     <SelectValue />
