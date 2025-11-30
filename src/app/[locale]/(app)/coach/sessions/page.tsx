@@ -104,6 +104,7 @@ export default function CoachSessionsPage() {
   const [periodFilter, setPeriodFilter] = useState<'all' | 'week' | 'month' | 'year'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'upcoming' | 'past'>('all');
   const [studentFilter, setStudentFilter] = useState<string>('all');
+  const [sessionTypeFilter, setSessionTypeFilter] = useState<'all' | 'single' | 'pack'>('all');
 
   useEffect(() => {
     if (session?.user) {
@@ -248,6 +249,9 @@ export default function CoachSessionsPage() {
     // Filtre par élève
     if (studentFilter !== 'all' && session.player.id !== studentFilter) return false;
 
+    // Filtre par type de session (unique ou pack)
+    if (sessionTypeFilter === 'single' && session.reservationType !== 'SINGLE') return false;
+    if (sessionTypeFilter === 'pack' && session.reservationType !== 'PACK') return false;
 
     // Filtre par période
     if (periodFilter !== 'all') {
@@ -389,6 +393,20 @@ export default function CoachSessionsPage() {
                         {student.name || student.email}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-400">Type</label>
+                <Select value={sessionTypeFilter} onValueChange={(value) => setSessionTypeFilter(value as 'all' | 'single' | 'pack')}>
+                  <SelectTrigger className="text-white w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous</SelectItem>
+                    <SelectItem value="single">Session unique</SelectItem>
+                    <SelectItem value="pack">Pack</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
