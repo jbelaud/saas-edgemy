@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { updateCoachProfileSchema } from '@/lib/validation/schemas';
+import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -58,18 +61,17 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { firstName, lastName, timezone } = body;
 
-    // Validation basique
-    const updateData: {
-      firstName?: string;
-      lastName?: string;
-      timezone?: string;
-    } = {};
+    // Validation avec Zod
+    const validationResult = updateCoachProfileSchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: 'Données invalides', details: validationResult.error.issues },
+        { status: 400 }
+      );
+    }
 
-    if (firstName !== undefined) updateData.firstName = firstName;
-    if (lastName !== undefined) updateData.lastName = lastName;
-    if (timezone !== undefined) updateData.timezone = timezone;
+    const updateData = validationResult.data;
 
     // Mettre à jour le profil coach
     const updatedCoach = await prisma.coach.update({
@@ -79,7 +81,13 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ coach: updatedCoach });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du profil coach:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Données invalides', details: error.issues },
+        { status: 400 }
+      );
+    }
+    logger.error('Erreur lors de la mise à jour du profil coach:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }

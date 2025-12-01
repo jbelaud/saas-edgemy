@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { coachNoteSchema } from '@/lib/validation/schemas';
+import { logger } from '@/lib/logger';
 
 // GET - Récupérer les notes d'un élève
 export async function GET(
@@ -39,7 +41,7 @@ export async function GET(
 
     return NextResponse.json({ notes });
   } catch (error) {
-    console.error('Erreur lors de la récupération des notes:', error);
+    logger.error('Erreur lors de la récupération des notes:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
@@ -71,14 +73,17 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { content } = body;
 
-    if (!content || content.trim() === '') {
+    // Validation avec Zod
+    const validationResult = coachNoteSchema.safeParse(body);
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Le contenu de la note est requis' },
+        { error: 'Données invalides', details: validationResult.error.issues },
         { status: 400 }
       );
     }
+
+    const { content } = validationResult.data;
 
     // Chercher une note existante
     const existingNote = await prisma.coachNote.findFirst({
@@ -108,7 +113,7 @@ export async function POST(
 
     return NextResponse.json({ note }, { status: 201 });
   } catch (error) {
-    console.error('Erreur lors de la création/mise à jour de la note:', error);
+    logger.error('Erreur lors de la création/mise à jour de la note:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }

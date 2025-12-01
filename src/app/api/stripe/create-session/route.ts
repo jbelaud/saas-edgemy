@@ -7,6 +7,8 @@ import { routing } from '@/i18n/routing';
 import { calculateForSession, calculateForPack } from '@/lib/stripe/pricing';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { applyRateLimit } from '@/lib/rate-limit';
+import { stripeLogger as logger } from '@/lib/logger';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -14,6 +16,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: Request) {
   try {
+    // Rate limiting: 20 req/min par utilisateur
+    const rateLimitResponse = await applyRateLimit(req, 'sensitive');
+    if (rateLimitResponse) return rateLimitResponse;
+
     // Vérifier l'authentification
     const authSession = await auth.api.getSession({
       headers: await headers(),
@@ -26,24 +32,13 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { reservationId, coachName, playerEmail, type, coachId, locale: requestedLocale } = body;
 
-    console.log('📥 Requête create-session reçue:', { reservationId, coachName, playerEmail, type, coachId });
+    logger.debug('Requête create-session reçue:', { reservationId, type, coachId });
 
     // Validation basique sur les champs request
     if (!reservationId || !playerEmail || !coachId) {
-      console.error('❌ Champs manquants:', {
-        hasReservationId: !!reservationId,
-        hasPlayerEmail: !!playerEmail,
-        hasCoachId: !!coachId,
-      });
+      logger.warn('Champs manquants dans create-session');
       return NextResponse.json(
-        {
-          error: 'Missing required fields',
-          details: {
-            reservationId: !reservationId ? 'missing' : 'ok',
-            playerEmail: !playerEmail ? 'missing' : 'ok',
-            coachId: !coachId ? 'missing' : 'ok',
-          }
-        },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
@@ -69,23 +64,19 @@ export async function POST(req: Request) {
     }
 
     if (reservation.coachId !== coachId) {
-      console.error('❌ Incohérence coach/réservation', { reservationCoachId: reservation.coachId, providedCoachId: coachId });
+      logger.warn('Incohérence coach/réservation');
       return NextResponse.json({ error: 'Reservation does not belong to this coach' }, { status: 400 });
     }
 
     // Vérifier que l'utilisateur connecté est bien le joueur de la réservation
     if (reservation.playerId !== authSession.user.id) {
-      console.error('❌ L\'utilisateur n\'est pas le propriétaire de la réservation', { 
-        playerId: reservation.playerId, 
-        sessionUserId: authSession.user.id 
-      });
+      logger.warn('Tentative d\'accès non autorisé à une réservation');
       return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
     }
 
     // Vérification du prix - Les réservations gratuites ne devraient pas arriver ici
-    // mais nous gardons une validation pour plus de sécurité
     if (!reservation.priceCents || reservation.priceCents <= 0) {
-      console.error('❌ Prix invalide pour la réservation - Les annonces gratuites doivent être gérées directement', { reservationId, priceCents: reservation.priceCents });
+      logger.warn('Tentative de checkout pour réservation gratuite');
       return NextResponse.json({ error: 'Free reservations should not go through Stripe checkout' }, { status: 400 });
     }
 
@@ -225,31 +216,16 @@ export async function POST(req: Request) {
       } as Prisma.ReservationUncheckedUpdateInput,
     });
 
-    console.log(` Session Stripe créée: ${session.id} pour réservation ${reservationId} (${reservationType})`);
-    console.log(
-      ` Prix coach: ${(pricingBreakdown.coachNetCents / 100).toFixed(2)}€ | `
-      + `Commission Edgemy: ${(pricingBreakdown.edgemyFeeCents / 100).toFixed(2)}€ | `
-      + `Frais Stripe estimés: ${(pricingBreakdown.stripeFeeCents / 100).toFixed(2)}€ | `
-      + `Prix élève: ${(pricingBreakdown.totalCustomerCents / 100).toFixed(2)}€`,
-    );
-    if (reservationType === 'PACK') {
-      console.log(
-        `📦 Pack: ${sessionsCount} sessions prévues | Paiement par session: ${(sessionPayoutCents / 100).toFixed(2)}€`,
-      );
-    } else {
-      console.log('🎯 Session unique: commission et frais calculés via helper pricing.ts');
-    }
-    console.log(`🔒 NOUVEAU SYSTÈME: Argent GELÉ dans solde Edgemy (pas de transfer immédiat)`);
-    console.log(`⏳ Transfer au coach ${coach.stripeAccountId} effectué APRÈS la session`);
+    logger.debug(`Session Stripe créée: ${session.id} pour réservation ${reservationId}`);
 
     return NextResponse.json({
       url: session.url,
       sessionId: session.id,
     });
   } catch (err) {
-    console.error('❌ Erreur création session Stripe:', err);
+    logger.error('Erreur création session Stripe:', err);
     return NextResponse.json(
-      { error: 'Failed to create session', details: err instanceof Error ? err.message : 'Unknown error' },
+      { error: 'Failed to create session' },
       { status: 500 }
     );
   }

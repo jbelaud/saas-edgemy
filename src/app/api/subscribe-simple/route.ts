@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { z } from 'zod';
+import { applyRateLimit } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 const subscriberSchema = z.object({
   email: z.string().email("Adresse email invalide"),
@@ -11,20 +13,22 @@ const subscriberSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Subscribe Simple API called');
+    // Rate limiting: 10 req/min par IP
+    const rateLimitResponse = await applyRateLimit(request, 'public');
+    if (rateLimitResponse) return rateLimitResponse;
+
+    logger.debug('Subscribe Simple API called');
     const body = await request.json();
-    console.log('Request body:', body);
+    logger.debug('Request body:', body);
     
     // Validate the input
     const validatedData = subscriberSchema.parse(body);
-    console.log('Data validated:', validatedData);
+    logger.debug('Data validated:', validatedData);
 
     // Check if email already exists
-    console.log('Checking for existing subscriber...');
     const existingSubscriber = await db.subscriber.findUnique({
       where: { email: validatedData.email }
     });
-    console.log('Existing subscriber:', existingSubscriber);
 
     if (existingSubscriber) {
       return NextResponse.json(
@@ -34,14 +38,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new subscriber
-    console.log('Creating new subscriber...');
     const subscriber = await db.subscriber.create({
       data: {
         email: validatedData.email,
         role: validatedData.role,
       },
     });
-    console.log('Subscriber created:', subscriber);
+    logger.debug('Subscriber created:', subscriber.id);
 
     return NextResponse.json(
       { message: 'Inscription réussie', id: subscriber.id },
@@ -49,7 +52,7 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('Subscription error:', error);
+    logger.error('Subscription error:', error);
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -59,10 +62,7 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
