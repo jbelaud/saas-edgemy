@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 /**
  * API pour approuver un avis (admin/coach)
@@ -11,11 +13,19 @@ export async function POST(
   try {
     const { reviewId } = await params;
 
-    // TODO: Vérifier que l'utilisateur est admin ou le coach concerné
-    // const session = await getAuth(request);
-    // if (!session || (session.role !== 'ADMIN' && session.role !== 'COACH')) {
-    //   return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
-    // }
+    // Vérifier l'authentification
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
+
+    // Vérifier que l'utilisateur est admin ou coach
+    if (session.user.role !== 'ADMIN' && session.user.role !== 'COACH') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
 
     // Récupérer l'avis
     const review = await prisma.review.findUnique({
@@ -34,10 +44,10 @@ export async function POST(
       );
     }
 
-    // TODO: Vérifier que l'utilisateur est le coach ou admin
-    // if (session.role === 'COACH' && review.coach.userId !== session.userId) {
-    //   return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
-    // }
+    // Si l'utilisateur est un coach, vérifier qu'il est le propriétaire de l'avis
+    if (session.user.role === 'COACH' && review.coach.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
 
     // Approuver l'avis
     const updatedReview = await prisma.review.update({

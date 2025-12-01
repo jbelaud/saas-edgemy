@@ -5,6 +5,8 @@ import { ReservationType } from '@/lib/stripe/types';
 import { prisma } from '@/lib/prisma';
 import { routing } from '@/i18n/routing';
 import { calculateForSession, calculateForPack } from '@/lib/stripe/pricing';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -12,6 +14,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: Request) {
   try {
+    // Vérifier l'authentification
+    const authSession = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!authSession?.user?.id) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { reservationId, coachName, playerEmail, type, coachId, locale: requestedLocale } = body;
 
@@ -60,6 +71,15 @@ export async function POST(req: Request) {
     if (reservation.coachId !== coachId) {
       console.error('❌ Incohérence coach/réservation', { reservationCoachId: reservation.coachId, providedCoachId: coachId });
       return NextResponse.json({ error: 'Reservation does not belong to this coach' }, { status: 400 });
+    }
+
+    // Vérifier que l'utilisateur connecté est bien le joueur de la réservation
+    if (reservation.playerId !== authSession.user.id) {
+      console.error('❌ L\'utilisateur n\'est pas le propriétaire de la réservation', { 
+        playerId: reservation.playerId, 
+        sessionUserId: authSession.user.id 
+      });
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
     }
 
     // Vérification du prix - Les réservations gratuites ne devraient pas arriver ici

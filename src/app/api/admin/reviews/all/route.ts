@@ -1,16 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 /**
  * API pour récupérer TOUS les avis (pour modération admin)
  */
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Vérifier que l'utilisateur est admin
-    // const session = await getAuth(request);
-    // if (!session || session.role !== 'ADMIN') {
-    //   return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
-    // }
+    // Vérifier l'authentification
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
+
+    // Seuls les admins peuvent voir tous les avis
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
 
     // Récupérer tous les avis avec toutes les informations
     const reviews = await prisma.review.findMany({

@@ -1,17 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ReviewSource } from '@prisma/client';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 /**
  * API pour récupérer les avis en attente de validation
  */
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Vérifier que l'utilisateur est admin ou coach
-    // const session = await getAuth(request);
-    // if (!session || (session.role !== 'ADMIN' && session.role !== 'COACH')) {
-    //   return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
-    // }
+    // Vérifier l'authentification
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
+
+    // Vérifier que l'utilisateur est admin ou coach
+    if (session.user.role !== 'ADMIN' && session.user.role !== 'COACH') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
 
     const searchParams = request.nextUrl.searchParams;
     const coachId = searchParams.get('coachId'); // Optionnel : filtrer par coach

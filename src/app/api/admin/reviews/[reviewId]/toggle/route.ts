@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
 /**
  * API pour basculer la visibilité d'un avis (admin)
@@ -13,11 +15,19 @@ export async function POST(
     const body = await request.json();
     const { isPublic } = body;
 
-    // TODO: Vérifier que l'utilisateur est admin
-    // const session = await getAuth(request);
-    // if (!session || session.role !== 'ADMIN') {
-    //   return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
-    // }
+    // Vérifier l'authentification
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
+
+    // Seuls les admins peuvent modifier la visibilité des avis
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
 
     // Validation
     if (typeof isPublic !== 'boolean') {

@@ -27,12 +27,13 @@ import { isSessionCompleted } from '@/lib/stripe/business-rules';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Vérifier l'autorisation cron
+    // Vérifier l'autorisation cron (clé secrète obligatoire)
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      console.error('❌ Tentative d\'accès non autorisée au cron auto-complete-sessions');
+    // SÉCURITÉ: Toujours exiger le CRON_SECRET en production
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      console.error('🚫 Accès cron non autorisé - CRON_SECRET manquant ou invalide');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

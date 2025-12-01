@@ -9,11 +9,13 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Vérifier l'autorisation (clé secrète ou Vercel Cron header)
+    // Vérifier l'autorisation (clé secrète obligatoire)
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    // SÉCURITÉ: Toujours exiger le CRON_SECRET en production
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      console.error('🚫 Accès cron non autorisé - CRON_SECRET manquant ou invalide');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
