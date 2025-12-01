@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
@@ -78,4 +79,26 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+// Appliquer next-intl puis Sentry
+const configWithIntl = withNextIntl(nextConfig);
+
+export default withSentryConfig(configWithIntl, {
+  // Options Sentry
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Désactiver le téléchargement des source maps en dev
+  silent: !process.env.CI,
+
+  // Options de build
+  widenClientFileUpload: true,
+  disableLogger: true,
+
+  // Configuration des source maps
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+
+  // Tunneling pour contourner les ad-blockers (optionnel)
+  // tunnelRoute: '/monitoring',
+});

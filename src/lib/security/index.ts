@@ -67,3 +67,9 @@ export {
   looksLikeEmail,
   looksLikePhone,
 } from './pii';
+
+// Turnstile (Captcha)
+export {
+  verifyTurnstileToken,
+  validateTurnstile,
+} from './turnstile';

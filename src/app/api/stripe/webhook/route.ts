@@ -10,6 +10,8 @@ import { ensureMemberRole } from '@/lib/discord/roles';
 import { checkLowMargin } from '@/lib/stripe/alerts';
 import { sendEmail } from '@/lib/email/brevo';
 import { generateSessionConfirmationEmail, generateCoachSessionNotificationEmail } from '@/lib/email/templates';
+import { paymentAudit } from '@/lib/security';
+import { webhookLogger as logger } from '@/lib/logger';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -77,13 +79,13 @@ export async function POST(req: Request) {
   const sig = headersList.get('stripe-signature');
 
   if (!sig) {
-    console.error('Webhook error: Missing stripe-signature header');
+    logger.error('Webhook error: Missing stripe-signature header');
     return new Response('Missing stripe-signature header', { status: 400 });
   }
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error('Webhook error: STRIPE_WEBHOOK_SECRET not configured');
+    logger.error('Webhook error: STRIPE_WEBHOOK_SECRET not configured');
     return new Response('Webhook secret not configured', { status: 500 });
   }
 
@@ -93,7 +95,7 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Webhook signature verification error:', message);
+    logger.error('Webhook signature verification error:', message);
     return new Response(`Webhook Error: ${message}`, { status: 400 });
   }
 
@@ -240,8 +242,15 @@ export async function POST(req: Request) {
           // 🔐 Vérifier et alerter si marge anormale
           await checkLowMargin(reservationId, edgemyFeeCents, totalCustomerCents);
 
-          console.log(`✅ Réservation ${reservationId} marquée comme PAID et CONFIRMED`);
-          console.log(`⏳ transferStatus: PENDING - Le transfer sera fait via /api/reservations/${reservationId}/complete`);
+          logger.debug(`Réservation ${reservationId} marquée comme PAID et CONFIRMED`);
+
+          // Audit trail - Paiement complété
+          await paymentAudit.completed(
+            reservation.playerId,
+            reservationId,
+            totalCustomerCents,
+            req
+          );
 
           // Envoi des emails de confirmation
           const formatCurrency = (cents: number) => {

@@ -2,10 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { validateCsrfToken, auditLog, AuditAction } from '@/lib/security';
+import { applyRateLimit } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 // POST - Créer une réservation (unitaire ou première session d'un pack)
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const rateLimitResponse = await applyRateLimit(request, 'sensitive');
+    if (rateLimitResponse) return rateLimitResponse;
+
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -246,13 +257,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Audit trail
+    await auditLog({
+      action: AuditAction.RESERVATION_CREATED,
+      userId: session.user.id,
+      resourceType: 'reservation',
+      resourceId: updatedReservation.id,
+      metadata: { coachId, type: reservationType, priceCents: reservationPriceCents },
+      request,
+    });
+
     // Retourner l'ID et les détails de la réservation
     return NextResponse.json({
-      id: updatedReservation.id, // Pour le front qui attend data.id
-      reservation: updatedReservation, // Pour compatibilité
+      id: updatedReservation.id,
+      reservation: updatedReservation,
     }, { status: 201 });
   } catch (error) {
-    console.error('Erreur lors de la création de la réservation:', error);
+    logger.error('Erreur lors de la création de la réservation:', error);
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }

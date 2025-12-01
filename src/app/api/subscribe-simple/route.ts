@@ -3,12 +3,14 @@ import { db } from '@/lib/db';
 import { z } from 'zod';
 import { applyRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
+import { verifyTurnstileToken } from '@/lib/security/turnstile';
 
 const subscriberSchema = z.object({
   email: z.string().email("Adresse email invalide"),
   role: z.enum(["PLAYER", "COACH"], {
     message: "Veuillez sélectionner votre rôle",
   }),
+  turnstileToken: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -19,11 +21,18 @@ export async function POST(request: NextRequest) {
 
     logger.debug('Subscribe Simple API called');
     const body = await request.json();
-    logger.debug('Request body:', body);
     
     // Validate the input
     const validatedData = subscriberSchema.parse(body);
-    logger.debug('Data validated:', validatedData);
+
+    // Vérifier le captcha Turnstile (si configuré)
+    const isTurnstileValid = await verifyTurnstileToken(validatedData.turnstileToken, request);
+    if (!isTurnstileValid) {
+      return NextResponse.json(
+        { error: 'Veuillez compléter le captcha' },
+        { status: 400 }
+      );
+    }
 
     // Check if email already exists
     const existingSubscriber = await db.subscriber.findUnique({
