@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { validateCsrfToken } from '@/lib/security';
 
 /**
  * API pour approuver un avis (admin/coach)
@@ -11,6 +12,10 @@ export async function POST(
   { params }: { params: Promise<{ reviewId: string }> }
 ) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const { reviewId } = await params;
 
     // Vérifier l'authentification

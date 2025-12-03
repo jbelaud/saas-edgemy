@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
+import { validateCsrfToken } from '@/lib/security';
 
 /**
  * API pour soumettre un avis externe (sans réservation)
@@ -8,6 +9,10 @@ import { Prisma } from '@prisma/client';
  */
 export async function POST(request: NextRequest) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const body = await request.json();
     const { coachId, rating, comment, playerName, playerEmail } = body;
 

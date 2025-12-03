@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { convertLocalToUTC } from '@/lib/timezone';
+import { validateCsrfToken } from '@/lib/security';
 
 // GET - Récupérer toutes les disponibilités du coach
 export async function GET() {
@@ -50,6 +51,10 @@ export async function GET() {
 // POST - Créer une nouvelle disponibilité
 export async function POST(request: NextRequest) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });

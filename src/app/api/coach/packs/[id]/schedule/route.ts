@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { validateCsrfToken } from '@/lib/security';
 
 // POST /api/coach/packs/[id]/schedule - Planifier une nouvelle session d'un pack
 export async function POST(
@@ -8,6 +9,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: request.headers,
     });

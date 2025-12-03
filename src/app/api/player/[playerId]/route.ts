@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
+import { validateCsrfToken } from "@/lib/security";
 
 export async function GET(
   request: NextRequest,
@@ -65,6 +66,10 @@ export async function PATCH(
   { params }: { params: Promise<{ playerId: string }> }
 ) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });

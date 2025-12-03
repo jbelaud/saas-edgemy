@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { checkAndExpireFreeTrial } from '@/lib/checkTrialExpiration';
+import { validateCsrfToken } from '@/lib/security';
 
 function generateSlug(title: string): string {
   return title
@@ -55,8 +56,12 @@ export async function GET() {
 }
 
 // POST - Créer une annonce
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -209,8 +214,12 @@ export async function POST(request: Request) {
 }
 
 // PUT - Mettre à jour une annonce
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -268,8 +277,12 @@ export async function PUT(request: Request) {
 }
 
 // DELETE - Supprimer une annonce
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });

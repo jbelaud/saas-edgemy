@@ -31,12 +31,17 @@ import {
 } from '@/lib/stripe/transfer';
 import { isSessionCompleted } from '@/lib/stripe/business-rules';
 import { Prisma } from '@prisma/client';
+import { validateCsrfToken } from '@/lib/security';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     // Vérifier l'authentification
     const session = await auth.api.getSession({
       headers: await headers(),

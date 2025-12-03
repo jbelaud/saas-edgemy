@@ -50,3 +50,6 @@ next-env.d.ts
 
 .vercel
 nul
+
+# Sentry Config File
+.env.sentry-build-plugin

@@ -1,14 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { validateCsrfToken } from '@/lib/security';
 
 /**
  * POST /api/discord/disconnect
  * Déconnecte le compte Discord de l'utilisateur
  */
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });

@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { uploadFileToSupabase } from '@/lib/supabase';
+import { validateCsrfToken } from '@/lib/security';
 
 /**
  * API pour l'upload de fichiers vers Supabase Storage
@@ -11,8 +12,12 @@ import { uploadFileToSupabase } from '@/lib/supabase';
  * - player-media (public) : avatars des joueurs
  */
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });

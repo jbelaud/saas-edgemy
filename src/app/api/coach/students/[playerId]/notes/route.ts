@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { coachNoteSchema } from '@/lib/validation/schemas';
 import { logger } from '@/lib/logger';
+import { validateCsrfToken } from '@/lib/security';
 
 // GET - Récupérer les notes d'un élève
 export async function GET(
@@ -55,6 +56,10 @@ export async function POST(
   { params }: { params: Promise<{ playerId: string }> }
 ) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const { playerId } = await params;
     const session = await auth.api.getSession({
       headers: await headers(),

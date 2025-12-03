@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { updateCoachProfileSchema } from '@/lib/validation/schemas';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { validateCsrfToken } from '@/lib/security';
 
 export async function GET() {
   try {
@@ -37,6 +38,10 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });

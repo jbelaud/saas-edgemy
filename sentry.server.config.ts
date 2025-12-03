@@ -1,44 +1,19 @@
-import * as Sentry from '@sentry/nextjs';
+// This file configures the initialization of Sentry on the server.
+// The config you add here will be used whenever the server handles a request.
+// https://docs.sentry.io/platforms/javascript/guides/nextjs/
+
+import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
+  dsn: "https://3032de2c9ef5ad9741d96941aa4411c9@o4510458433044480.ingest.de.sentry.io/4510458433503312",
 
-  // Taux d'échantillonnage pour les traces
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
+  tracesSampleRate: 1,
 
-  // Désactiver en développement si pas de DSN
-  enabled: !!(process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN),
+  // Enable logs to be sent to Sentry
+  enableLogs: true,
 
-  // Ignorer certaines erreurs
-  ignoreErrors: [
-    'NEXT_NOT_FOUND',
-    'NEXT_REDIRECT',
-  ],
-
-  // Nettoyer les données sensibles
-  beforeSend(event) {
-    // Supprimer les données sensibles
-    if (event.request?.headers) {
-      delete event.request.headers['authorization'];
-      delete event.request.headers['cookie'];
-      delete event.request.headers['x-csrf-token'];
-    }
-
-    // Supprimer les données sensibles des extras
-    if (event.extra) {
-      const sensitiveKeys = ['password', 'token', 'secret', 'apiKey', 'stripeKey'];
-      for (const key of Object.keys(event.extra)) {
-        if (sensitiveKeys.some(s => key.toLowerCase().includes(s))) {
-          event.extra[key] = '[REDACTED]';
-        }
-      }
-    }
-
-    return event;
-  },
-
-  // Configurer les integrations
-  integrations: [
-    Sentry.prismaIntegration(),
-  ],
+  // Enable sending user PII (Personally Identifiable Information)
+  // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
+  sendDefaultPii: true,
 });

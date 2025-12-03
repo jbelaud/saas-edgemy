@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { validateCsrfToken } from '@/lib/security';
 
 // GET - Récupérer les paramètres du coach
 export async function GET() {
@@ -42,6 +43,10 @@ export async function GET() {
 // PATCH - Mettre à jour les paramètres du coach
 export async function PATCH(request: NextRequest) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(request);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: await headers(),
     });

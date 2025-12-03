@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import Stripe from 'stripe';
+import { validateCsrfToken } from '@/lib/security';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -9,6 +10,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: NextRequest) {
   try {
+    // Protection CSRF
+    const csrfError = await validateCsrfToken(req);
+    if (csrfError) return csrfError;
+
     const session = await auth.api.getSession({
       headers: req.headers,
     });
