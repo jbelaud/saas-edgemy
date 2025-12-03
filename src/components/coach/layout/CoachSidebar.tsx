@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useSession, signOut } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 
 interface NavItem {
-  title: string;
+  titleKey: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
@@ -41,37 +41,37 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    title: "Tableau de bord",
+    titleKey: "dashboard",
     href: "/coach/dashboard",
     icon: LayoutDashboard,
   },
   {
-    title: "Annonces",
+    titleKey: "announcements",
     href: "/coach/announcements",
     icon: Megaphone,
   },
   {
-    title: "Packs",
+    titleKey: "packs",
     href: "/coach/packs",
     icon: Package,
   },
   {
-    title: "Agenda",
+    titleKey: "agenda",
     href: "/coach/agenda",
     icon: Calendar,
   },
   {
-    title: "Mes sessions",
+    titleKey: "sessions",
     href: "/coach/sessions",
     icon: CalendarCheck,
   },
   {
-    title: "Revenus",
+    titleKey: "revenue",
     href: "/coach/revenue",
     icon: Euro,
   },
   {
-    title: "Paramètres",
+    titleKey: "settings",
     href: "/coach/settings",
     icon: Settings,
   },
@@ -80,6 +80,7 @@ const navItems: NavItem[] = [
 export function CoachSidebar() {
   const pathname = usePathname();
   const locale = useLocale();
+  const t = useTranslations('coach.sidebar');
   // Ouvert sur desktop, fermé sur mobile
   const [collapsed, setCollapsed] = useState(false);
   const [coachSlug, setCoachSlug] = useState<string | null>(null);
@@ -213,7 +214,7 @@ export function CoachSidebar() {
               )}
             >
               <Icon className={cn("h-5 w-5 flex-shrink-0")} />
-              {!collapsed && <span>{item.title}</span>}
+              {!collapsed && <span>{t(item.titleKey)}</span>}
               {!collapsed && item.badge && (
                 <span className="ml-auto rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-400">
                   {item.badge}
@@ -244,7 +245,7 @@ export function CoachSidebar() {
               {!collapsed && (
                 <div className="flex flex-col items-start text-left overflow-hidden">
                   <p className="text-sm font-medium truncate w-full text-white">
-                    {user?.name || "Utilisateur"}
+                    {user?.name || t('user')}
                   </p>
                   <p className="text-xs text-gray-400 truncate w-full">
                     {user?.email || ""}
@@ -267,12 +268,12 @@ export function CoachSidebar() {
               {hasPlayerProfile ? (
                 <Link href={`/${locale}/player/dashboard`} className="flex items-center cursor-pointer text-gray-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white">
                   <ArrowRightLeft className="mr-2 h-4 w-4" />
-                  <span>Basculer en mode Joueur</span>
+                  <span>{t('switchToPlayer')}</span>
                 </Link>
               ) : (
                 <Link href={`/${locale}/coach/${coachSlug}`} className="flex items-center cursor-pointer text-gray-300 hover:text-white hover:bg-white/5 focus:bg-white/5 focus:text-white">
                   <User className="mr-2 h-4 w-4" />
-                  <span>Voir mon profil public</span>
+                  <span>{t('viewPublicProfile')}</span>
                 </Link>
               )}
             </DropdownMenuItem>
@@ -288,7 +289,7 @@ export function CoachSidebar() {
               className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-300"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Déconnexion</span>
+              <span>{t('logout')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

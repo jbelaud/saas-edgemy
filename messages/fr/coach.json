@@ -1,4 +1,314 @@
 {
+  "sidebar": {
+    "dashboard": "Tableau de bord",
+    "announcements": "Annonces",
+    "packs": "Packs",
+    "agenda": "Agenda",
+    "sessions": "Mes sessions",
+    "revenue": "Revenus",
+    "settings": "Paramètres",
+    "user": "Utilisateur",
+    "switchToPlayer": "Basculer en mode Joueur",
+    "viewPublicProfile": "Voir mon profil public",
+    "logout": "Déconnexion"
+  },
+  "dashboard": {
+    "greeting": {
+      "welcome": "Bienvenue,",
+      "manage": "Gérez votre activité de coaching"
+    },
+    "error": {
+      "title": "Erreur",
+      "loading": "Erreur lors du chargement du dashboard"
+    },
+    "actions": {
+      "viewProfile": "Voir mon profil public",
+      "createAnnouncement": "Créer une annonce"
+    },
+    "stats": {
+      "totalRevenue": "Revenus totaux",
+      "thisMonth": "{amount}€ ce mois",
+      "reservations": "Réservations",
+      "upcoming": "{count} à venir",
+      "coachingHours": "Heures de coaching",
+      "totalCumulated": "Total cumulé",
+      "activeAnnouncements": "Annonces actives",
+      "pending": "{count} en attente"
+    },
+    "tabs": {
+      "overview": "Vue d'ensemble",
+      "profile": "Profil",
+      "announcements": "Annonces"
+    }
+  },
+  "sessions": {
+    "title": "Mes Sessions",
+    "subtitle": "Gérez toutes vos sessions passées et à venir",
+    "stats": {
+      "total": "Total sessions",
+      "upcoming": "À venir",
+      "completed": "Complétées"
+    },
+    "filters": {
+      "title": "Filtres",
+      "period": "Période",
+      "allPeriods": "Toutes les périodes",
+      "thisWeek": "Cette semaine",
+      "thisMonth": "Ce mois",
+      "thisYear": "Cette année",
+      "status": "Statut",
+      "all": "Toutes",
+      "upcomingOnly": "À venir",
+      "pastOnly": "Passées",
+      "student": "Élève",
+      "allStudents": "Tous les élèves",
+      "type": "Type",
+      "allTypes": "Tous",
+      "singleSession": "Session unique",
+      "pack": "Pack"
+    },
+    "empty": {
+      "title": "Aucune session",
+      "description": "Aucune session ne correspond aux filtres sélectionnés"
+    },
+    "status": {
+      "completed": "Complétée",
+      "finished": "Terminée",
+      "scheduled": "Planifiée",
+      "upcoming": "À venir",
+      "confirmed": "Confirmée",
+      "paid": "Payé",
+      "paidExternal": "Payé (externe)"
+    },
+    "player": "Joueur",
+    "duration": "Durée",
+    "durationMinutes": "{minutes}min",
+    "firstSession": "1ère session",
+    "hoursUsed": "{used}h utilisées / {total}h",
+    "thisSession": "Cette session: {hours}h",
+    "modal": {
+      "title": "Détails de la session",
+      "student": "Élève",
+      "date": "Date",
+      "time": "Heure",
+      "duration": "Durée",
+      "minutes": "{minutes} minutes",
+      "type": "Type",
+      "packInfo": {
+        "title": "Informations du pack",
+        "totalHours": "Heures totales",
+        "thisSession": "Cette session",
+        "hoursUsed": "Heures utilisées (cumul)",
+        "hoursRemaining": "Heures restantes",
+        "progress": "Progression"
+      },
+      "openDiscord": "Ouvrir le canal Discord"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérez vos informations personnelles et vos préférences",
+    "planChanged": "Votre changement de plan a été effectué avec succès !",
+    "planCancelled": "Le changement de plan a été annulé.",
+    "profile": {
+      "title": "Informations personnelles",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "timezone": "Fuseau horaire",
+      "timezonePlaceholder": "Choisir un fuseau horaire",
+      "timezoneHint": "Ce fuseau sera utilisé pour planifier vos disponibilités et envoyer les rappels.",
+      "saving": "Enregistrement...",
+      "save": "Enregistrer les modifications"
+    },
+    "subscription": {
+      "title": "Mon abonnement"
+    },
+    "stripe": {
+      "title": "Compte professionnel Stripe"
+    },
+    "discord": {
+      "title": "Connexion Discord",
+      "why": "Pourquoi connecter Discord ?",
+      "benefits": {
+        "channels": "Salons privés automatiques pour chaque élève",
+        "communication": "Communication directe avec vos élèves",
+        "history": "Historique des conversations conservé",
+        "voice": "Sessions vocales pour le coaching en direct"
+      },
+      "security": {
+        "title": "Sécurité et confidentialité",
+        "description": "Un seul compte Discord par coach. Vos données sont sécurisées et ne sont jamais partagées."
+      },
+      "viewServer": "Voir le serveur Discord Edgemy",
+      "hint": "Nécessaire pour créer automatiquement les salons Discord avec vos élèves"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "comingSoon": "Bientôt disponible 🚀"
+    },
+    "toast": {
+      "success": "Paramètres enregistrés",
+      "successDescription": "Vos paramètres ont été enregistrés avec succès !",
+      "error": "Erreur",
+      "errorDescription": "Une erreur est survenue lors de l'enregistrement de vos paramètres."
+    }
+  },
+  "revenue": {
+    "title": "Revenus & performance",
+    "subtitle": "Analysez vos gains, suivez vos réservations et anticipez vos prochains paiements.",
+    "noData": "Impossible d'afficher les revenus pour le moment.",
+    "stats": {
+      "totalRevenue": "Revenus total",
+      "thisMonth": "{amount} € générés ce mois-ci",
+      "hoursCoached": "Heures coachées",
+      "sessionsCompleted": "{count} sessions complétées",
+      "avgPerSession": "Revenu moyen / session",
+      "perHour": "{amount} € par heure de coaching",
+      "upcomingSessions": "Prochaines sessions",
+      "pendingRequests": "{count} demandes en attente"
+    },
+    "chart": {
+      "title": "Évolution mensuelle",
+      "subtitle": "Revenus encaissés sur les 6 derniers mois",
+      "legend": "Revenus encaissés",
+      "noData": "Aucune donnée disponible pour l'instant.",
+      "tooltipLabel": "Revenus"
+    },
+    "summary": {
+      "title": "Résumé financier",
+      "subtitle": "Vision claire de vos recettes et demandes",
+      "activeAnnouncements": "Annonces actives",
+      "pendingRequests": "Demandes en attente",
+      "upcomingSessions": "Sessions à venir"
+    },
+    "optimization": {
+      "title": "Optimisation",
+      "subtitle": "Recommandations pour augmenter vos revenus",
+      "tip1": "Relancez vos joueurs récurrents pour des packs + gains réguliers.",
+      "tip2": "Activez plus de créneaux pour augmenter vos chances de réservation.",
+      "tip3": "Créez une annonce pack pour fidéliser vos élèves."
+    },
+    "payouts": {
+      "title": "Versements & paiements",
+      "connectedSubtitle": "Vos versements automatiques",
+      "notConnectedSubtitle": "Paramétrez vos informations bancaires Stripe",
+      "connected": "Compte Stripe connecté",
+      "connectedDescription": "Vos gains sont automatiquement versés sur votre compte bancaire après validation de chaque session.",
+      "singlePayment": "Sessions individuelles : paiement immédiat après la session",
+      "packPayment": "Packs : paiement après la première session du pack",
+      "manageStripe": "Gérer mon compte Stripe",
+      "notConnected": "Compte Stripe",
+      "notConnectedDescription": "Finalisez la connexion pour recevoir vos futurs paiements.",
+      "configure": "Configurer mes versements",
+      "connectedHint": "Les versements sont traités automatiquement immédiatement après validation des sessions.",
+      "notConnectedHint": "Les versements sont traités automatiquement sous 7 jours ouvrés après validation des sessions."
+    }
+  },
+  "announcements": {
+    "title": "Mes Annonces",
+    "subtitle": "Créez et gérez vos offres de coaching",
+    "viewProfile": "Voir mon profil public",
+    "create": "Créer une annonce"
+  },
+  "agenda": {
+    "title": "Mon Agenda",
+    "subtitle": "Gérez vos disponibilités et visualisez vos sessions réservées",
+    "packSessions": {
+      "title": "Sessions de pack",
+      "description": "Planifiez une session pour un joueur ayant acheté un pack",
+      "schedule": "Planifier une session"
+    },
+    "upcomingSessions": {
+      "title": "Prochaines sessions",
+      "description": "La liste de vos prochaines sessions sera affichée ici."
+    }
+  },
+  "activate": {
+    "title": "Activer mon essai gratuit",
+    "subtitle": "Tu as reçu un code promo ? Active ton mois gratuit ici",
+    "codeLabel": "Code promo",
+    "codePlaceholder": "EDGEMY-FREE1MONTH",
+    "codeHint": "Entre le code que tu as reçu pour activer ton essai gratuit de 30 jours",
+    "emptyCode": "Veuillez entrer un code promo",
+    "activating": "Activation en cours...",
+    "activateButton": "Activer mon mois gratuit",
+    "success": "Votre essai gratuit de 30 jours a été activé avec succès !",
+    "benefits": {
+      "title": "Ce que tu obtiens avec l'essai gratuit :",
+      "fullAccess": "30 jours d'accès complet à toutes les fonctionnalités coach",
+      "unlimitedAnnouncements": "Création d'annonces illimitées",
+      "agendaManagement": "Gestion complète de ton agenda et disponibilités",
+      "stripeIntegration": "Intégration Stripe pour recevoir tes paiements",
+      "discordChannels": "Salons Discord automatiques avec tes élèves"
+    },
+    "note": "Le code promo est utilisable une seule fois par compte. Après 30 jours, tu pourras passer à un abonnement payant pour continuer à coacher."
+  },
+  "review": {
+    "pageTitle": "Partagez votre expérience avec {coachName}",
+    "pageSubtitle": "Votre avis aide d'autres joueurs à choisir le meilleur coach pour progresser",
+    "loading": "Chargement...",
+    "publishNote": "Votre avis sera publié sur la page publique de {coachName} après validation",
+    "thankYou": {
+      "title": "Merci pour votre avis !",
+      "message": "Votre avis sur <highlight>{coachName}</highlight> a été soumis avec succès.",
+      "validationNote": "Votre avis sera publié sur le profil de {coachName} après validation par notre équipe.",
+      "createAccount": {
+        "title": "Créez votre compte Edgemy",
+        "subtitle": "Rejoignez notre communauté pour profiter de tous les avantages :",
+        "benefit1Title": "Réservez des sessions en 1 clic",
+        "benefit1Desc": "Accédez au calendrier des coachs",
+        "benefit2Title": "Suivez vos réservations",
+        "benefit2Desc": "Historique et notifications",
+        "benefit3Title": "Discutez avec les coachs",
+        "benefit3Desc": "Discord et messagerie privée",
+        "benefit4Title": "Gérez vos avis",
+        "benefit4Desc": "Modifiez et suivez vos avis publiés"
+      },
+      "backToProfile": "Retour au profil",
+      "alreadyAccount": "Vous avez déjà un compte ?",
+      "signIn": "Se connecter",
+      "contactUs": "Des questions ? Contactez-nous sur"
+    }
+  },
+  "packs": {
+    "title": "Mes Packs",
+    "subtitle": "Gérez les packs d'heures achetés par vos élèves",
+    "stats": {
+      "total": "Total packs",
+      "active": "Packs actifs",
+      "completed": "Packs complétés"
+    },
+    "empty": {
+      "title": "Aucun pack acheté",
+      "description": "Les packs achetés par vos élèves apparaîtront ici"
+    },
+    "status": {
+      "active": "Actif",
+      "completed": "Complété"
+    },
+    "sessionStatus": {
+      "completed": "Complétée",
+      "scheduled": "Planifiée",
+      "cancelled": "Annulée"
+    },
+    "packTitle": "Pack {hours}h — {player}",
+    "player": "Joueur",
+    "sessions": "session",
+    "sessionsPlural": "sessions",
+    "completedSession": "complétée",
+    "completedSessionsPlural": "complétées",
+    "price": "Prix",
+    "progress": "Progression",
+    "hoursUsed": "{used}h / {total}h utilisées",
+    "hoursRemaining": "{hours}h restantes",
+    "sessionsTitle": "Sessions ({count})",
+    "firstSession": "1ère session",
+    "cancelConfirm": "Êtes-vous sûr de vouloir annuler cette session ? Les heures seront re-créditées au pack.",
+    "cancelSuccess": "Session annulée avec succès. Les heures ont été re-créditées.",
+    "cancelError": "Impossible d'annuler la session",
+    "scheduleSession": "Planifier une session ({hours}h restantes)",
+    "allHoursUsed": "Toutes les heures ont été utilisées"
+  },
   "discoverCoaches": {
     "hero": {
       "title": "Découvrez nos coachs poker d'exception",

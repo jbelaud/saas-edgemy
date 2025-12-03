@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from '@/lib/auth-client';
+import { useTranslations } from 'next-intl';
 import { GlassCard } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -31,6 +32,7 @@ const LANGUAGES = [
 export function PlayerSettingsForm() {
   const { data: session } = useSession();
   const { toast } = useToast();
+  const t = useTranslations('player.settings');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [playerId, setPlayerId] = useState<string | null>(null);
@@ -59,8 +61,8 @@ export function PlayerSettingsForm() {
       } catch (error) {
         console.error('Erreur:', error);
         toast({
-          title: "Erreur",
-          description: "Impossible de charger vos paramètres",
+          title: t('toast.error'),
+          description: t('toast.loadError'),
           variant: "destructive",
         });
       } finally {
@@ -71,7 +73,7 @@ export function PlayerSettingsForm() {
     if (session?.user) {
       fetchPlayerData();
     }
-  }, [session, toast]);
+  }, [session, toast, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,14 +98,14 @@ export function PlayerSettingsForm() {
       }
 
       toast({
-        title: "Paramètres sauvegardés",
-        description: "Vos paramètres ont été mis à jour avec succès",
+        title: t('toast.saveSuccess'),
+        description: t('toast.saveSuccessDescription'),
       });
     } catch (error) {
       console.error('Erreur:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de sauvegarder vos paramètres",
+        title: t('toast.error'),
+        description: t('toast.saveError'),
         variant: "destructive",
       });
     } finally {
@@ -129,19 +131,19 @@ export function PlayerSettingsForm() {
               <User className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Informations personnelles</h2>
-              <p className="text-sm text-gray-400">Mets à jour tes informations de profil</p>
+              <h2 className="text-xl font-bold text-white">{t('profile.title')}</h2>
+              <p className="text-sm text-gray-400">{t('profile.subtitle')}</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
           {/* Prénom */}
           <div className="space-y-2">
-            <Label htmlFor="firstName">Prénom</Label>
+            <Label htmlFor="firstName">{t('profile.firstName')}</Label>
             <Input
               id="firstName"
               type="text"
-              placeholder="Jean"
+              placeholder={t('profile.firstNamePlaceholder')}
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
@@ -150,11 +152,11 @@ export function PlayerSettingsForm() {
 
           {/* Nom */}
           <div className="space-y-2">
-            <Label htmlFor="lastName">Nom</Label>
+            <Label htmlFor="lastName">{t('profile.lastName')}</Label>
             <Input
               id="lastName"
               type="text"
-              placeholder="Dupont"
+              placeholder={t('profile.lastNamePlaceholder')}
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
@@ -163,10 +165,10 @@ export function PlayerSettingsForm() {
 
           {/* Fuseau horaire */}
           <div className="space-y-2">
-            <Label htmlFor="timezone">Fuseau horaire</Label>
+            <Label htmlFor="timezone">{t('profile.timezone')}</Label>
             <Select value={timezone} onValueChange={setTimezone}>
               <SelectTrigger id="timezone">
-                <SelectValue placeholder="Sélectionner un fuseau horaire" />
+                <SelectValue placeholder={t('profile.timezonePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {TIMEZONES.map((tz) => (
@@ -177,16 +179,16 @@ export function PlayerSettingsForm() {
               </SelectContent>
             </Select>
             <p className="text-sm text-gray-500">
-              Utilisé pour planifier tes sessions de coaching
+              {t('profile.timezoneHint')}
             </p>
           </div>
 
           {/* Langue préférée */}
           <div className="space-y-2">
-            <Label htmlFor="language">Langue préférée</Label>
+            <Label htmlFor="language">{t('profile.language')}</Label>
             <Select value={language} onValueChange={setLanguage}>
               <SelectTrigger id="language">
-                <SelectValue placeholder="Sélectionner une langue" />
+                <SelectValue placeholder={t('profile.languagePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {LANGUAGES.map((lang) => (
@@ -197,7 +199,7 @@ export function PlayerSettingsForm() {
               </SelectContent>
             </Select>
             <p className="text-sm text-gray-500">
-              Langue de l&apos;interface (à venir)
+              {t('profile.languageHint')}
             </p>
           </div>
 
@@ -211,12 +213,12 @@ export function PlayerSettingsForm() {
                 {isSaving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enregistrement...
+                    {t('profile.saving')}
                   </>
                 ) : (
                   <>
                     <Save className="mr-2 h-4 w-4" />
-                    Enregistrer
+                    {t('profile.save')}
                   </>
                 )}
               </Button>
@@ -239,29 +241,29 @@ export function PlayerSettingsForm() {
               </svg>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Connexion Discord</h2>
-              <p className="text-sm text-gray-400">Connecte ton compte Discord pour accéder aux salons de tes sessions</p>
+              <h2 className="text-xl font-bold text-white">{t('discord.title')}</h2>
+              <p className="text-sm text-gray-400">{t('discord.subtitle')}</p>
             </div>
           </div>
 
           <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 mb-6">
-            <h3 className="text-sm font-semibold text-white mb-3">Avantages de la connexion Discord</h3>
+            <h3 className="text-sm font-semibold text-white mb-3">{t('discord.benefits.title')}</h3>
             <ul className="space-y-2 text-sm text-gray-300">
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">✓</span>
-                <span>Accès direct aux salons privés de tes sessions de coaching</span>
+                <span>{t('discord.benefits.access')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">✓</span>
-                <span>Communication vocale et écrite avec ton coach</span>
+                <span>{t('discord.benefits.communication')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">✓</span>
-                <span>Historique des conversations sauvegardé</span>
+                <span>{t('discord.benefits.history')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">✓</span>
-                <span>Notifications en temps réel pour tes sessions</span>
+                <span>{t('discord.benefits.notifications')}</span>
               </li>
             </ul>
           </div>
@@ -270,9 +272,9 @@ export function PlayerSettingsForm() {
             <div className="flex items-start gap-3">
               <Shield className="h-5 w-5 text-orange-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-sm font-semibold text-orange-300 mb-1">Sécurité et confidentialité</h4>
+                <h4 className="text-sm font-semibold text-orange-300 mb-1">{t('discord.security.title')}</h4>
                 <p className="text-xs text-orange-200/80">
-                  Un seul compte Edgemy peut être lié à un compte Discord. Ton ID Discord est stocké de manière sécurisée et n&apos;est utilisé que pour créer tes salons de session privés.
+                  {t('discord.security.description')}
                 </p>
               </div>
             </div>
@@ -300,11 +302,11 @@ export function PlayerSettingsForm() {
                   >
                     <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z" />
                   </svg>
-                  Rejoindre le serveur Edgemy
+                  {t('discord.joinServer')}
                 </Button>
               </a>
               <p className="text-xs text-gray-500 mt-2 text-center">
-                Nécessaire pour accéder aux salons de tes sessions
+                {t('discord.joinServerHint')}
               </p>
             </div>
           </div>
@@ -319,12 +321,12 @@ export function PlayerSettingsForm() {
               <Bell className="h-5 w-5 text-purple-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Notifications</h2>
-              <p className="text-sm text-gray-400">Gère tes préférences de notifications</p>
+              <h2 className="text-xl font-bold text-white">{t('notifications.title')}</h2>
+              <p className="text-sm text-gray-400">{t('notifications.subtitle')}</p>
             </div>
           </div>
           <div className="text-center py-8">
-            <p className="text-gray-400 text-sm">Bientôt disponible 🚀</p>
+            <p className="text-gray-400 text-sm">{t('notifications.comingSoon')}</p>
           </div>
         </div>
       </GlassCard>

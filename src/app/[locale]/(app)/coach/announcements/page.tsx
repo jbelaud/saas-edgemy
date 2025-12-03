@@ -4,6 +4,7 @@ import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { DashboardAnnouncements } from '@/components/coach/dashboard/DashboardAnnouncements';
 import { CreateAnnouncementModalV2 } from '@/components/coach/announcements/CreateAnnouncementModalV2';
 import { useSession } from '@/lib/auth-client';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Loader2, Plus, Eye, Megaphone } from 'lucide-react';
@@ -14,6 +15,7 @@ import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate'
 
 export default function CoachAnnouncementsPage() {
   const { data: session, isPending } = useSession();
+  const t = useTranslations('coach.announcements');
   const params = useParams();
   const locale = params.locale as string;
   const [coach, setCoach] = useState<{
@@ -107,10 +109,10 @@ export default function CoachAnnouncementsPage() {
         <div>
           <GradientText variant="emerald" className="text-4xl font-bold mb-2 flex items-center gap-3">
             <Megaphone className="w-10 h-10" />
-            Mes Annonces
+            {t('title')}
           </GradientText>
           <p className="text-gray-400 text-lg">
-            Créez et gérez vos offres de coaching
+            {t('subtitle')}
           </p>
         </div>
         {hasActiveSubscription && (
@@ -120,14 +122,14 @@ export default function CoachAnnouncementsPage() {
               className="px-6 py-3 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
             >
               <Eye className="w-5 h-5" />
-              Voir mon profil public
+              {t('viewProfile')}
             </button>
             <button
               onClick={handleCreateAnnouncement}
               className="px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
             >
               <Plus className="w-5 h-5" />
-              Créer une annonce
+              {t('create')}
             </button>
           </div>
         )}

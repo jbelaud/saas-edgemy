@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
+import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { GlassCard, GradientText } from '@/components/ui';
@@ -14,6 +15,7 @@ export default function ActivateFreeTrial() {
   const router = useRouter();
   const params = useParams();
   const locale = (params?.locale as string) || 'fr';
+  const t = useTranslations('coach.activate');
   const { data: session, isPending } = useSession();
 
   const [code, setCode] = useState('');
@@ -24,7 +26,7 @@ export default function ActivateFreeTrial() {
     e.preventDefault();
 
     if (!code.trim()) {
-      setMessage({ type: 'error', text: 'Veuillez entrer un code promo' });
+      setMessage({ type: 'error', text: t('emptyCode') });
       return;
     }
 
@@ -46,7 +48,7 @@ export default function ActivateFreeTrial() {
 
       setMessage({
         type: 'success',
-        text: 'Votre essai gratuit de 30 jours a été activé avec succès !'
+        text: t('success')
       });
 
       // Rediriger vers le dashboard après 2 secondes
@@ -87,10 +89,10 @@ export default function ActivateFreeTrial() {
             <Gift className="w-8 h-8 text-white" />
           </div>
           <GradientText className="text-4xl font-bold mb-3" variant="emerald">
-            Activer mon essai gratuit
+            {t('title')}
           </GradientText>
           <p className="text-gray-400 text-lg">
-            Tu as reçu un code promo ? Active ton mois gratuit ici
+            {t('subtitle')}
           </p>
         </div>
 
@@ -98,19 +100,19 @@ export default function ActivateFreeTrial() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="code" className="block text-sm font-medium text-white mb-2">
-                Code promo
+                {t('codeLabel')}
               </label>
               <Input
                 id="code"
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="EDGEMY-FREE1MONTH"
+                placeholder={t('codePlaceholder')}
                 className="text-center text-lg font-semibold tracking-wider uppercase"
                 disabled={isLoading}
               />
               <p className="text-xs text-gray-500 mt-2">
-                Entre le code que tu as reçu pour activer ton essai gratuit de 30 jours
+                {t('codeHint')}
               </p>
             </div>
 
@@ -143,12 +145,12 @@ export default function ActivateFreeTrial() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Activation en cours...
+                  {t('activating')}
                 </>
               ) : (
                 <>
                   <Gift className="mr-2 h-5 w-5" />
-                  Activer mon mois gratuit
+                  {t('activateButton')}
                 </>
               )}
             </Button>
@@ -156,36 +158,35 @@ export default function ActivateFreeTrial() {
 
           <div className="mt-8 pt-6 border-t border-white/10">
             <h3 className="text-sm font-semibold text-white mb-3">
-              Ce que tu obtiens avec l&apos;essai gratuit :
+              {t('benefits.title')}
             </h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>30 jours d&apos;accès complet à toutes les fonctionnalités coach</span>
+                <span>{t('benefits.fullAccess')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>Création d&apos;annonces illimitées</span>
+                <span>{t('benefits.unlimitedAnnouncements')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>Gestion complète de ton agenda et disponibilités</span>
+                <span>{t('benefits.agendaManagement')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>Intégration Stripe pour recevoir tes paiements</span>
+                <span>{t('benefits.stripeIntegration')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>Salons Discord automatiques avec tes élèves</span>
+                <span>{t('benefits.discordChannels')}</span>
               </li>
             </ul>
           </div>
 
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
             <p className="text-xs text-blue-300">
-              💡 <strong>Note :</strong> Le code promo est utilisable une seule fois par compte.
-              Après 30 jours, tu pourras passer à un abonnement payant pour continuer à coacher.
+              💡 <strong>Note :</strong> {t('note')}
             </p>
           </div>
         </GlassCard>

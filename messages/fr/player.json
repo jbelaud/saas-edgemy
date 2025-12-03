@@ -1,4 +1,121 @@
 {
+  "sidebar": {
+    "dashboard": "Tableau de bord",
+    "findCoach": "Trouver un coach",
+    "mySessions": "Mes sessions",
+    "myCoaches": "Mes coachs",
+    "myGoals": "Mes objectifs",
+    "workgroup": "Groupe de travail",
+    "bankroll": "Bankroll",
+    "settings": "Paramètres",
+    "user": "Utilisateur",
+    "switchToCoach": "Basculer en mode Coach",
+    "logout": "Déconnexion"
+  },
+  "dashboard": {
+    "greeting": {
+      "hello": "Salut",
+      "ready": "Prêt à progresser aujourd'hui ?",
+      "defaultName": "Joueur"
+    },
+    "error": {
+      "title": "Erreur",
+      "loadingError": "Erreur lors du chargement du dashboard"
+    },
+    "stats": {
+      "coachedHours": "Heures coachées",
+      "sessionsCompleted": "{count} session complétée",
+      "sessionsCompletedPlural": "{count} sessions complétées",
+      "coachesFollowed": "Coachs suivis",
+      "noCoach": "Aucun coach pour le moment",
+      "coachActive": "Coach actif",
+      "coachesActive": "Coachs actifs",
+      "scheduledSessions": "Sessions planifiées",
+      "upcoming": "À venir"
+    },
+    "cta": {
+      "findFirstCoach": "Trouve ton premier coach",
+      "findNextCoach": "Trouve ton prochain coach",
+      "descriptionFirst": "Explore notre sélection de coachs professionnels et réserve ta première session de coaching.",
+      "descriptionNext": "Continue ton apprentissage avec de nouveaux coachs ou réserve une nouvelle session.",
+      "exploreCoaches": "Explorer les coachs"
+    },
+    "progress": {
+      "title": "Ton suivi de progression",
+      "subtitle": "Visualise ton évolution et tes statistiques de coaching",
+      "comingSoon": "Bientôt disponible 🚀",
+      "description": "Ton suivi de progression personnalisé arrivera prochainement"
+    }
+  },
+  "sessions": {
+    "title": "Mes Sessions",
+    "subtitle": "Consultez vos sessions de coaching réservées",
+    "timezone": "Les horaires sont affichés dans votre fuseau horaire",
+    "upcoming": {
+      "title": "Prochaines sessions",
+      "empty": "Aucune session à venir",
+      "emptyHint": "Explorez les coachs disponibles pour réserver une session"
+    },
+    "past": {
+      "title": "Sessions passées"
+    },
+    "status": {
+      "confirmed": "Confirmée",
+      "pending": "En attente"
+    },
+    "with": "avec",
+    "pack": "Pack",
+    "packRemaining": "Pack: {remaining}h restantes / {total}h"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Gère les paramètres de ton profil",
+    "profile": {
+      "title": "Informations personnelles",
+      "subtitle": "Mets à jour tes informations de profil",
+      "firstName": "Prénom",
+      "firstNamePlaceholder": "Jean",
+      "lastName": "Nom",
+      "lastNamePlaceholder": "Dupont",
+      "timezone": "Fuseau horaire",
+      "timezonePlaceholder": "Sélectionner un fuseau horaire",
+      "timezoneHint": "Utilisé pour planifier tes sessions de coaching",
+      "language": "Langue préférée",
+      "languagePlaceholder": "Sélectionner une langue",
+      "languageHint": "Langue de l'interface (à venir)",
+      "save": "Enregistrer",
+      "saving": "Enregistrement..."
+    },
+    "discord": {
+      "title": "Connexion Discord",
+      "subtitle": "Connecte ton compte Discord pour accéder aux salons de tes sessions",
+      "benefits": {
+        "title": "Avantages de la connexion Discord",
+        "access": "Accès direct aux salons privés de tes sessions de coaching",
+        "communication": "Communication vocale et écrite avec ton coach",
+        "history": "Historique des conversations sauvegardé",
+        "notifications": "Notifications en temps réel pour tes sessions"
+      },
+      "security": {
+        "title": "Sécurité et confidentialité",
+        "description": "Un seul compte Edgemy peut être lié à un compte Discord. Ton ID Discord est stocké de manière sécurisée et n'est utilisé que pour créer tes salons de session privés."
+      },
+      "joinServer": "Rejoindre le serveur Edgemy",
+      "joinServerHint": "Nécessaire pour accéder aux salons de tes sessions"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Gère tes préférences de notifications",
+      "comingSoon": "Bientôt disponible 🚀"
+    },
+    "toast": {
+      "loadError": "Impossible de charger vos paramètres",
+      "saveSuccess": "Paramètres sauvegardés",
+      "saveSuccessDescription": "Vos paramètres ont été mis à jour avec succès",
+      "saveError": "Impossible de sauvegarder vos paramètres",
+      "error": "Erreur"
+    }
+  },
   "coaches": {
     "loading": {
       "title": "Chargement de tes coachs",

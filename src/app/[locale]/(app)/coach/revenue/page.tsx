@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
+import { useTranslations } from 'next-intl';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { GlassCard, GradientText } from '@/components/ui';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ export default function CoachRevenuePage() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const t = useTranslations('coach.revenue');
   const { data: session, isPending } = useSession();
 
   const [dashboardData, setDashboardData] = useState<CoachDashboardResponse | null>(null);
@@ -101,7 +103,7 @@ export default function CoachRevenuePage() {
     return (
       <CoachLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <p className="text-gray-400">Impossible d&apos;afficher les revenus pour le moment.</p>
+          <p className="text-gray-400">{t('noData')}</p>
         </div>
       </CoachLayout>
     );
@@ -116,11 +118,11 @@ export default function CoachRevenuePage() {
               <Euro className="h-6 w-6 text-emerald-300" />
             </div>
             <GradientText className="text-3xl font-semibold" variant="emerald">
-              Revenus & performance
+              {t('title')}
             </GradientText>
           </div>
           <p className="text-gray-300 max-w-2xl">
-            Analysez vos gains, suivez vos réservations et anticipez vos prochains paiements.
+            {t('subtitle')}
           </p>
         </header>
 
@@ -129,46 +131,46 @@ export default function CoachRevenuePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <GlassCard className="p-6 border-emerald-500/20">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-gray-400">Revenus total</p>
+              <p className="text-sm text-gray-400">{t('stats.totalRevenue')}</p>
               <TrendingUp className="h-5 w-5 text-emerald-300" />
             </div>
             <p className="text-3xl font-semibold text-white">{stats.totalRevenue.toFixed(2)} €</p>
             <p className="text-xs text-emerald-300/80 mt-2 flex items-center gap-1">
               <ArrowUpRight className="h-4 w-4" />
-              {stats.monthlyRevenue.toFixed(2)} € générés ce mois-ci
+              {t('stats.thisMonth', { amount: stats.monthlyRevenue.toFixed(2) })}
             </p>
           </GlassCard>
 
           <GlassCard className="p-6 border-blue-500/20">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-gray-400">Heures coachées</p>
+              <p className="text-sm text-gray-400">{t('stats.hoursCoached')}</p>
               <Clock className="h-5 w-5 text-blue-300" />
             </div>
             <p className="text-3xl font-semibold text-white">{stats.totalHours.toFixed(1)} h</p>
             <p className="text-xs text-blue-300/80 mt-2">
-              {stats.totalReservations} sessions complétées
+              {t('stats.sessionsCompleted', { count: stats.totalReservations })}
             </p>
           </GlassCard>
 
           <GlassCard className="p-6 border-amber-500/20">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-gray-400">Revenu moyen / session</p>
+              <p className="text-sm text-gray-400">{t('stats.avgPerSession')}</p>
               <Wallet className="h-5 w-5 text-amber-300" />
             </div>
             <p className="text-3xl font-semibold text-white">{averageOrderValue.toFixed(2)} €</p>
             <p className="text-xs text-amber-300/80 mt-2">
-              {revenuePerHour.toFixed(2)} € par heure de coaching
+              {t('stats.perHour', { amount: revenuePerHour.toFixed(2) })}
             </p>
           </GlassCard>
 
           <GlassCard className="p-6 border-purple-500/20">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-gray-400">Prochaines sessions</p>
+              <p className="text-sm text-gray-400">{t('stats.upcomingSessions')}</p>
               <Calendar className="h-5 w-5 text-purple-300" />
             </div>
             <p className="text-3xl font-semibold text-white">{stats.upcomingReservations}</p>
             <p className="text-xs text-purple-300/80 mt-2">
-              {stats.pendingReservations} demandes en attente
+              {t('stats.pendingRequests', { count: stats.pendingReservations })}
             </p>
           </GlassCard>
         </div>
@@ -177,13 +179,13 @@ export default function CoachRevenuePage() {
         <GlassCard className="p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-white">Évolution mensuelle</h3>
-              <p className="text-sm text-gray-400">Revenus encaissés sur les 6 derniers mois</p>
+              <h3 className="text-lg font-semibold text-white">{t('chart.title')}</h3>
+              <p className="text-sm text-gray-400">{t('chart.subtitle')}</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 text-sm text-gray-300">
                 <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                Revenus encaissés
+                {t('chart.legend')}
               </div>
             </div>
           </div>
@@ -201,7 +203,7 @@ export default function CoachRevenuePage() {
                   <XAxis dataKey="month" stroke="#9ca3af" tick={{ fontSize: 12 }} />
                   <YAxis stroke="#9ca3af" tickFormatter={(value) => `${value}€`} tick={{ fontSize: 12 }} />
                   <Tooltip
-                    formatter={(value: number) => [`${value.toFixed(2)} €`, 'Revenus']}
+                    formatter={(value: number) => [`${value.toFixed(2)} €`, t('chart.tooltipLabel')]}
                     contentStyle={{
                       backgroundColor: 'rgba(15, 23, 42, 0.95)',
                       borderRadius: '12px',
@@ -222,7 +224,7 @@ export default function CoachRevenuePage() {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
-                Aucune donnée disponible pour l’instant.
+                {t('chart.noData')}
               </div>
             )}
           </div>
@@ -236,21 +238,21 @@ export default function CoachRevenuePage() {
                 <Banknote className="h-5 w-5 text-emerald-300" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Résumé financier</h3>
-                <p className="text-sm text-gray-400">Vision claire de vos recettes et demandes</p>
+                <h3 className="text-lg font-semibold text-white">{t('summary.title')}</h3>
+                <p className="text-sm text-gray-400">{t('summary.subtitle')}</p>
               </div>
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
-                <span className="text-gray-300">Annonces actives</span>
+                <span className="text-gray-300">{t('summary.activeAnnouncements')}</span>
                 <span className="text-white font-semibold">{stats.activeAnnouncements}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
-                <span className="text-gray-300">Demandes en attente</span>
+                <span className="text-gray-300">{t('summary.pendingRequests')}</span>
                 <span className="text-amber-300 font-semibold">{stats.pendingReservations}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
-                <span className="text-gray-300">Sessions à venir</span>
+                <span className="text-gray-300">{t('summary.upcomingSessions')}</span>
                 <span className="text-emerald-300 font-semibold">{stats.upcomingReservations}</span>
               </div>
             </div>
@@ -262,22 +264,22 @@ export default function CoachRevenuePage() {
                 <BarChart3 className="h-5 w-5 text-blue-300" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Optimisation</h3>
-                <p className="text-sm text-gray-400">Recommandations pour augmenter vos revenus</p>
+                <h3 className="text-lg font-semibold text-white">{t('optimization.title')}</h3>
+                <p className="text-sm text-gray-400">{t('optimization.subtitle')}</p>
               </div>
             </div>
             <ul className="space-y-3 text-sm text-gray-300">
               <li className="flex items-start gap-2">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Relancez vos joueurs récurrents pour des packs + gains réguliers.
+                {t('optimization.tip1')}
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-400" />
-                Activez plus de créneaux pour augmenter vos chances de réservation.
+                {t('optimization.tip2')}
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-400" />
-                Créez une annonce pack pour fidéliser vos élèves.
+                {t('optimization.tip3')}
               </li>
             </ul>
           </GlassCard>
@@ -288,9 +290,9 @@ export default function CoachRevenuePage() {
                 <Wallet className="h-5 w-5 text-purple-300" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Versements & paiements</h3>
+                <h3 className="text-lg font-semibold text-white">{t('payouts.title')}</h3>
                 <p className="text-sm text-gray-400">
-                  {isStripeConnected ? 'Vos versements automatiques' : 'Paramétrez vos informations bancaires Stripe'}
+                  {isStripeConnected ? t('payouts.connectedSubtitle') : t('payouts.notConnectedSubtitle')}
                 </p>
               </div>
             </div>
@@ -300,19 +302,19 @@ export default function CoachRevenuePage() {
                   <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                     <p className="text-white font-medium flex items-center gap-2">
                       <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                      Compte Stripe connecté
+                      {t('payouts.connected')}
                     </p>
                     <p className="text-xs text-gray-300 mt-2">
-                      Vos gains sont automatiquement versés sur votre compte bancaire après validation de chaque session.
+                      {t('payouts.connectedDescription')}
                     </p>
                     <ul className="mt-3 space-y-1 text-xs text-gray-400">
                       <li className="flex items-start gap-2">
                         <span className="mt-1">•</span>
-                        <span>Sessions individuelles : paiement immédiat après la session</span>
+                        <span>{t('payouts.singlePayment')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="mt-1">•</span>
-                        <span>Packs : paiement après la première session du pack</span>
+                        <span>{t('payouts.packPayment')}</span>
                       </li>
                     </ul>
                     <Button
@@ -320,29 +322,29 @@ export default function CoachRevenuePage() {
                       className="mt-4 w-full border-emerald-500/70 bg-emerald-950/60 text-emerald-100 hover:bg-emerald-800/70 hover:border-emerald-400 hover:text-white"
                       onClick={() => router.push(`/${locale}/coach/settings?tab=payouts`)}
                     >
-                      Gérer mon compte Stripe
+                      {t('payouts.manageStripe')}
                     </Button>
                   </div>
                 </>
               ) : (
                 <div className="p-4 bg-white/5 border border-purple-500/20 rounded-lg">
-                  <p className="text-white font-medium">Compte Stripe</p>
+                  <p className="text-white font-medium">{t('payouts.notConnected')}</p>
                   <p className="text-xs text-gray-400 mt-1">
-                    Finalisez la connexion pour recevoir vos futurs paiements.
+                    {t('payouts.notConnectedDescription')}
                   </p>
                   <Button
                     variant="outline"
                     className="mt-4 w-full border-purple-500/70 bg-purple-950/60 text-purple-100 hover:bg-purple-800/70 hover:border-purple-400 hover:text-white"
                     onClick={() => router.push(`/${locale}/coach/settings?tab=payouts`)}
                   >
-                    Configurer mes versements
+                    {t('payouts.configure')}
                   </Button>
                 </div>
               )}
               <p className="text-xs text-gray-500">
                 {isStripeConnected
-                  ? 'Les versements sont traités automatiquement immédiatement après validation des sessions.'
-                  : 'Les versements sont traités automatiquement sous 7 jours ouvrés après validation des sessions.'
+                  ? t('payouts.connectedHint')
+                  : t('payouts.notConnectedHint')
                 }
               </p>
             </div>

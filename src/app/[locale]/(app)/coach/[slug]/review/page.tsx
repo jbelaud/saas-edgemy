@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/prisma';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
@@ -59,6 +59,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function CoachReviewPage({ params }: PageProps) {
   const { slug, locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations('coach.review');
 
   const coach = await getCoach(slug);
 
@@ -88,22 +89,22 @@ export default async function CoachReviewPage({ params }: PageProps) {
               )}
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-              Partagez votre expérience avec {coachName}
+              {t('pageTitle', { coachName })}
             </h1>
             <p className="text-slate-300 text-lg">
-              Votre avis aide d&apos;autres joueurs à choisir le meilleur coach pour progresser
+              {t('pageSubtitle')}
             </p>
           </div>
 
           {/* Formulaire d'avis */}
-          <Suspense fallback={<div className="text-center text-slate-400">Chargement...</div>}>
+          <Suspense fallback={<div className="text-center text-slate-400">{t('loading')}</div>}>
             <ReviewForm coachId={coach.id} coachName={coachName} locale={locale} />
           </Suspense>
 
           {/* Note SEO/UGC */}
           <div className="mt-8 p-4 bg-blue-500/10 border border-blue-400/30 rounded-lg">
             <p className="text-sm text-blue-200 text-center">
-              ✨ Votre avis sera publié sur la page publique de {coachName} après validation
+              ✨ {t('publishNote', { coachName })}
             </p>
           </div>
         </div>

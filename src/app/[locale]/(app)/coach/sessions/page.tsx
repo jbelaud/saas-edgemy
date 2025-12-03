@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from '@/lib/auth-client';
+import { useTranslations, useLocale } from 'next-intl';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { GlassCard, GradientText, Modal } from '@/components/ui';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS } from 'date-fns/locale';
 import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
 import {
   Select,
@@ -94,6 +95,9 @@ interface ApiResponse {
 
 export default function CoachSessionsPage() {
   const { data: session, isPending } = useSession();
+  const t = useTranslations('coach.sessions');
+  const locale = useLocale();
+  const dateLocale = locale === 'fr' ? fr : enUS;
   const [data, setData] = useState<ApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
@@ -151,32 +155,32 @@ export default function CoachSessionsPage() {
     setIsDetailModalOpen(true);
   };
 
-  const getStatusBadge = (session: Session) => {
-    const isPast = new Date(session.endDate) <= new Date();
+  const getStatusBadge = (sessionItem: Session) => {
+    const isPast = new Date(sessionItem.endDate) <= new Date();
 
-    if (session.status === 'COMPLETED') {
+    if (sessionItem.status === 'COMPLETED') {
       return (
         <Badge className="bg-green-500/20 text-green-300 border-green-500/40">
           <CheckCircle className="h-3 w-3 mr-1" />
-          Complétée
+          {t('status.completed')}
         </Badge>
       );
     }
 
-    if (isPast && session.status === 'CONFIRMED') {
+    if (isPast && sessionItem.status === 'CONFIRMED') {
       return (
         <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40">
           <CheckCircle className="h-3 w-3 mr-1" />
-          Terminée
+          {t('status.finished')}
         </Badge>
       );
     }
 
-    if (session.type === 'package_session' && session.status === 'SCHEDULED') {
+    if (sessionItem.type === 'package_session' && sessionItem.status === 'SCHEDULED') {
       return (
         <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/40">
           <Clock className="h-3 w-3 mr-1" />
-          Planifiée
+          {t('status.scheduled')}
         </Badge>
       );
     }
@@ -184,41 +188,41 @@ export default function CoachSessionsPage() {
     return (
       <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40">
         <Clock className="h-3 w-3 mr-1" />
-        À venir
+        {t('status.upcoming')}
       </Badge>
     );
   };
 
-  const getPaymentBadge = (session: Session) => {
+  const getPaymentBadge = (sessionItem: Session) => {
     const now = new Date();
-    const sessionEnd = new Date(session.endDate);
+    const sessionEnd = new Date(sessionItem.endDate);
     const isUpcoming = sessionEnd > now;
 
     // Session future payée = "Confirmée" (le joueur a payé, session garantie)
-    if (isUpcoming && (session.paymentStatus === 'PAID' || session.paymentStatus === 'EXTERNAL_PAID')) {
+    if (isUpcoming && (sessionItem.paymentStatus === 'PAID' || sessionItem.paymentStatus === 'EXTERNAL_PAID')) {
       return (
         <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
           <CreditCard className="h-3 w-3 mr-1" />
-          Confirmée
+          {t('status.confirmed')}
         </Badge>
       );
     }
 
     // Session passée payée = "Payé" (le coach a été/sera payé)
-    if (!isUpcoming && session.paymentStatus === 'PAID') {
+    if (!isUpcoming && sessionItem.paymentStatus === 'PAID') {
       return (
         <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
           <CreditCard className="h-3 w-3 mr-1" />
-          Payé
+          {t('status.paid')}
         </Badge>
       );
     }
 
-    if (!isUpcoming && session.paymentStatus === 'EXTERNAL_PAID') {
+    if (!isUpcoming && sessionItem.paymentStatus === 'EXTERNAL_PAID') {
       return (
         <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/30">
           <CreditCard className="h-3 w-3 mr-1" />
-          Payé (externe)
+          {t('status.paidExternal')}
         </Badge>
       );
     }
@@ -296,10 +300,10 @@ export default function CoachSessionsPage() {
         {/* Header */}
         <div className="mb-8">
           <GradientText className="text-4xl font-bold mb-2">
-            Mes Sessions
+            {t('title')}
           </GradientText>
           <p className="text-gray-400">
-            Gérez toutes vos sessions passées et à venir
+            {t('subtitle')}
           </p>
         </div>
 
@@ -312,7 +316,7 @@ export default function CoachSessionsPage() {
                   <Calendar className="h-6 w-6 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Total sessions</p>
+                  <p className="text-sm text-gray-400">{t('stats.total')}</p>
                   <p className="text-2xl font-bold text-white">{filteredStats.total}</p>
                 </div>
               </div>
@@ -324,7 +328,7 @@ export default function CoachSessionsPage() {
                   <Clock className="h-6 w-6 text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">À venir</p>
+                  <p className="text-sm text-gray-400">{t('stats.upcoming')}</p>
                   <p className="text-2xl font-bold text-white">{filteredStats.upcoming}</p>
                 </div>
               </div>
@@ -336,7 +340,7 @@ export default function CoachSessionsPage() {
                   <CheckCircle className="h-6 w-6 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Complétées</p>
+                  <p className="text-sm text-gray-400">{t('stats.completed')}</p>
                   <p className="text-2xl font-bold text-white">{filteredStats.past}</p>
                 </div>
               </div>
@@ -348,46 +352,46 @@ export default function CoachSessionsPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2">
                 <Filter className="h-5 w-5 text-purple-400" />
-                <h3 className="text-lg font-bold text-white">Filtres</h3>
+                <h3 className="text-lg font-bold text-white">{t('filters.title')}</h3>
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Période</label>
+                <label className="text-sm text-gray-400">{t('filters.period')}</label>
                 <Select value={periodFilter} onValueChange={(value) => setPeriodFilter(value as 'all' | 'week' | 'month' | 'year')}>
                   <SelectTrigger className="text-white w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Toutes les périodes</SelectItem>
-                    <SelectItem value="week">Cette semaine</SelectItem>
-                    <SelectItem value="month">Ce mois</SelectItem>
-                    <SelectItem value="year">Cette année</SelectItem>
+                    <SelectItem value="all">{t('filters.allPeriods')}</SelectItem>
+                    <SelectItem value="week">{t('filters.thisWeek')}</SelectItem>
+                    <SelectItem value="month">{t('filters.thisMonth')}</SelectItem>
+                    <SelectItem value="year">{t('filters.thisYear')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Statut</label>
+                <label className="text-sm text-gray-400">{t('filters.status')}</label>
                 <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as 'all' | 'upcoming' | 'past')}>
                   <SelectTrigger className="text-white w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Toutes</SelectItem>
-                    <SelectItem value="upcoming">À venir</SelectItem>
-                    <SelectItem value="past">Passées</SelectItem>
+                    <SelectItem value="all">{t('filters.all')}</SelectItem>
+                    <SelectItem value="upcoming">{t('filters.upcomingOnly')}</SelectItem>
+                    <SelectItem value="past">{t('filters.pastOnly')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Élève</label>
+                <label className="text-sm text-gray-400">{t('filters.student')}</label>
                 <Select value={studentFilter} onValueChange={setStudentFilter}>
                   <SelectTrigger className="text-white w-[200px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les élèves</SelectItem>
+                    <SelectItem value="all">{t('filters.allStudents')}</SelectItem>
                     {data?.students.map((student) => (
                       <SelectItem key={student.id} value={student.id}>
                         {student.name || student.email}
@@ -398,15 +402,15 @@ export default function CoachSessionsPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Type</label>
+                <label className="text-sm text-gray-400">{t('filters.type')}</label>
                 <Select value={sessionTypeFilter} onValueChange={(value) => setSessionTypeFilter(value as 'all' | 'single' | 'pack')}>
                   <SelectTrigger className="text-white w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    <SelectItem value="single">Session unique</SelectItem>
-                    <SelectItem value="pack">Pack</SelectItem>
+                    <SelectItem value="all">{t('filters.allTypes')}</SelectItem>
+                    <SelectItem value="single">{t('filters.singleSession')}</SelectItem>
+                    <SelectItem value="pack">{t('filters.pack')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -417,9 +421,9 @@ export default function CoachSessionsPage() {
           {displayedSessions.length === 0 ? (
             <GlassCard className="p-12 text-center">
               <Calendar className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-              <p className="text-lg font-medium text-white mb-2">Aucune session</p>
+              <p className="text-lg font-medium text-white mb-2">{t('empty.title')}</p>
               <p className="text-gray-400">
-                Aucune session ne correspond aux filtres sélectionnés
+                {t('empty.description')}
               </p>
             </GlassCard>
           ) : (
@@ -448,7 +452,7 @@ export default function CoachSessionsPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <p className="font-semibold text-white">
-                              {session.player.name || 'Joueur'}
+                              {session.player.name || t('player')}
                             </p>
                             {getStatusBadge(session)}
                             {getPaymentBadge(session)}
@@ -467,14 +471,14 @@ export default function CoachSessionsPage() {
                           <div className="flex items-center gap-4 text-xs text-gray-400 flex-wrap">
                             <div className="flex items-center gap-1">
                               <CalendarIcon className="h-3 w-3" />
-                              {format(new Date(session.startDate), 'PPP', { locale: fr })}
+                              {format(new Date(session.startDate), 'PPP', { locale: dateLocale })}
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {format(new Date(session.startDate), 'HH:mm', { locale: fr })}
+                              {format(new Date(session.startDate), 'HH:mm', { locale: dateLocale })}
                             </div>
                             <div>
-                              Durée: {session.durationMinutes}min
+                              {t('duration')}: {t('durationMinutes', { minutes: session.durationMinutes })}
                             </div>
                           </div>
 
@@ -486,20 +490,20 @@ export default function CoachSessionsPage() {
                                   {/* Badge 1ère session */}
                                   {session.isFirstSession && (
                                     <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs">
-                                      🎯 1ère session
+                                      🎯 {t('firstSession')}
                                     </Badge>
                                   )}
                                   {/* Heures cumulatives utilisées */}
                                   {session.cumulativeHoursUsed !== null && (
                                     <span className="text-xs font-medium text-purple-300">
-                                      {session.cumulativeHoursUsed.toFixed(1)}h utilisées / {session.coachingPackage.totalHours}h
+                                      {t('hoursUsed', { used: session.cumulativeHoursUsed.toFixed(1), total: session.coachingPackage.totalHours })}
                                     </span>
                                   )}
                                 </div>
                                 {/* Durée de cette session */}
                                 {session.sessionDurationHours !== null && (
                                   <span className="text-xs text-gray-400">
-                                    Cette session: {session.sessionDurationHours.toFixed(1)}h
+                                    {t('thisSession', { hours: session.sessionDurationHours.toFixed(1) })}
                                   </span>
                                 )}
                               </div>
@@ -550,13 +554,13 @@ export default function CoachSessionsPage() {
             setIsDetailModalOpen(false);
             setSelectedSession(null);
           }}
-          title="Détails de la session"
+          title={t('modal.title')}
           maxWidth="lg"
         >
           <div className="space-y-6">
             {/* Élève */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-400 mb-2">Élève</h3>
+              <h3 className="text-sm font-semibold text-gray-400 mb-2">{t('modal.student')}</h3>
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={selectedSession.player.image || undefined} />
@@ -570,7 +574,7 @@ export default function CoachSessionsPage() {
                 </Avatar>
                 <div>
                   <p className="font-semibold text-white">
-                    {selectedSession.player.name || 'Joueur'}
+                    {selectedSession.player.name || t('player')}
                   </p>
                   <p className="text-sm text-gray-400">{selectedSession.player.email}</p>
                 </div>
@@ -580,28 +584,28 @@ export default function CoachSessionsPage() {
             {/* Date et heure */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 mb-2">Date</h3>
+                <h3 className="text-sm font-semibold text-gray-400 mb-2">{t('modal.date')}</h3>
                 <p className="text-white">
-                  {format(new Date(selectedSession.startDate), 'PPP', { locale: fr })}
+                  {format(new Date(selectedSession.startDate), 'PPP', { locale: dateLocale })}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 mb-2">Heure</h3>
+                <h3 className="text-sm font-semibold text-gray-400 mb-2">{t('modal.time')}</h3>
                 <p className="text-white">
-                  {format(new Date(selectedSession.startDate), 'HH:mm', { locale: fr })} - {format(new Date(selectedSession.endDate), 'HH:mm', { locale: fr })}
+                  {format(new Date(selectedSession.startDate), 'HH:mm', { locale: dateLocale })} - {format(new Date(selectedSession.endDate), 'HH:mm', { locale: dateLocale })}
                 </p>
               </div>
             </div>
 
             {/* Durée */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-400 mb-2">Durée</h3>
-              <p className="text-white">{selectedSession.durationMinutes} minutes</p>
+              <h3 className="text-sm font-semibold text-gray-400 mb-2">{t('modal.duration')}</h3>
+              <p className="text-white">{t('modal.minutes', { minutes: selectedSession.durationMinutes })}</p>
             </div>
 
             {/* Type de session */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-400 mb-2">Type</h3>
+              <h3 className="text-sm font-semibold text-gray-400 mb-2">{t('modal.type')}</h3>
               <p className="text-white">
                 {selectedSession.announcement.title}
               </p>
@@ -612,22 +616,22 @@ export default function CoachSessionsPage() {
               <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
                 <h3 className="text-sm font-semibold text-purple-300 mb-3 flex items-center gap-2">
                   <TrendingUp className="h-4 w-4" />
-                  Informations du pack
+                  {t('modal.packInfo.title')}
                   {selectedSession.isFirstSession && (
                     <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs ml-2">
-                      1ère session
+                      {t('firstSession')}
                     </Badge>
                   )}
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Heures totales</span>
+                    <span className="text-gray-400">{t('modal.packInfo.totalHours')}</span>
                     <span className="text-white font-semibold">
                       {selectedSession.coachingPackage.totalHours}h
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Cette session</span>
+                    <span className="text-gray-400">{t('modal.packInfo.thisSession')}</span>
                     <span className="text-white font-semibold">
                       {selectedSession.sessionDurationHours?.toFixed(1) || (selectedSession.durationMinutes / 60).toFixed(1)}h
                     </span>
@@ -635,13 +639,13 @@ export default function CoachSessionsPage() {
                   {selectedSession.cumulativeHoursUsed !== null && (
                     <>
                       <div className="flex justify-between">
-                        <span className="text-gray-400">Heures utilisées (cumul)</span>
+                        <span className="text-gray-400">{t('modal.packInfo.hoursUsed')}</span>
                         <span className="text-white font-semibold">
                           {selectedSession.cumulativeHoursUsed.toFixed(1)}h / {selectedSession.coachingPackage.totalHours}h
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-400">Heures restantes</span>
+                        <span className="text-gray-400">{t('modal.packInfo.hoursRemaining')}</span>
                         <span className="text-white font-semibold">
                           {(selectedSession.coachingPackage.totalHours - selectedSession.cumulativeHoursUsed).toFixed(1)}h
                         </span>
@@ -650,7 +654,7 @@ export default function CoachSessionsPage() {
                   )}
                   <div className="mt-2">
                     <div className="flex justify-between text-xs text-gray-400 mb-1">
-                      <span>Progression</span>
+                      <span>{t('modal.packInfo.progress')}</span>
                       <span>{(selectedSession.packProgressPercent ?? selectedSession.coachingPackage.progressPercent).toFixed(0)}%</span>
                     </div>
                     <div className="w-full bg-purple-900/50 rounded-full h-2">
@@ -673,7 +677,7 @@ export default function CoachSessionsPage() {
                 }}
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
-                Ouvrir le canal Discord
+                {t('modal.openDiscord')}
               </Button>
             )}
           </div>

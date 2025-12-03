@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useTranslations } from 'next-intl';
 import { Calendar, Clock, User, Loader2, Package, Globe } from 'lucide-react';
 import { SessionActionsButtons } from '@/components/sessions/SessionActionsButtons';
 import Image from 'next/image';
@@ -41,6 +40,7 @@ interface Reservation {
 
 export default function PlayerSessionsPage() {
   const router = useRouter();
+  const t = useTranslations('player.sessions');
   const { data: session, isPending } = useSession();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [playerDiscordId, setPlayerDiscordId] = useState<string | null>(null);
@@ -161,14 +161,14 @@ export default function PlayerSessionsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-2">
-              <GradientText variant="emerald">Mes Sessions</GradientText>
+              <GradientText variant="emerald">{t('title')}</GradientText>
             </h1>
             <p className="text-gray-400 text-lg">
-              Consultez vos sessions de coaching réservées
+              {t('subtitle')}
             </p>
           </div>
           {timezoneLoaded && (
-            <Tooltip content="Les horaires sont affichés dans votre fuseau horaire" position="bottom">
+            <Tooltip content={t('timezone')} position="bottom">
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg cursor-help">
                 <Globe className="h-3.5 w-3.5 text-blue-600" />
                 <span className="text-xs font-medium text-blue-700">
@@ -185,14 +185,14 @@ export default function PlayerSessionsPage() {
         <div>
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-white">
             <Calendar className="h-5 w-5 text-emerald-400" />
-            Prochaines sessions ({upcomingSessions.length})
+            {t('upcoming.title')} ({upcomingSessions.length})
           </h2>
           
           {upcomingSessions.length === 0 ? (
             <GlassCard className="p-8 text-center">
-              <p className="text-gray-300">Aucune session à venir</p>
+              <p className="text-gray-300">{t('upcoming.empty')}</p>
               <p className="text-sm text-gray-400 mt-2">
-                Explorez les coachs disponibles pour réserver une session
+                {t('upcoming.emptyHint')}
               </p>
             </GlassCard>
           ) : (
@@ -222,18 +222,18 @@ export default function PlayerSessionsPage() {
                             {reservation.type === 'pack-session' && (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded">
                                 <Package className="h-3 w-3" />
-                                Pack
+                                {t('pack')}
                               </span>
                             )}
                           </div>
                           <p className="text-sm text-gray-300 flex items-center gap-1">
                             <User className="h-4 w-4" />
-                            avec {reservation.coach.firstName} {reservation.coach.lastName}
+                            {t('with')} {reservation.coach.firstName} {reservation.coach.lastName}
                           </p>
                           {reservation.packageInfo && (
                             <div className="mt-2 p-2 bg-purple-500/10 rounded-lg border border-purple-500/30">
                               <p className="text-xs text-purple-300 mb-1">
-                                Pack: {reservation.packageInfo.remainingHours.toFixed(1)}h restantes / {reservation.packageInfo.totalHours}h
+                                {t('packRemaining', { remaining: reservation.packageInfo.remainingHours.toFixed(1), total: reservation.packageInfo.totalHours })}
                               </p>
                               <div className="w-full bg-purple-900/50 rounded-full h-1.5">
                                 <div
@@ -268,7 +268,7 @@ export default function PlayerSessionsPage() {
                           ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                           : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                       }`}>
-                        {reservation.status === 'CONFIRMED' ? 'Confirmée' : 'En attente'}
+                        {reservation.status === 'CONFIRMED' ? t('status.confirmed') : t('status.pending')}
                       </span>
 
                       {/* Bouton Discord uniquement */}
@@ -288,7 +288,7 @@ export default function PlayerSessionsPage() {
         {pastSessions.length > 0 && (
           <div>
             <h2 className="text-xl font-semibold mb-4 text-gray-400">
-              Sessions passées ({pastSessions.length})
+              {t('past.title')} ({pastSessions.length})
             </h2>
             
             <div className="grid gap-4">
@@ -314,7 +314,7 @@ export default function PlayerSessionsPage() {
                             {reservation.announcement.title}
                           </h3>
                           <p className="text-sm text-gray-300">
-                            avec {reservation.coach.firstName} {reservation.coach.lastName}
+                            {t('with')} {reservation.coach.firstName} {reservation.coach.lastName}
                           </p>
                         </div>
                       </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
+import { useTranslations, useLocale } from 'next-intl';
 import { CoachLayout } from '@/components/coach/layout/CoachLayout';
 import { GlassCard, GradientText } from '@/components/ui';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Package, Clock, Loader2, Calendar, TrendingUp, CheckCircle, X } from 'lucide-react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS } from 'date-fns/locale';
 import Link from 'next/link';
 import { SubscriptionGate } from '@/components/coach/dashboard/SubscriptionGate';
 
@@ -44,6 +45,9 @@ interface CoachPackage {
 
 export default function CoachPacksPage() {
   const { data: session, isPending } = useSession();
+  const t = useTranslations('coach.packs');
+  const locale = useLocale();
+  const dateLocale = locale === 'fr' ? fr : enUS;
   const [packages, setPackages] = useState<CoachPackage[]>([]);
   const [stats, setStats] = useState({ total: 0, active: 0, completed: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -91,9 +95,9 @@ export default function CoachPacksPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-500/20 text-green-300">Actif</Badge>;
+        return <Badge className="bg-green-500/20 text-green-300">{t('status.active')}</Badge>;
       case 'COMPLETED':
-        return <Badge className="bg-blue-500/20 text-blue-300">Complété</Badge>;
+        return <Badge className="bg-blue-500/20 text-blue-300">{t('status.completed')}</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -102,18 +106,18 @@ export default function CoachPacksPage() {
   const getSessionStatusBadge = (status: string) => {
     switch (status) {
       case 'COMPLETED':
-        return <Badge className="bg-green-500/20 text-green-300">Complétée</Badge>;
+        return <Badge className="bg-green-500/20 text-green-300">{t('sessionStatus.completed')}</Badge>;
       case 'SCHEDULED':
-        return <Badge className="bg-blue-500/20 text-blue-300">Planifiée</Badge>;
+        return <Badge className="bg-blue-500/20 text-blue-300">{t('sessionStatus.scheduled')}</Badge>;
       case 'CANCELLED':
-        return <Badge className="bg-red-500/20 text-red-300">Annulée</Badge>;
+        return <Badge className="bg-red-500/20 text-red-300">{t('sessionStatus.cancelled')}</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
   const handleCancelSession = async (packageSessionId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir annuler cette session ? Les heures seront re-créditées au pack.')) {
+    if (!confirm(t('cancelConfirm'))) {
       return;
     }
 
@@ -130,14 +134,14 @@ export default function CoachPacksPage() {
       if (response.ok) {
         // Recharger les packs pour afficher les données mises à jour
         await fetchPackages();
-        alert('Session annulée avec succès. Les heures ont été re-créditées.');
+        alert(t('cancelSuccess'));
       } else {
         const data = await response.json();
-        alert(`Erreur: ${data.error || 'Impossible d\'annuler la session'}`);
+        alert(`${t('cancelError')}: ${data.error || ''}`);
       }
     } catch (error) {
       console.error('Erreur annulation session:', error);
-      alert('Erreur lors de l\'annulation de la session');
+      alert(t('cancelError'));
     } finally {
       setCancellingSessionId(null);
     }
@@ -160,10 +164,10 @@ export default function CoachPacksPage() {
         {/* Header */}
         <div className="mb-8">
           <GradientText className="text-4xl font-bold mb-2">
-            Mes Packs
+            {t('title')}
           </GradientText>
           <p className="text-gray-400">
-            Gérez les packs d&apos;heures achetés par vos élèves
+            {t('subtitle')}
           </p>
         </div>
 
@@ -176,7 +180,7 @@ export default function CoachPacksPage() {
                 <Package className="h-6 w-6 text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Total packs</p>
+                <p className="text-sm text-gray-400">{t('stats.total')}</p>
                 <p className="text-2xl font-bold text-white">{stats.total}</p>
               </div>
             </div>
@@ -188,7 +192,7 @@ export default function CoachPacksPage() {
                 <TrendingUp className="h-6 w-6 text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Packs actifs</p>
+                <p className="text-sm text-gray-400">{t('stats.active')}</p>
                 <p className="text-2xl font-bold text-white">{stats.active}</p>
               </div>
             </div>
@@ -200,7 +204,7 @@ export default function CoachPacksPage() {
                 <CheckCircle className="h-6 w-6 text-blue-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Packs complétés</p>
+                <p className="text-sm text-gray-400">{t('stats.completed')}</p>
                 <p className="text-2xl font-bold text-white">{stats.completed}</p>
               </div>
             </div>
@@ -211,9 +215,9 @@ export default function CoachPacksPage() {
         {packages.length === 0 ? (
           <GlassCard className="p-12 text-center">
             <Package className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-            <p className="text-lg font-medium text-white mb-2">Aucun pack acheté</p>
+            <p className="text-lg font-medium text-white mb-2">{t('empty.title')}</p>
             <p className="text-gray-400">
-              Les packs achetés par vos élèves apparaîtront ici
+              {t('empty.description')}
             </p>
           </GlassCard>
         ) : (
@@ -240,7 +244,7 @@ export default function CoachPacksPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <Package className="h-5 w-5 text-purple-400" />
                           <h3 className="text-xl font-bold text-white">
-                            Pack {pkg.totalHours}h — {pkg.player.name || 'Joueur'}
+                            {t('packTitle', { hours: pkg.totalHours, player: pkg.player.name || t('player') })}
                           </h3>
                         </div>
                         <p className="text-sm text-gray-400 mb-2">
@@ -249,16 +253,16 @@ export default function CoachPacksPage() {
                         <div className="flex items-center gap-2">
                           {getStatusBadge(pkg.status)}
                           <Badge variant="secondary">
-                            {pkg.totalSessions} session{pkg.totalSessions > 1 ? 's' : ''}
+                            {pkg.totalSessions} {pkg.totalSessions > 1 ? t('sessionsPlural') : t('sessions')}
                           </Badge>
                           <Badge variant="secondary">
-                            {pkg.completedSessions} complétée{pkg.completedSessions > 1 ? 's' : ''}
+                            {pkg.completedSessions} {pkg.completedSessions > 1 ? t('completedSessionsPlural') : t('completedSession')}
                           </Badge>
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-400">Prix</p>
+                      <p className="text-sm text-gray-400">{t('price')}</p>
                       <p className="text-xl font-bold text-white">
                         {(pkg.priceCents / 100).toFixed(2)} €
                       </p>
@@ -269,10 +273,10 @@ export default function CoachPacksPage() {
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-medium text-white">
-                        Progression
+                        {t('progress')}
                       </p>
                       <p className="text-sm text-gray-400">
-                        {pkg.usedHours}h / {pkg.totalHours}h utilisées
+                        {t('hoursUsed', { used: pkg.usedHours, total: pkg.totalHours })}
                       </p>
                     </div>
                     <div className="h-2 bg-white/10 rounded-full overflow-hidden">
@@ -283,7 +287,7 @@ export default function CoachPacksPage() {
                     </div>
                     {pkg.remainingHours > 0 && (
                       <p className="text-xs text-gray-400 mt-1">
-                        {pkg.remainingHours}h restantes
+                        {t('hoursRemaining', { hours: pkg.remainingHours })}
                       </p>
                     )}
                   </div>
@@ -293,18 +297,18 @@ export default function CoachPacksPage() {
                     <div className="mb-4">
                       <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-blue-400" />
-                        Sessions ({pkg.sessions.length})
+                        {t('sessionsTitle', { count: pkg.sessions.length })}
                       </h4>
                       <div className="space-y-2">
-                        {pkg.sessions.map((session, index) => {
+                        {pkg.sessions.map((sessionItem, index) => {
                           // La session la plus ancienne (index le plus élevé car tri par desc) est la première
                           const isFirstSession = index === pkg.sessions.length - 1;
 
-                          const canCancel = session.status === 'SCHEDULED' && new Date(session.startDate) > new Date();
+                          const canCancel = sessionItem.status === 'SCHEDULED' && new Date(sessionItem.startDate) > new Date();
 
                           return (
                             <div
-                              key={session.id}
+                              key={sessionItem.id}
                               className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10"
                             >
                               <div className="flex items-center gap-3 flex-1">
@@ -312,31 +316,31 @@ export default function CoachPacksPage() {
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
                                     <p className="text-sm font-medium text-white">
-                                      {format(new Date(session.startDate), 'PPP', { locale: fr })}
+                                      {format(new Date(sessionItem.startDate), 'PPP', { locale: dateLocale })}
                                     </p>
                                     {isFirstSession && (
                                       <Badge className="bg-amber-500/20 text-amber-300 text-xs">
-                                        1ère session
+                                        {t('firstSession')}
                                       </Badge>
                                     )}
                                   </div>
                                   <p className="text-xs text-gray-400">
-                                    {format(new Date(session.startDate), 'HH:mm', { locale: fr })} - {format(new Date(session.endDate), 'HH:mm', { locale: fr })}
-                                    {' '}({session.durationMinutes}min)
+                                    {format(new Date(sessionItem.startDate), 'HH:mm', { locale: dateLocale })} - {format(new Date(sessionItem.endDate), 'HH:mm', { locale: dateLocale })}
+                                    {' '}({sessionItem.durationMinutes}min)
                                   </p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                {getSessionStatusBadge(session.status)}
+                                {getSessionStatusBadge(sessionItem.status)}
                                 {canCancel && (
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => handleCancelSession(session.id)}
-                                    disabled={cancellingSessionId === session.id}
+                                    onClick={() => handleCancelSession(sessionItem.id)}
+                                    disabled={cancellingSessionId === sessionItem.id}
                                     className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                                   >
-                                    {cancellingSessionId === session.id ? (
+                                    {cancellingSessionId === sessionItem.id ? (
                                       <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : (
                                       <X className="h-4 w-4" />
@@ -353,10 +357,10 @@ export default function CoachPacksPage() {
 
                   {/* CTA Planifier */}
                   {pkg.remainingHours > 0 && (
-                    <Link href="/fr/coach/agenda">
+                    <Link href={`/${locale}/coach/agenda`}>
                       <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
                         <Calendar className="mr-2 h-4 w-4" />
-                        Planifier une session ({pkg.remainingHours}h restantes)
+                        {t('scheduleSession', { hours: pkg.remainingHours })}
                       </Button>
                     </Link>
                   )}
@@ -364,7 +368,7 @@ export default function CoachPacksPage() {
                   {pkg.remainingHours === 0 && (
                     <div className="text-center py-3 bg-green-500/10 rounded-lg border border-green-500/20">
                       <p className="text-sm font-medium text-green-300">
-                        ✅ Toutes les heures ont été utilisées
+                        ✅ {t('allHoursUsed')}
                       </p>
                     </div>
                   )}

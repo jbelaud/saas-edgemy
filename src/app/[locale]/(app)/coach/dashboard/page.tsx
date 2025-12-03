@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Loader2, TrendingUp, Users, Clock, Euro, Eye, BarChart3, UserCircle2, Megaphone, Plus } from 'lucide-react';
 import { GlassCard, GradientText } from '@/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,6 +23,7 @@ import { CreateAnnouncementModalV2 } from '@/components/coach/announcements/Crea
 export default function CoachDashboardPage() {
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations('coach.dashboard');
   const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
   const [data, setData] = useState<CoachDashboardData | null>(null);
@@ -142,7 +143,7 @@ export default function CoachDashboardPage() {
     return (
       <div className="container mx-auto py-8">
         <GlassCard className="border-red-500/20 bg-red-500/10">
-          <h2 className="text-red-400 text-xl font-bold mb-2">Erreur</h2>
+          <h2 className="text-red-400 text-xl font-bold mb-2">{t('error.title')}</h2>
           <p className="text-red-300">{error}</p>
         </GlassCard>
       </div>
@@ -192,11 +193,11 @@ export default function CoachDashboardPage() {
       <div className="mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold mb-2">
-            <GradientText variant="white">Bienvenue,</GradientText>{' '}
+            <GradientText variant="white">{t('greeting.welcome')}</GradientText>{' '}
             <GradientText variant="amber">{coach.firstName}</GradientText> 👋
           </h1>
           <p className="text-gray-400 text-lg">
-            Gérez votre activité de coaching
+            {t('greeting.manage')}
           </p>
         </div>
         {hasActiveSubscription && (
@@ -206,14 +207,14 @@ export default function CoachDashboardPage() {
               className="px-6 py-3 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
             >
               <Eye className="w-5 h-5" />
-              Voir mon profil public
+              {t('actions.viewProfile')}
             </button>
             <button
               onClick={handleCreateAnnouncement}
               className="px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
             >
               <Plus className="w-5 h-5" />
-              Créer une annonce
+              {t('actions.createAnnouncement')}
             </button>
           </div>
         )}
@@ -245,45 +246,45 @@ export default function CoachDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <GlassCard>
           <div className="flex flex-row items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-400">Revenus totaux</h3>
+            <h3 className="text-sm font-medium text-gray-400">{t('stats.totalRevenue')}</h3>
             <Euro className="h-4 w-4 text-amber-400" />
           </div>
           <div className="text-3xl font-bold text-white">{stats.totalRevenue.toFixed(2)}€</div>
           <p className="text-xs text-gray-500 mt-1">
-            {stats.monthlyRevenue.toFixed(2)}€ ce mois
+            {t('stats.thisMonth', { amount: stats.monthlyRevenue.toFixed(2) })}
           </p>
         </GlassCard>
 
         <GlassCard>
           <div className="flex flex-row items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-400">Réservations</h3>
+            <h3 className="text-sm font-medium text-gray-400">{t('stats.reservations')}</h3>
             <Users className="h-4 w-4 text-blue-400" />
           </div>
           <div className="text-3xl font-bold text-white">{stats.totalReservations}</div>
           <p className="text-xs text-gray-500 mt-1">
-            {stats.upcomingReservations} à venir
+            {t('stats.upcoming', { count: stats.upcomingReservations })}
           </p>
         </GlassCard>
 
         <GlassCard>
           <div className="flex flex-row items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-400">Heures de coaching</h3>
+            <h3 className="text-sm font-medium text-gray-400">{t('stats.coachingHours')}</h3>
             <Clock className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="text-3xl font-bold text-white">{stats.totalHours}h</div>
           <p className="text-xs text-gray-500 mt-1">
-            Total cumulé
+            {t('stats.totalCumulated')}
           </p>
         </GlassCard>
 
         <GlassCard>
           <div className="flex flex-row items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-400">Annonces actives</h3>
+            <h3 className="text-sm font-medium text-gray-400">{t('stats.activeAnnouncements')}</h3>
             <TrendingUp className="h-4 w-4 text-purple-400" />
           </div>
           <div className="text-3xl font-bold text-white">{stats.activeAnnouncements}</div>
           <p className="text-xs text-gray-500 mt-1">
-            {stats.pendingReservations} en attente
+            {t('stats.pending', { count: stats.pendingReservations })}
           </p>
         </GlassCard>
       </div>
@@ -293,15 +294,15 @@ export default function CoachDashboardPage() {
         <TabsList>
           <TabsTrigger value="stats">
             <BarChart3 className="h-4 w-4" />
-            Vue d&apos;ensemble
+            {t('tabs.overview')}
           </TabsTrigger>
           <TabsTrigger value="profile">
             <UserCircle2 className="h-4 w-4" />
-            Profil
+            {t('tabs.profile')}
           </TabsTrigger>
           <TabsTrigger value="announcements">
             <Megaphone className="h-4 w-4" />
-            Annonces
+            {t('tabs.announcements')}
           </TabsTrigger>
         </TabsList>
 

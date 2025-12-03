@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from '@/lib/auth-client';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import CoachCalendar from '@/components/calendar/CoachCalendar';
 import QuickAddAvailability from '@/components/calendar/QuickAddAvailability';
@@ -20,6 +21,7 @@ interface Availability {
 
 export default function CoachAgendaPage() {
   const { data: session, isPending } = useSession();
+  const t = useTranslations('coach.agenda');
   const router = useRouter();
   const [coachId, setCoachId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,10 +94,10 @@ export default function CoachAgendaPage() {
       {/* Header */}
       <div className="mb-8">
         <GradientText variant="amber" className="text-4xl font-bold mb-2">
-          📅 Mon Agenda
+          📅 {t('title')}
         </GradientText>
         <p className="text-gray-400 text-lg">
-          Gérez vos disponibilités et visualisez vos sessions réservées
+          {t('subtitle')}
         </p>
       </div>
 
@@ -112,17 +114,17 @@ export default function CoachAgendaPage() {
               <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
                 <Package className="w-5 h-5 text-purple-400" />
               </div>
-              <h2 className="text-xl font-semibold text-white">Sessions de pack</h2>
+              <h2 className="text-xl font-semibold text-white">{t('packSessions.title')}</h2>
             </div>
             <p className="text-gray-400 text-sm mb-4">
-              Planifiez une session pour un joueur ayant acheté un pack
+              {t('packSessions.description')}
             </p>
             <button
               onClick={() => setIsPackModalOpen(true)}
               className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
             >
               <Package className="w-5 h-5" />
-              Planifier une session
+              {t('packSessions.schedule')}
             </button>
           </GlassCard>
         </div>
@@ -154,10 +156,10 @@ export default function CoachAgendaPage() {
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
               <Clock className="w-5 h-5 text-amber-400" />
             </div>
-            <h2 className="text-xl font-semibold text-white">Prochaines sessions</h2>
+            <h2 className="text-xl font-semibold text-white">{t('upcomingSessions.title')}</h2>
           </div>
           <p className="text-gray-400 text-sm">
-            La liste de vos prochaines sessions sera affichée ici.
+            {t('upcomingSessions.description')}
           </p>
         </GlassCard>
       </SubscriptionGate>

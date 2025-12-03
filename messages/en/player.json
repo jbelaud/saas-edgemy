@@ -1,4 +1,121 @@
 {
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "findCoach": "Find a coach",
+    "mySessions": "My sessions",
+    "myCoaches": "My coaches",
+    "myGoals": "My goals",
+    "workgroup": "Workgroup",
+    "bankroll": "Bankroll",
+    "settings": "Settings",
+    "user": "User",
+    "switchToCoach": "Switch to Coach mode",
+    "logout": "Log out"
+  },
+  "dashboard": {
+    "greeting": {
+      "hello": "Hi",
+      "ready": "Ready to improve today?",
+      "defaultName": "Player"
+    },
+    "error": {
+      "title": "Error",
+      "loadingError": "Error loading dashboard"
+    },
+    "stats": {
+      "coachedHours": "Coached hours",
+      "sessionsCompleted": "{count} session completed",
+      "sessionsCompletedPlural": "{count} sessions completed",
+      "coachesFollowed": "Coaches followed",
+      "noCoach": "No coach yet",
+      "coachActive": "Active coach",
+      "coachesActive": "Active coaches",
+      "scheduledSessions": "Scheduled sessions",
+      "upcoming": "Upcoming"
+    },
+    "cta": {
+      "findFirstCoach": "Find your first coach",
+      "findNextCoach": "Find your next coach",
+      "descriptionFirst": "Explore our selection of professional coaches and book your first coaching session.",
+      "descriptionNext": "Continue your learning with new coaches or book a new session.",
+      "exploreCoaches": "Explore coaches"
+    },
+    "progress": {
+      "title": "Your progress tracking",
+      "subtitle": "Visualize your evolution and coaching statistics",
+      "comingSoon": "Coming soon 🚀",
+      "description": "Your personalized progress tracking will be available soon"
+    }
+  },
+  "sessions": {
+    "title": "My Sessions",
+    "subtitle": "View your booked coaching sessions",
+    "timezone": "Times are displayed in your timezone",
+    "upcoming": {
+      "title": "Upcoming sessions",
+      "empty": "No upcoming sessions",
+      "emptyHint": "Explore available coaches to book a session"
+    },
+    "past": {
+      "title": "Past sessions"
+    },
+    "status": {
+      "confirmed": "Confirmed",
+      "pending": "Pending"
+    },
+    "with": "with",
+    "pack": "Pack",
+    "packRemaining": "Pack: {remaining}h remaining / {total}h"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your profile settings",
+    "profile": {
+      "title": "Personal information",
+      "subtitle": "Update your profile information",
+      "firstName": "First name",
+      "firstNamePlaceholder": "John",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "Doe",
+      "timezone": "Timezone",
+      "timezonePlaceholder": "Select a timezone",
+      "timezoneHint": "Used to schedule your coaching sessions",
+      "language": "Preferred language",
+      "languagePlaceholder": "Select a language",
+      "languageHint": "Interface language (coming soon)",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "discord": {
+      "title": "Discord connection",
+      "subtitle": "Connect your Discord account to access your session rooms",
+      "benefits": {
+        "title": "Benefits of Discord connection",
+        "access": "Direct access to private rooms for your coaching sessions",
+        "communication": "Voice and text communication with your coach",
+        "history": "Conversation history saved",
+        "notifications": "Real-time notifications for your sessions"
+      },
+      "security": {
+        "title": "Security and privacy",
+        "description": "Only one Edgemy account can be linked to a Discord account. Your Discord ID is stored securely and is only used to create your private session rooms."
+      },
+      "joinServer": "Join the Edgemy server",
+      "joinServerHint": "Required to access your session rooms"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Manage your notification preferences",
+      "comingSoon": "Coming soon 🚀"
+    },
+    "toast": {
+      "loadError": "Unable to load your settings",
+      "saveSuccess": "Settings saved",
+      "saveSuccessDescription": "Your settings have been updated successfully",
+      "saveError": "Unable to save your settings",
+      "error": "Error"
+    }
+  },
   "coaches": {
     "loading": {
       "title": "Loading your coaches",
