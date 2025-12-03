@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, animate } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { useTranslations } from 'next-intl';
 
 interface CalculateurInputs {
   nombreEleves: number;
@@ -37,6 +38,7 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
 }
 
 export function CalculateurCoach() {
+  const t = useTranslations('home.calculator');
   const [inputs, setInputs] = useState<CalculateurInputs>({
     nombreEleves: 10,
     sessionsParSemaine: 4,
@@ -108,7 +110,7 @@ export function CalculateurCoach() {
             transition={{ duration: 0.6 }}
             className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent"
           >
-            Calcule ton gain de productivité
+            {t('title')}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -117,7 +119,7 @@ export function CalculateurCoach() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-xl text-gray-400 max-w-2xl mx-auto"
           >
-Découvre combien de temps tu peux récupérer grâce à la simplification de ton organisation, planning et paiements
+            {t('subtitle')}
           </motion.p>
         </div>
 
@@ -132,9 +134,9 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
           >
             <Card className="bg-slate-900/50 backdrop-blur-sm border-white/10 shadow-2xl w-full">
               <CardHeader>
-                <CardTitle className="text-2xl text-white">Tes informations</CardTitle>
+                <CardTitle className="text-2xl text-white">{t('formTitle')}</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Ajuste les valeurs selon ton activité actuelle
+                  {t('formDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -142,7 +144,7 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="nombreEleves" className="text-gray-300 text-base">
-                      Nombre d&apos;élèves actifs / mois
+                      {t('inputs.students')}
                     </Label>
                     <span className="text-green-400 font-bold text-lg">{inputs.nombreEleves}</span>
                   </div>
@@ -165,7 +167,7 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="sessionsParSemaine" className="text-gray-300 text-base">
-                      Sessions par semaine
+                      {t('inputs.sessions')}
                     </Label>
                     <span className="text-green-400 font-bold text-lg">{inputs.sessionsParSemaine}</span>
                   </div>
@@ -188,7 +190,7 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="dureeMoyenne" className="text-gray-300 text-base">
-                      Durée moyenne d&apos;une session (heures)
+                      {t('inputs.duration')}
                     </Label>
                     <span className="text-green-400 font-bold text-lg">{inputs.dureeMoyenne}h</span>
                   </div>
@@ -212,7 +214,7 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="tarifHoraire" className="text-gray-300 text-base">
-                      Tarif horaire (€)
+                      {t('inputs.rate')}
                     </Label>
                     <span className="text-green-400 font-bold text-lg">{inputs.tarifHoraire}€</span>
                   </div>
@@ -235,7 +237,7 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="tempsAdminSemaine" className="text-gray-300 text-base">
-                      Temps admin/semaine (organisation, planning, paiements)
+                      {t('inputs.adminTime')}
                     </Label>
                     <span className="text-green-400 font-bold text-lg">{inputs.tempsAdminSemaine}h</span>
                   </div>
@@ -267,9 +269,9 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
           >
             <Card className="bg-gradient-to-br from-green-900/30 to-green-950/30 backdrop-blur-sm border-green-500/20 shadow-2xl w-full">
               <CardHeader>
-                <CardTitle className="text-2xl text-white">Ton potentiel avec Edgemy</CardTitle>
+                <CardTitle className="text-2xl text-white">{t('resultsTitle')}</CardTitle>
                 <CardDescription className="text-gray-300">
-                  Résultats basés sur une simplification de ~55% des tâches d&apos;organisation et coordination
+                  {t('resultsDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -279,12 +281,12 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="text-sm text-green-300 mb-2">Valeur du temps récupéré</div>
+                  <div className="text-sm text-green-300 mb-2">{t('results.valueRecovered')}</div>
                   <div className="text-4xl font-bold text-green-400">
                     +<AnimatedNumber value={Math.round(resultats.gainMensuel)} /> €
                   </div>
                   <div className="text-xs text-gray-400 mt-2">
-                    Par mois, grâce à la simplification
+                    {t('results.perMonth')}
                   </div>
                 </motion.div>
 
@@ -294,12 +296,12 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="text-sm text-blue-300 mb-2">Temps récupéré par mois</div>
+                  <div className="text-sm text-blue-300 mb-2">{t('results.timeRecovered')}</div>
                   <div className="text-4xl font-bold text-blue-400">
                     <AnimatedNumber value={Math.round(resultats.tempsRecupere * 10) / 10} suffix="h" />
                   </div>
                   <div className="text-xs text-gray-400 mt-2">
-                    Pour coach, grinder ou te reposer
+                    {t('results.timeUse')}
                   </div>
                 </motion.div>
 
@@ -309,32 +311,23 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="text-sm text-amber-300 mb-2">ROI mensuel</div>
+                  <div className="text-sm text-amber-300 mb-2">{t('results.roi')}</div>
                   <div className="text-4xl font-bold text-amber-400">
                     <AnimatedNumber value={Math.round(resultats.roi * 10) / 10} suffix="x" />
                   </div>
                   <div className="text-xs text-gray-400 mt-2">
-                    Pour un abonnement à {resultats.prixEdgemy}€/mois
+                    {t('results.roiDescription', { price: resultats.prixEdgemy })}
                   </div>
                 </motion.div>
 
-                {/* Phrase personnalisée */}
+                {/* Phrase personnalisée - keeping dynamic values inline */}
                 <div className="p-6 bg-slate-800/50 rounded-xl border border-white/10">
                   <p className="text-gray-300 leading-relaxed">
-                    Avec Edgemy, tu récupères en moyenne{' '}
-                    <span className="text-blue-400 font-bold">
-                      {Math.round(resultats.tempsRecupere * 10) / 10} heures par mois
-                    </span>
-                    {' '}grâce à la simplification de l&apos;organisation, du planning et des paiements.
-                    Cela représente environ{' '}
-                    <span className="text-green-400 font-bold">
-                      {Math.round(resultats.gainMensuel)}€ de valeur
-                    </span>
-                    {' '}et un ROI de{' '}
-                    <span className="text-amber-400 font-bold">
-                      x{Math.round(resultats.roi * 10) / 10}
-                    </span>
-                    , dès le premier mois.
+                    {t.rich('results.summary', {
+                      hours: Math.round(resultats.tempsRecupere * 10) / 10,
+                      value: Math.round(resultats.gainMensuel),
+                      roi: Math.round(resultats.roi * 10) / 10
+                    })}
                   </p>
                 </div>
               </CardContent>
@@ -359,14 +352,10 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
               </div>
               <div className="flex-1">
                 <h4 className="text-amber-400 font-semibold text-lg mb-2">
-                  💡 Estimation indicative
+                  {t('disclaimer.title')}
                 </h4>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                  Ces résultats sont des <span className="text-white font-medium">estimations personnalisées</span> basées sur tes informations.
-                  Les gains réels peuvent varier selon ton organisation, tes méthodes de travail et ton utilisation d&apos;Edgemy.
-                  L&apos;objectif d&apos;Edgemy est de <span className="text-amber-400 font-medium">simplifier ta gestion administrative, optimiser ton temps</span> et
-                  te permettre de <span className="text-amber-400 font-medium">te concentrer sur le coaching</span>.
-                  Sans compter la <span className="text-emerald-400 font-medium">visibilité accrue</span> que tu gagnes en rejoignant notre communauté de coachs professionnels.
+                  {t('disclaimer.text')}
                 </p>
               </div>
             </div>
@@ -388,7 +377,7 @@ Découvre combien de temps tu peux récupérer grâce à la simplification de to
             }}
             className="w-full px-8 py-5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-lg rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
           >
-            Créer mon profil coach maintenant
+            {t('cta')}
           </button>
         </motion.div>
       </div>

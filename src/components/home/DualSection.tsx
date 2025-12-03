@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export function DualSection() {
+  const t = useTranslations('home.dual');
   const [hoveredCard, setHoveredCard] = useState<'player' | 'coach' | null>(null);
   const [isYearly, setIsYearly] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'lite' | 'pro'>('pro');
@@ -30,10 +32,10 @@ export function DualSection() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-            Edgemy s&apos;adapte à ton profil
+            {t('title')}
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Que tu sois joueur ou coach, trouve ta place dans la communauté
+            {t('subtitle')}
           </p>
         </div>
 
@@ -57,42 +59,36 @@ export function DualSection() {
                   </svg>
                 </div>
                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-                  <span className="text-emerald-400 text-base font-semibold px-4 py-1.5">Pour les joueurs</span>
+                  <span className="text-emerald-400 text-base font-semibold px-4 py-1.5">{t('player.badge')}</span>
                 </div>
               </div>
 
               {/* Title */}
               <div className="flex flex-col items-center mb-6 pt-16">
                 <h3 className="text-3xl font-bold mb-2 text-white text-center">
-                  Trouve ton coach idéal
+                  {t('player.title')}
                 </h3>
                 <div className="text-4xl font-extrabold text-emerald-400 mb-2">
-                  Gratuit
+                  {t('player.price')}
                 </div>
                 <div className="text-sm text-gray-400 mb-2">
-                  {playerCommission} de commission sur les réservations
+                  {t('player.commission', { percent: playerCommission })}
                 </div>
               </div>
 
               {/* Description */}
               <p className="text-gray-400 mb-6 leading-relaxed text-center mx-auto max-w-md">
-                Accès gratuit à tous les coachs. Payez uniquement les séances que vous réservez.
-                Bénéficiez de tarifs dégressifs sur les packs d&apos;heures.
+                {t('player.description')}
               </p>
 
               {/* Features List */}
               <ul className="space-y-3 mb-6 pb-8">
-                {[
-                  "Accès gratuit à la plateforme",
-                  "6,5% de commission sur les réservations",
-                  "Réductions sur les packs d'heures",
-                  "Paiements sécurisés via Stripe"
-                ].map((feature, index) => (
+                {[0, 1, 2, 3].map((index) => (
                   <li key={index} className="flex items-start gap-3 text-gray-300">
                     <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-sm leading-tight">{feature}</span>
+                    <span className="text-sm leading-tight">{t(`player.features.${index}`)}</span>
                   </li>
                 ))}
               </ul>
@@ -106,7 +102,7 @@ export function DualSection() {
                   }}
                   className="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/20"
                 >
-                  Créer un compte joueur
+                  {t('player.cta')}
                 </button>
               </div>
             </div>
@@ -130,13 +126,13 @@ export function DualSection() {
                   </svg>
                 </div>
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-full">
-                  <span className="text-amber-400 text-base font-semibold px-4 py-1.5">Pour les coachs</span>
+                  <span className="text-amber-400 text-base font-semibold px-4 py-1.5">{t('coach.badge')}</span>
                 </div>
               </div>
 
               {/* Title */}
               <h3 className="text-3xl font-bold mb-4 text-white text-center">
-                Développe ton activité
+                {t('coach.title')}
               </h3>
 
               {/* Toggle Plan LITE / PRO */}
@@ -149,7 +145,7 @@ export function DualSection() {
                       : 'text-gray-400 hover:text-white'
                   }`}
                 >
-                  LITE
+                  {t('coach.lite.name')}
                 </button>
                 <button
                   onClick={() => setSelectedPlan('pro')}
@@ -159,10 +155,10 @@ export function DualSection() {
                       : 'text-gray-400 hover:text-white'
                   }`}
                 >
-                  PRO
+                  {t('coach.pro.name')}
                   {selectedPlan === 'pro' && (
                     <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                      Recommandé
+                      {t('coach.pro.recommended')}
                     </span>
                   )}
                 </button>
@@ -170,7 +166,7 @@ export function DualSection() {
 
               {/* Toggle Annuel/Mensuel */}
               <div className="flex items-center justify-center gap-3 mb-6">
-                <span className={`text-sm font-medium ${!isYearly ? 'text-white' : 'text-gray-500'}`}>Mensuel</span>
+                <span className={`text-sm font-medium ${!isYearly ? 'text-white' : 'text-gray-500'}`}>{t('coach.monthly')}</span>
                 <button
                   onClick={() => setIsYearly(!isYearly)}
                   className="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
@@ -182,12 +178,12 @@ export function DualSection() {
                   />
                 </button>
                 <div className="flex flex-col items-start">
-                  <span className={`text-sm font-medium ${isYearly ? 'text-white' : 'text-gray-500'}`}>Annuel</span>
+                  <span className={`text-sm font-medium ${isYearly ? 'text-white' : 'text-gray-500'}`}>{t('coach.yearly')}</span>
                   {isYearly && selectedPlan === 'lite' && (
-                    <span className="text-xs text-amber-400">-17%</span>
+                    <span className="text-xs text-amber-400">{t('coach.yearlyDiscount', { percent: '17' })}</span>
                   )}
                   {isYearly && selectedPlan === 'pro' && (
-                    <span className="text-xs text-amber-400">-15%</span>
+                    <span className="text-xs text-amber-400">{t('coach.yearlyDiscount', { percent: '15' })}</span>
                   )}
                 </div>
               </div>
@@ -202,12 +198,12 @@ export function DualSection() {
               <div className="h-6 mb-3 text-center">
                 {isYearly && selectedPlan === 'lite' && (
                   <div className="text-sm text-amber-400">
-                    Soit seulement 12,42€/mois
+                    {t('coach.yearlyEquivalent', { price: '12.42' })}
                   </div>
                 )}
                 {isYearly && selectedPlan === 'pro' && (
                   <div className="text-sm text-amber-400">
-                    Soit seulement 33,25€/mois
+                    {t('coach.yearlyEquivalent', { price: '33.25' })}
                   </div>
                 )}
               </div>
@@ -215,40 +211,30 @@ export function DualSection() {
               {/* Description */}
               <p className="text-gray-400 mb-4 leading-relaxed text-center text-sm">
                 {selectedPlan === 'lite'
-                  ? "Fonctionnalités de base pour démarrer ton activité de coaching sur Edgemy."
-                  : "Maximise ta visibilité et garde 100% du montant de tes sessions. Idéal pour les coachs actifs."
+                  ? t('coach.lite.description')
+                  : t('coach.pro.description')
                 }
               </p>
 
               {/* Features List */}
               <ul className="space-y-2.5 mb-6 flex-1">
-                {selectedPlan === 'lite' && [
-                  "Profil public personnalisable",
-                  "Visibilité dans l'annuaire",
-                  "Tu gères tes propres moyens de paiement"
-                ].map((feature, index) => (
+                {selectedPlan === 'lite' && [0, 1, 2].map((index) => (
                   <li key={index} className="flex items-start gap-3 text-gray-300">
                     <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-sm leading-tight">{feature}</span>
+                    <span className="text-sm leading-tight">{t(`coach.lite.features.${index}`)}</span>
                   </li>
                 ))}
 
-                {selectedPlan === 'pro' && [
-                  "Automatisation complète des paiements",
-                  "Visibilité dans l'annuaire",
-                  "Personnalisation avancée du profil",
-                  "Support direct de l'équipe Edgemy",
-                  <span key="highlight" className="font-semibold text-amber-400">
-                    Tu gardes 100% du montant des sessions
-                  </span>
-                ].map((feature, index) => (
+                {selectedPlan === 'pro' && [0, 1, 2, 3, 4].map((index) => (
                   <li key={index} className="flex items-start gap-3 text-gray-300">
                     <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-sm leading-tight">{feature}</span>
+                    <span className={`text-sm leading-tight ${index === 4 ? 'font-semibold text-amber-400' : ''}`}>
+                      {t(`coach.pro.features.${index}`)}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -260,10 +246,10 @@ export function DualSection() {
                     <svg className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-amber-400 font-bold text-sm">Avantage PRO</span>
+                    <span className="text-amber-400 font-bold text-sm">{t('coach.pro.highlight.title')}</span>
                   </div>
                   <p className="text-xs text-gray-300 leading-relaxed">
-                    Aucune commission prélevée sur tes réservations. Maximise tes revenus en gardant l&apos;intégralité de tes gains.
+                    {t('coach.pro.highlight.text')}
                   </p>
                 </div>
               )}
@@ -281,7 +267,7 @@ export function DualSection() {
                       : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white shadow-slate-500/20'
                   }`}
                 >
-                  Devenir coach sur Edgemy
+                  {t('coach.cta')}
                 </button>
               </div>
             </div>

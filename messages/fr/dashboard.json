@@ -1,0 +1,9 @@
+{
+  "title": "Tableau de bord",
+  "welcome": "Bienvenue",
+  "stats": {
+    "totalSessions": "Sessions totales",
+    "totalRevenue": "Revenu total",
+    "activeStudents": "Élèves actifs"
+  }
+}

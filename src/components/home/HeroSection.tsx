@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 export function HeroSection() {
   const locale = useLocale();
+  const t = useTranslations('home.hero');
   
   return (
     <section className="relative min-h-[90vh] sm:min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pt-2 sm:pt-6 md:pt-10">
@@ -24,18 +25,17 @@ export function HeroSection() {
             {/* Main Title */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               <span className="bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent">
-                Progressez au poker
+                {t('title1')}
               </span>
               <br />
               <span className="bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 bg-clip-text text-transparent">
-                avec un coach 1-to-1
+                {t('title2')}
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-              La plateforme qui connecte les joueurs sérieux à des coachs passionnés.
-              Choisissez votre coach, planifiez vos sessions, progressez à votre rythme.
+              {t('subtitle')}
             </p>
 
             {/* CTA Buttons */}
@@ -44,7 +44,7 @@ export function HeroSection() {
                 href={`/${locale}/coachs`}
                 className="group relative px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-lg rounded-xl transition-all transform hover:scale-105 shadow-xl shadow-amber-500/20 w-full sm:w-auto text-center"
               >
-                <span className="relative z-10">Trouver un coach</span>
+                <span className="relative z-10">{t('ctaPrimary')}</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-500 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity"></div>
               </Link>
               <button
@@ -54,24 +54,24 @@ export function HeroSection() {
                 }}
                 className="px-8 py-4 border border-gray-700 hover:bg-gray-800/50 text-white font-medium text-lg rounded-xl transition-all w-full sm:w-auto"
               >
-                Créer un compte joueur
+                {t('ctaSecondary')}
               </button>
             </div>
 
             {/* Assurance Line */}
             <p className="text-sm text-gray-500 mb-8">
-              Sans engagement — Paiement sécurisé — Plateforme en lancement
+              {t('assurance')}
             </p>
 
             {/* Coach CTA */}
             <div className="text-center lg:text-left">
               <span className="text-gray-400 text-sm">
-                Vous êtes coach ?{' '}
+                {t('coachCta')}{' '}
                 <a
                   href={`/${locale}/coach/inscription`}
                   className="text-amber-400 hover:text-amber-300 font-medium transition-colors"
                 >
-                  Rejoignez notre plateforme
+                  {t('coachCtaLink')}
                 </a>
               </span>
             </div>
@@ -90,13 +90,13 @@ export function HeroSection() {
                       <line x1="3" y1="15" x2="16" y2="15"></line>
                     </svg>
                   </div>
-                  <h3 className="text-lg font-medium text-gray-200 mb-1">Interface de coaching</h3>
-                  <p className="text-sm text-gray-400">Calendrier intégré • Suivi de progression • Paiements sécurisés</p>
+                  <h3 className="text-lg font-medium text-gray-200 mb-1">{t('mockupTitle')}</h3>
+                  <p className="text-sm text-gray-400">{t('mockupDescription')}</p>
                 </div>
               </div>
               {/* Badge Bêta */}
               <div className="absolute -top-3 -right-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                Version bêta
+                {t('betaBadge')}
               </div>
             </div>
           </div>

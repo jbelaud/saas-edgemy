@@ -3,9 +3,11 @@
 import { MessageCircle, Twitter } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { routing } from '@/i18n/routing';
 
 export function AppFooter() {
+  const t = useTranslations('footer');
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
   const segments = pathname?.split('/').filter(Boolean) ?? [];
@@ -31,30 +33,30 @@ export function AppFooter() {
               </span>
             </Link>
             <p className="text-gray-400 text-sm font-medium mb-2">
-              Coaching poker. Simplifi&eacute;.
+              {t('tagline')}
             </p>
             <p className="text-gray-500 text-xs">
-              La plateforme qui connecte joueurs ambitieux et coachs d&apos;excellence.
+              {t('description')}
             </p>
           </div>
 
           {/* Navigation Column */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Navigation</h3>
+            <h3 className="text-white font-semibold mb-4">{t('nav.title')}</h3>
             <ul className="space-y-3">
               <li>
                 <Link href={localizedPath('/a-propos')} className="text-gray-400 hover:text-white transition-colors text-sm">
-                  À propos
+                  {t('nav.about')}
                 </Link>
               </li>
               <li>
                 <Link href={localizedPath('/blog')} className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Blog
+                  {t('nav.blog')}
                 </Link>
               </li>
               <li>
                 <Link href={localizedPath('/contact')} className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Contact
+                  {t('nav.contact')}
                 </Link>
               </li>
             </ul>
@@ -62,16 +64,16 @@ export function AppFooter() {
 
           {/* Legal Column */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Légal</h3>
+            <h3 className="text-white font-semibold mb-4">{t('legal.title')}</h3>
             <ul className="space-y-3">
               <li>
                 <Link href={localizedPath('/mentions-legales')} className="text-gray-400 hover:text-white transition-colors text-sm">
-                  CGU
+                  {t('legal.terms')}
                 </Link>
               </li>
               <li>
                 <Link href={localizedPath('/politique-de-confidentialite')} className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Politique de confidentialité
+                  {t('legal.privacy')}
                 </Link>
               </li>
             </ul>
@@ -79,14 +81,14 @@ export function AppFooter() {
 
           {/* Socials Column */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Suivez-nous</h3>
+            <h3 className="text-white font-semibold mb-4">{t('social.title')}</h3>
             <div className="flex gap-3">
               <a 
                 href="https://discord.gg/dYDEzbVz" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white transition-all"
-                aria-label="Discord"
+                aria-label={t('social.discord')}
               >
                 <MessageCircle className="w-5 h-5" />
               </a>
@@ -95,7 +97,7 @@ export function AppFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white transition-all"
-                aria-label="X (Twitter)"
+                aria-label={t('social.twitter')}
               >
                 <Twitter className="w-5 h-5" />
               </a>
@@ -107,10 +109,10 @@ export function AppFooter() {
         <div className="pt-8 border-t border-white/5">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-500 text-sm">
-              © {currentYear} Edgemy. Tous droits réservés.
+              {t('copyright', { year: currentYear })}
             </p>
             <p className="text-gray-600 text-xs">
-              Fait avec ❤️ pour la communauté poker
+              {t('madeWith')}
             </p>
           </div>
         </div>

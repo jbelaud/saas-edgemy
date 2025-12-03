@@ -13,10 +13,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, LayoutDashboard, Settings } from "lucide-react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export function AuthButton() {
   const locale = useLocale();
+  const t = useTranslations('header.auth');
   const { data: session, isPending } = useSession();
   const [coachData, setCoachData] = React.useState<{ avatarUrl?: string | null; isCoach?: boolean }>({});
 
@@ -39,7 +40,7 @@ export function AuthButton() {
   if (isPending) {
     return (
       <Button variant="ghost" disabled>
-        Chargement...
+        {t('loading')}
       </Button>
     );
   }
@@ -98,7 +99,7 @@ export function AuthButton() {
                 <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
                   <LayoutDashboard className="h-4 w-4 text-blue-400" />
                 </div>
-                <span className="font-medium">Dashboard</span>
+                <span className="font-medium">{t('dashboard')}</span>
               </Link>
             </DropdownMenuItem>
 
@@ -110,7 +111,7 @@ export function AuthButton() {
                 <div className="p-2 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
                   <Settings className="h-4 w-4 text-purple-400" />
                 </div>
-                <span className="font-medium">Paramètres</span>
+                <span className="font-medium">{t('settings')}</span>
               </Link>
             </DropdownMenuItem>
 
@@ -123,7 +124,7 @@ export function AuthButton() {
               <div className="p-2 bg-red-500/20 rounded-lg group-hover:bg-red-500/30 transition-colors">
                 <LogOut className="h-4 w-4 text-red-400 group-hover:text-red-300" />
               </div>
-              <span className="font-medium">Déconnexion</span>
+              <span className="font-medium">{t('logout')}</span>
             </DropdownMenuItem>
           </div>
         </DropdownMenuContent>
@@ -159,7 +160,7 @@ export function AuthButton() {
           d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
         />
       </svg>
-      Se connecter avec Google
+      {t('loginWithGoogle')}
     </Button>
   );
 }

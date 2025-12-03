@@ -1,0 +1,20 @@
+{
+  "nav": {
+    "discoverCoaches": "Découvrir les coachs",
+    "blog": "Blog",
+    "about": "À propos",
+    "contact": "Contact"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "becomeCoach": "Devenir Coach",
+    "loading": "Chargement...",
+    "dashboard": "Dashboard",
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
+    "loginWithGoogle": "Se connecter avec Google"
+  },
+  "languageSwitcher": {
+    "currentLanguage": "Langue actuelle"
+  }
+}

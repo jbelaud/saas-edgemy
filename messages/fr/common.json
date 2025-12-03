@@ -1,0 +1,22 @@
+{
+  "development": "Application en cours de développement",
+  "loading": "Chargement...",
+  "error": "Une erreur est survenue",
+  "success": "Succès",
+  "continue": "Continuer",
+  "learnMore": "En savoir plus",
+  "back": "Retour",
+  "next": "Suivant",
+  "save": "Enregistrer",
+  "cancel": "Annuler",
+  "close": "Fermer",
+  "search": "Rechercher",
+  "filter": "Filtrer",
+  "reset": "Réinitialiser",
+  "submit": "Envoyer",
+  "delete": "Supprimer",
+  "edit": "Modifier",
+  "view": "Voir",
+  "create": "Créer",
+  "update": "Mettre à jour"
+}

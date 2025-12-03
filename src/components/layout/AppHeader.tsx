@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from '@/lib/auth-client';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { CoachSignUpModal } from '@/components/auth/CoachSignUpModal';
@@ -17,6 +18,7 @@ export function AppHeader() {
   const params = useParams();
   const searchParams = useSearchParams();
   const locale = (params?.locale as string) || 'fr';
+  const t = useTranslations('header');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCoachSignUpModal, setShowCoachSignUpModal] = useState(false);
   const [showPlayerSignUpModal, setShowPlayerSignUpModal] = useState(false);
@@ -84,25 +86,25 @@ export function AppHeader() {
               href={`/${locale}/coachs`}
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
-              Découvrir les coachs
+              {t('nav.discoverCoaches')}
             </Link>
             <Link
               href={`/${locale}/pages/blog`}
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
-              Blog
+              {t('nav.blog')}
             </Link>
             <Link
               href={`/${locale}/pages/a-propos`}
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
-              À propos
+              {t('nav.about')}
             </Link>
             <Link
               href={`/${locale}/pages/contact`}
               className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
             >
-              Contact
+              {t('nav.contact')}
             </Link>
           </nav>
 
@@ -128,7 +130,7 @@ export function AppHeader() {
                   }}
                   className="text-gray-300 hover:text-white hover:bg-white/5"
                 >
-                  Se connecter
+                  {t('auth.login')}
                 </Button>
                 <Button 
                   onClick={() => {
@@ -137,7 +139,7 @@ export function AppHeader() {
                   }}
                   className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
                 >
-                  Devenir Coach
+                  {t('auth.becomeCoach')}
                 </Button>
               </>
             )}
@@ -174,28 +176,28 @@ export function AppHeader() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
               >
-                Découvrir les coachs
+                {t('nav.discoverCoaches')}
               </Link>
               <Link
                 href={`/${locale}/pages/blog`}
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
               >
-                Blog
+                {t('nav.blog')}
               </Link>
               <Link
                 href={`/${locale}/pages/a-propos`}
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
               >
-                À propos
+                {t('nav.about')}
               </Link>
               <Link
                 href={`/${locale}/pages/contact`}
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-gray-300 hover:text-white transition-colors text-base font-medium py-2"
               >
-                Contact
+                {t('nav.contact')}
               </Link>
             </nav>
 
@@ -210,7 +212,7 @@ export function AppHeader() {
                   }}
                   className="w-full text-gray-300 hover:text-white hover:bg-white/5 justify-center"
                 >
-                  Se connecter
+                  {t('auth.login')}
                 </Button>
                 <Button 
                   onClick={() => {
@@ -220,7 +222,7 @@ export function AppHeader() {
                   }}
                   className="w-full px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl font-semibold transition-all shadow-lg shadow-amber-500/20"
                 >
-                  Devenir Coach
+                  {t('auth.becomeCoach')}
                 </Button>
               </div>
             )}

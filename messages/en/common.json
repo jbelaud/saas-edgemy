@@ -1,0 +1,22 @@
+{
+  "development": "Application under development",
+  "loading": "Loading...",
+  "error": "An error occurred",
+  "success": "Success",
+  "continue": "Continue",
+  "learnMore": "Learn more",
+  "back": "Back",
+  "next": "Next",
+  "save": "Save",
+  "cancel": "Cancel",
+  "close": "Close",
+  "search": "Search",
+  "filter": "Filter",
+  "reset": "Reset",
+  "submit": "Submit",
+  "delete": "Delete",
+  "edit": "Edit",
+  "view": "View",
+  "create": "Create",
+  "update": "Update"
+}

@@ -5,7 +5,7 @@ import { signUp, signIn } from "@/lib/auth-client";
 import { Modal, GradientButton, GradientText, Input, Label } from "@/components/ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface CoachSignUpModalProps {
   open: boolean;
@@ -16,6 +16,7 @@ interface CoachSignUpModalProps {
 export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachSignUpModalProps) {
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations('auth.signUp');
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -91,11 +92,11 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
       {/* Title */}
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold mb-2">
-          <GradientText variant="white">Devenir Coach</GradientText>{" "}
+          <GradientText variant="white">{t('title').split(' ').slice(0, 2).join(' ')}</GradientText>{" "}
           <GradientText variant="amber">Edgemy</GradientText>
         </h2>
         <p className="text-gray-400 text-sm">
-          Rejoignez notre équipe de coachs professionnels
+          {t('subtitle')}
         </p>
       </div>
 
@@ -125,7 +126,7 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-          Continuer avec Google
+          {t('googleButton')}
         </GradientButton>
 
         {/* Divider */}
@@ -135,7 +136,7 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-slate-900 px-2 text-gray-500">
-              Ou continuer avec
+              {t('orContinueWith')}
             </span>
           </div>
         </div>
@@ -151,11 +152,11 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
           {/* Name Fields */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName" className="text-gray-300">Prénom</Label>
+              <Label htmlFor="firstName" className="text-gray-300">{t('firstName')}</Label>
               <Input
                 id="firstName"
                 type="text"
-                placeholder="Jean"
+                placeholder={t('firstNamePlaceholder')}
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
@@ -163,11 +164,11 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName" className="text-gray-300">Nom</Label>
+              <Label htmlFor="lastName" className="text-gray-300">{t('lastName')}</Label>
               <Input
                 id="lastName"
                 type="text"
-                placeholder="Dupont"
+                placeholder={t('lastNamePlaceholder')}
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
@@ -178,11 +179,11 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
 
           {/* Email Field */}
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-300">Email</Label>
+            <Label htmlFor="email" className="text-gray-300">{t('email')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="jean.dupont@exemple.fr"
+              placeholder={t('emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -192,11 +193,11 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
 
           {/* Password Field */}
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-300">Mot de passe</Label>
+            <Label htmlFor="password" className="text-gray-300">{t('password')}</Label>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={t('passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -211,20 +212,20 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
             fullWidth 
             disabled={isLoading}
           >
-            {isLoading ? "Inscription..." : "Créer mon compte coach"}
+            {isLoading ? t('submitting') : t('submit')}
           </GradientButton>
         </form>
 
         {/* Login Link */}
         <div className="text-center text-sm text-gray-400">
-          Déjà inscrit ?{" "}
+          {t('alreadyMember')}{" "}
           {onSwitchToLogin ? (
             <button
               type="button"
               onClick={onSwitchToLogin}
               className="text-amber-400 hover:text-amber-300 transition-colors font-medium"
             >
-              Se connecter
+              {t('signIn')}
             </button>
           ) : (
             <Link 
@@ -232,7 +233,7 @@ export function CoachSignUpModal({ open, onOpenChange, onSwitchToLogin }: CoachS
               className="text-amber-400 hover:text-amber-300 transition-colors font-medium" 
               onClick={() => onOpenChange(false)}
             >
-              Se connecter
+              {t('signIn')}
             </Link>
           )}
         </div>

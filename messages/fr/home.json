@@ -1,0 +1,169 @@
+{
+  "hero": {
+    "title1": "Progressez au poker",
+    "title2": "avec un coach 1-to-1",
+    "subtitle": "La plateforme qui connecte les joueurs sérieux à des coachs passionnés. Choisissez votre coach, planifiez vos sessions, progressez à votre rythme.",
+    "ctaPrimary": "Trouver un coach",
+    "ctaSecondary": "Créer un compte joueur",
+    "assurance": "Sans engagement — Paiement sécurisé — Plateforme en lancement",
+    "coachCta": "Vous êtes coach ?",
+    "coachCtaLink": "Rejoignez notre plateforme",
+    "mockupTitle": "Interface de coaching",
+    "mockupDescription": "Calendrier intégré • Suivi de progression • Paiements sécurisés",
+    "betaBadge": "Version bêta"
+  },
+  "howItWorks": {
+    "title": "Comment ça marche ?",
+    "subtitle": "Commence ton parcours vers l'excellence en 3 étapes simples",
+    "step1": {
+      "number": "01",
+      "title": "Choisis ton coach",
+      "description": "Parcours les profils vérifiés de nos coachs. Filtre par spécialité, niveau et tarif pour trouver celui qui te correspond."
+    },
+    "step2": {
+      "number": "02",
+      "title": "Réserve ta session",
+      "description": "Choisis un créneau disponible, paie en ligne de manière sécurisée via Stripe. Simple et rapide."
+    },
+    "step3": {
+      "number": "03",
+      "title": "Progresse avec ton coach",
+      "description": "Accède à tes replays, notes de session et suivi de progression directement dans ton dashboard."
+    }
+  },
+  "features": {
+    "title": "Pourquoi choisir Edgemy ?",
+    "subtitle": "Une plateforme pensée pour maximiser ta progression au poker",
+    "feature1": {
+      "title": "Des coachs passionnés",
+      "description": "Des coachs passionnés qui partagent leur expertise et leur expérience du poker à travers des sessions personnalisées."
+    },
+    "feature2": {
+      "title": "Sessions personnalisées",
+      "description": "Des sessions sur mesure où chaque coach adapte son approche en fonction de tes besoins et de ton style de jeu."
+    },
+    "feature3": {
+      "title": "Paiements sécurisés",
+      "description": "Transactions 100% sécurisées via Stripe. Tes données sont protégées."
+    },
+    "feature4": {
+      "title": "Réservations flexibles",
+      "description": "Planifie facilement tes sessions aux horaires qui te conviennent, selon la disponibilité des coachs."
+    }
+  },
+  "calculator": {
+    "title": "Calcule ton gain de productivité",
+    "subtitle": "Découvre combien de temps tu peux récupérer grâce à la simplification de ton organisation, planning et paiements",
+    "formTitle": "Tes informations",
+    "formDescription": "Ajuste les valeurs selon ton activité actuelle",
+    "resultsTitle": "Ton potentiel avec Edgemy",
+    "resultsDescription": "Résultats basés sur une simplification de ~55% des tâches d'organisation et coordination",
+    "inputs": {
+      "students": "Nombre d'élèves actifs / mois",
+      "sessions": "Sessions par semaine",
+      "duration": "Durée moyenne d'une session (heures)",
+      "rate": "Tarif horaire (€)",
+      "adminTime": "Temps admin/semaine (organisation, planning, paiements)"
+    },
+    "results": {
+      "valueRecovered": "Valeur du temps récupéré",
+      "perMonth": "Par mois, grâce à la simplification",
+      "timeRecovered": "Temps récupéré par mois",
+      "timeUse": "Pour coach, grinder ou te reposer",
+      "roi": "ROI mensuel",
+      "roiDescription": "Pour un abonnement à {price}€/mois",
+      "summary": "Avec Edgemy, tu récupères en moyenne {hours} heures par mois grâce à la simplification de l'organisation, du planning et des paiements. Cela représente environ {value}€ de valeur et un ROI de x{roi}, dès le premier mois."
+    },
+    "disclaimer": {
+      "title": "💡 Estimation indicative",
+      "text": "Ces résultats sont des estimations personnalisées basées sur tes informations. Les gains réels peuvent varier selon ton organisation, tes méthodes de travail et ton utilisation d'Edgemy. L'objectif d'Edgemy est de simplifier ta gestion administrative, optimiser ton temps et te permettre de te concentrer sur le coaching. Sans compter la visibilité accrue que tu gagnes en rejoignant notre communauté de coachs professionnels."
+    },
+    "cta": "Créer mon profil coach maintenant"
+  },
+  "dual": {
+    "title": "Edgemy s'adapte à ton profil",
+    "subtitle": "Que tu sois joueur ou coach, trouve ta place dans la communauté",
+    "player": {
+      "badge": "Pour les joueurs",
+      "title": "Trouve ton coach idéal",
+      "price": "Gratuit",
+      "commission": "{percent} de commission sur les réservations",
+      "description": "Accès gratuit à tous les coachs. Payez uniquement les séances que vous réservez. Bénéficiez de tarifs dégressifs sur les packs d'heures.",
+      "features": [
+        "Accès gratuit à la plateforme",
+        "6,5% de commission sur les réservations",
+        "Réductions sur les packs d'heures",
+        "Paiements sécurisés via Stripe"
+      ],
+      "cta": "Créer un compte joueur"
+    },
+    "coach": {
+      "badge": "Pour les coachs",
+      "title": "Développe ton activité",
+      "lite": {
+        "name": "LITE",
+        "description": "Fonctionnalités de base pour démarrer ton activité de coaching sur Edgemy.",
+        "features": [
+          "Profil public personnalisable",
+          "Visibilité dans l'annuaire",
+          "Tu gères tes propres moyens de paiement"
+        ]
+      },
+      "pro": {
+        "name": "PRO",
+        "recommended": "Recommandé",
+        "description": "Maximise ta visibilité et garde 100% du montant de tes sessions. Idéal pour les coachs actifs.",
+        "features": [
+          "Automatisation complète des paiements",
+          "Visibilité dans l'annuaire",
+          "Personnalisation avancée du profil",
+          "Support direct de l'équipe Edgemy",
+          "Tu gardes 100% du montant des sessions"
+        ],
+        "highlight": {
+          "title": "Avantage PRO",
+          "text": "Aucune commission prélevée sur tes réservations. Maximise tes revenus en gardant l'intégralité de tes gains."
+        }
+      },
+      "monthly": "Mensuel",
+      "yearly": "Annuel",
+      "perMonth": "/mois",
+      "perYear": "/an",
+      "yearlyDiscount": "-{percent}%",
+      "yearlyEquivalent": "Soit seulement {price}€/mois",
+      "cta": "Devenir coach sur Edgemy"
+    }
+  },
+  "mission": {
+    "badge": "Notre mission",
+    "title1": "Rendre le coaching poker",
+    "title2": "plus humain et accessible",
+    "subtitle": "Nous croyons qu'un bon accompagnement fait toute la différence. Edgemy connecte joueurs ambitieux et coachs d'excellence pour créer des parcours de progression sur mesure.",
+    "values": {
+      "community": {
+        "title": "Communauté",
+        "description": "Une plateforme pensée par et pour les passionnés de poker"
+      },
+      "quality": {
+        "title": "Qualité",
+        "description": "Coachs vérifiés et sessions de haute qualité garanties"
+      },
+      "simplicity": {
+        "title": "Simplicité",
+        "description": "Une expérience fluide du premier contact au suivi long terme"
+      }
+    }
+  },
+  "cta": {
+    "title1": "Rejoins la communauté Edgemy",
+    "title2": "dès aujourd'hui",
+    "subtitle": "Que tu sois joueur ou coach, commence ton parcours vers l'excellence. Rejoins une communauté de joueurs qui progressent déjà avec Edgemy.",
+    "primary": "Je m'inscris gratuitement",
+    "secondary": "Devenir coach sur Edgemy",
+    "trust": {
+      "signup": "Inscription rapide et gratuite",
+      "secure": "Paiements sécurisés",
+      "support": "Support réactif"
+    }
+  }
+}

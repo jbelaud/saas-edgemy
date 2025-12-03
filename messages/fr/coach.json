@@ -1,0 +1,53 @@
+{
+  "discoverCoaches": {
+    "hero": {
+      "title": "Découvrez nos coachs poker d'exception",
+      "subtitle": "Accédez aux meilleurs coachs actifs sur Edgemy, disponibles pour des sessions personnalisées.",
+      "ctaPrimary": "Explorer les coachs",
+      "ctaSecondary": "Devenir coach Edgemy",
+      "stat1": {
+        "label": "Coachs actifs abonnés"
+      },
+      "stat2": {
+        "value": "MTT • Cash Game • Spin & Go",
+        "label": "Formats couverts"
+      },
+      "stat3": {
+        "value": "Stratégie • Outils • Mental • Review",
+        "label": "Types de coaching disponibles"
+      }
+    },
+    "filters": {
+      "title": "Affinez votre recherche",
+      "searchPlaceholder": "Rechercher un coach ou un format...",
+      "typesTitle": "Catégories de coaching",
+      "formatsTitle": "Formats de jeu",
+      "languagesTitle": "Langues",
+      "reset": "Réinitialiser"
+    },
+    "states": {
+      "loading": "Chargement des coachs...",
+      "error": "Impossible de charger les coachs pour le moment.",
+      "empty": {
+        "title": "Aucun coach ne correspond à votre recherche",
+        "description": "Modifiez vos filtres ou revenez plus tard, de nouveaux coachs rejoignent Edgemy chaque semaine."
+      }
+    },
+    "card": {
+      "topCoach": "Top Coach",
+      "experience": "{count, plural, one {# an d'expérience} other {# ans d'expérience}}",
+      "priceFrom": "À partir de",
+      "perHour": " /heure",
+      "languages": "Langues",
+      "formats": "Formats",
+      "viewProfile": "Voir le profil",
+      "book": "Réserver"
+    },
+    "badges": {
+      "STRATEGY": "Stratégie",
+      "REVIEW": "Review",
+      "TOOL": "Outils",
+      "MENTAL": "Mental"
+    }
+  }
+}

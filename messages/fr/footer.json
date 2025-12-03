@@ -1,0 +1,33 @@
+{
+  "copyright": "© {year} Edgemy. Tous droits réservés.",
+  "tagline": "Coaching poker. Simplifié.",
+  "description": "La plateforme qui connecte joueurs ambitieux et coachs d'excellence.",
+  "madeWith": "Fait avec ❤️ pour la communauté poker",
+  "nav": {
+    "title": "Navigation",
+    "about": "À propos",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "legal": {
+    "title": "Légal",
+    "terms": "CGU",
+    "privacy": "Politique de confidentialité"
+  },
+  "social": {
+    "title": "Suivez-nous",
+    "discord": "Discord",
+    "twitter": "X (Twitter)"
+  },
+  "cta": {
+    "title": "Rejoignez la communauté Edgemy !",
+    "subtitle": "Boostez votre poker dès aujourd'hui et soyez parmi les premiers à découvrir notre plateforme",
+    "button": "Rejoindre la waitlist"
+  },
+  "baseline": "Coaching poker personnalisé pour joueurs francophones",
+  "links": {
+    "privacy": "Politique de confidentialité",
+    "terms": "Mentions légales",
+    "contact": "Contact"
+  }
+}

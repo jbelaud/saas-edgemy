@@ -1,0 +1,9 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome",
+  "stats": {
+    "totalSessions": "Total Sessions",
+    "totalRevenue": "Total Revenue",
+    "activeStudents": "Active Students"
+  }
+}

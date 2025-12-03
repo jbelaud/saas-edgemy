@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "@/lib/auth-client";
 import { Modal, GradientButton, Input, Label } from "@/components/ui";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface LoginModalProps {
   open: boolean;
@@ -15,10 +15,9 @@ interface LoginModalProps {
 
 export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToSignup }: LoginModalProps) {
   const locale = useLocale();
-  // En dev, pré-remplir avec le compte de test
-  const isDev = process.env.NODE_ENV === 'development';
-  const [email, setEmail] = useState(isDev ? "jeremy.belaud@gmail.com" : "");
-  const [password, setPassword] = useState(isDev ? "Jb@2024!" : "");
+  const t = useTranslations('auth.signIn');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,31 +26,24 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
     setIsLoading(true);
     setError(null);
     
-    console.log('🔐 Tentative de connexion avec:', { email, password: '***' });
-    
     try {
       const result = await signIn.email({
         email,
         password,
       });
       
-      console.log('✅ Résultat complet:', JSON.stringify(result, null, 2));
-      
       if (result?.error) {
-        // Extraire le message d'erreur de manière robuste
-        const err = result.error as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const err = result.error as Record<string, unknown>;
         let errorMessage = "Erreur de connexion";
         
         if (typeof err === 'string') {
           errorMessage = err;
-        } else if (err && typeof err === 'object') {
-          errorMessage = err.message || JSON.stringify(err);
+        } else if (err && typeof err === 'object' && 'message' in err) {
+          errorMessage = String(err.message);
         }
         
         setError(errorMessage);
-        console.error('❌ Erreur détaillée:', result.error);
       } else if (result?.data) {
-        console.log('✅ Connexion réussie, données:', result.data);
         onOpenChange(false);
         
         // Déterminer le dashboard approprié selon les rôles
@@ -64,15 +56,11 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
           window.location.href = `/${locale}/player/dashboard`;
         }
       } else {
-        console.log('⚠️ Résultat inattendu:', result);
         setError("Résultat de connexion inattendu");
       }
-    } catch (error) {
-      console.error("❌ Exception lors de la connexion:", error);
-      if (error instanceof Error) {
-        console.error("❌ Stack:", error.stack);
-        console.error("❌ Message:", error.message);
-        setError(error.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
       } else {
         setError("Une erreur est survenue lors de la connexion");
       }
@@ -101,13 +89,13 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
     <Modal 
       open={open} 
       onClose={() => onOpenChange(false)}
-      title="Se connecter"
+      title={t('title')}
       maxWidth="md"
     >
       <div className="space-y-6">
         {/* Description */}
         <p className="text-gray-400 text-sm">
-          Connectez-vous à votre compte Edgemy
+          {t('subtitle')}
         </p>
 
         {/* Google Login */}
@@ -135,7 +123,7 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-          Continuer avec Google
+          {t('googleButton')}
         </GradientButton>
 
         {/* Divider */}
@@ -145,7 +133,7 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-slate-900 px-2 text-gray-500">
-              Ou continuer avec
+              {t('orContinueWith')}
             </span>
           </div>
         </div>
@@ -160,11 +148,11 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
           
           {/* Email Field */}
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-300">Email</Label>
+            <Label htmlFor="email" className="text-gray-300">{t('email')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="coach-actif@edgemy.fr"
+              placeholder={t('emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -175,31 +163,24 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
           {/* Password Field */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-gray-300">Mot de passe</Label>
+              <Label htmlFor="password" className="text-gray-300">{t('password')}</Label>
               <Link
                 href="/forgot-password"
                 className="text-sm text-amber-400 hover:text-amber-300 transition-colors"
               >
-                Mot de passe oublié ?
+                {t('forgotPassword')}
               </Link>
             </div>
             <Input
               id="password"
               type="password"
-              placeholder="Password123!"
+              placeholder={t('passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-amber-500/50"
             />
           </div>
-          
-          {/* Dev Notice */}
-          {isDev && (
-            <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-3 py-2 rounded-xl text-xs">
-              💡 Mode dev : Champs pré-remplis avec coach-actif@edgemy.fr
-            </div>
-          )}
           
           {/* Submit Button */}
           <GradientButton 
@@ -208,27 +189,27 @@ export function LoginModal({ open, onOpenChange, context = 'player', onSwitchToS
             fullWidth 
             disabled={isLoading}
           >
-            {isLoading ? "Connexion..." : "Se connecter"}
+            {isLoading ? t('submitting') : t('submit')}
           </GradientButton>
         </form>
 
         {/* Sign Up Link */}
         <div className="text-center text-sm text-gray-400">
-          Pas encore de compte ?{" "}
+          {t('noAccount')}{" "}
           {onSwitchToSignup ? (
             <button
               type="button"
               onClick={onSwitchToSignup}
               className="text-amber-400 hover:text-amber-300 transition-colors font-medium"
             >
-              S&apos;inscrire
+              {t('signUp')}
             </button>
           ) : (
             <Link 
               href={`/signup?context=${context}`} 
               className="text-amber-400 hover:text-amber-300 transition-colors font-medium"
             >
-              S&apos;inscrire
+              {t('signUp')}
             </Link>
           )}
         </div>
