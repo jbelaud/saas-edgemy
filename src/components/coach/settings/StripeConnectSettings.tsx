@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { Button } from '@/components/ui/button';
 import { Shield, CheckCircle2, AlertTriangle, Loader2, ExternalLink, Zap } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -74,9 +75,8 @@ export function StripeConnectSettings() {
   const handleConnect = async (refresh = false) => {
     setIsConnecting(true);
     try {
-      const response = await fetch('/api/stripe/connect/account-link', {
+      const response = await fetchWithCsrf('/api/stripe/connect/account-link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh }),
       });
 

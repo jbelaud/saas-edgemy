@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
@@ -247,11 +248,8 @@ export function BookingModal({ isOpen, onClose, announcement, coachId, selectedP
 
     try {
       // Appeler l'API centralisée de réservation
-      const response = await fetch('/api/reservations/create', {
+      const response = await fetchWithCsrf('/api/reservations/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           announcementId: announcement.id,
           coachId,

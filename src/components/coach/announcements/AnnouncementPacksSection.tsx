@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -104,9 +105,8 @@ export function AnnouncementPacksSection({ announcementId, hourlyRate }: Announc
       const discountPercent = calculateDiscount(hours, totalPrice);
 
       if (editingPack) {
-        const response = await fetch(`/api/coach/announcement/${announcementId}/packs`, {
+        const response = await fetchWithCsrf(`/api/coach/announcement/${announcementId}/packs`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             packId: editingPack.id,
             hours,
@@ -117,9 +117,8 @@ export function AnnouncementPacksSection({ announcementId, hourlyRate }: Announc
 
         if (!response.ok) throw new Error('Erreur lors de la modification');
       } else {
-        const response = await fetch(`/api/coach/announcement/${announcementId}/packs`, {
+        const response = await fetchWithCsrf(`/api/coach/announcement/${announcementId}/packs`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             hours,
             totalPrice,
@@ -146,7 +145,7 @@ export function AnnouncementPacksSection({ announcementId, hourlyRate }: Announc
       'Êtes-vous sûr de vouloir supprimer ce pack ? Cette action est irréversible.',
       async () => {
         try {
-          const response = await fetch(
+          const response = await fetchWithCsrf(
             `/api/coach/announcement/${announcementId}/packs?packId=${packId}`,
             { method: 'DELETE' }
           );

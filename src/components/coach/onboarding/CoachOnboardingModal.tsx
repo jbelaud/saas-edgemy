@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { Progress } from '@/components/ui/progress';
@@ -80,9 +81,8 @@ export function CoachOnboardingModal({
   // Sauvegarder automatiquement le brouillon
   const saveDraft = async (data: Partial<OnboardingData>, step: number) => {
     try {
-      await fetch('/api/coach/draft', {
+      await fetchWithCsrf('/api/coach/draft', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, currentStep: step }),
       });
     } catch (error) {
@@ -109,9 +109,8 @@ export function CoachOnboardingModal({
     try {
       const completeData = { ...formData, ...stepData };
 
-      const response = await fetch('/api/coach/onboard', {
+      const response = await fetchWithCsrf('/api/coach/onboard', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(completeData),
       });
 

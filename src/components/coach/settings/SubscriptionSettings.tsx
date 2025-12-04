@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle2, Calendar, TrendingUp } from 'lucide-react';
@@ -71,11 +72,8 @@ export function SubscriptionSettings() {
     
     try {
       setIsCanceling(true);
-      const response = await fetch('/api/coach/subscription/cancel', {
+      const response = await fetchWithCsrf('/api/coach/subscription/cancel', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
       if (!response.ok) {
@@ -133,11 +131,8 @@ export function SubscriptionSettings() {
   const handleChangePlan = async (newPlan: 'MONTHLY' | 'YEARLY') => {
     setIsChanging(true);
     try {
-      const response = await fetch('/api/coach/subscription/change-plan', {
+      const response = await fetchWithCsrf('/api/coach/subscription/change-plan', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ newPlan }),
       });
 

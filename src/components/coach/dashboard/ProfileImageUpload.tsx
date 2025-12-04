@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Upload, Loader2, Trash2, User, Image as ImageIcon } from 'lucide-react';
@@ -61,7 +62,7 @@ export function ProfileImageUpload({
       formData.append('file', file);
       formData.append('type', type);
 
-      const response = await fetch('/api/upload', {
+      const response = await fetchWithCsrf('/api/upload', {
         method: 'POST',
         body: formData,
       });
@@ -74,9 +75,8 @@ export function ProfileImageUpload({
       const { url } = await response.json();
 
       // Mettre à jour le profil coach avec la nouvelle URL
-      const updateResponse = await fetch('/api/coach/profile/images', {
+      const updateResponse = await fetchWithCsrf('/api/coach/profile/images', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           [type === 'avatar' ? 'avatarUrl' : 'bannerUrl']: url,
         }),
@@ -107,9 +107,8 @@ export function ProfileImageUpload({
 
     try {
       // Supprimer l'image du profil (on met juste null en BDD, Supabase garde le fichier)
-      const response = await fetch('/api/coach/profile/images', {
+      const response = await fetchWithCsrf('/api/coach/profile/images', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           [type === 'avatar' ? 'avatarUrl' : 'bannerUrl']: null,
         }),

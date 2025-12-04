@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -72,9 +73,8 @@ export function DashboardProfile({ coach }: DashboardProfileProps) {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/coach/onboard', {
+      const response = await fetchWithCsrf('/api/coach/onboard', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 

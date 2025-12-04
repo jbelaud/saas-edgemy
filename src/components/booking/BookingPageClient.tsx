@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
@@ -110,9 +111,8 @@ export function BookingPageClient({
 
     try {
       // Créer la réservation
-      const reservationResponse = await fetch('/api/reservations/create', {
+      const reservationResponse = await fetchWithCsrf('/api/reservations/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           announcementId: announcement.id,
           coachId: coach.id,
@@ -146,9 +146,8 @@ export function BookingPageClient({
       }
 
       // Pour le plan PRO avec paiement, créer la session Stripe
-      const stripeResponse = await fetch('/api/stripe/create-session', {
+      const stripeResponse = await fetchWithCsrf('/api/stripe/create-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reservationId: reservationData.reservationId,
           coachId: coach.id,

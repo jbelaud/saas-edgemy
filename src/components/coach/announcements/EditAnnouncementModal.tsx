@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,9 +79,8 @@ export function EditAnnouncementModal({
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/coach/announcement', {
+      const response = await fetchWithCsrf('/api/coach/announcement', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: announcement.id,
           title: formData.title,

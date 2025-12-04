@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -112,9 +113,8 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
 
       if (editingPack) {
         // Modifier
-        const response = await fetch(`/api/coach/announcement/${announcementId}/packs`, {
+        const response = await fetchWithCsrf(`/api/coach/announcement/${announcementId}/packs`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             packId: editingPack.id,
             hours,
@@ -126,9 +126,8 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
         if (!response.ok) throw new Error('Erreur lors de la modification');
       } else {
         // Créer
-        const response = await fetch(`/api/coach/announcement/${announcementId}/packs`, {
+        const response = await fetchWithCsrf(`/api/coach/announcement/${announcementId}/packs`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             hours,
             totalPrice,
@@ -155,7 +154,7 @@ export function PacksManager({ announcementId, hourlyRate }: PacksManagerProps) 
       'Êtes-vous sûr de vouloir supprimer ce pack ? Cette action est irréversible.',
       async () => {
         try {
-          const response = await fetch(
+          const response = await fetchWithCsrf(
             `/api/coach/announcement/${announcementId}/packs?packId=${packId}`,
             { method: 'DELETE' }
           );

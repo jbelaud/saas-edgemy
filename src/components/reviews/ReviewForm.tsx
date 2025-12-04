@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { useRouter } from 'next/navigation';
 import { Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -48,11 +49,8 @@ export function ReviewForm({ coachId, coachName, locale }: ReviewFormProps) {
         throw new Error('Veuillez écrire un commentaire d\'au moins 10 caractères');
       }
 
-      const response = await fetch('/api/reviews/submit', {
+      const response = await fetchWithCsrf('/api/reviews/submit', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           coachId,
           rating,

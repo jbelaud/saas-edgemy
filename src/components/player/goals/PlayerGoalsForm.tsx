@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { useSession } from '@/lib/auth-client';
 import { GlassCard, GradientButton, GradientText } from '@/components/ui';
 import { Label } from '@/components/ui/label';
@@ -79,11 +80,8 @@ export function PlayerGoalsForm() {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/player/${playerId}`, {
+      const response = await fetchWithCsrf(`/api/player/${playerId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           goals,
           formats,

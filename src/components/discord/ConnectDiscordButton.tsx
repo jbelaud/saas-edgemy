@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/lib/auth-client';
 import { useSearchParams } from 'next/navigation';
@@ -109,7 +110,7 @@ export function ConnectDiscordButton({ className }: ConnectDiscordButtonProps) {
 
   const confirmDisconnectAction = async () => {
     try {
-      const response = await fetch('/api/discord/disconnect', {
+      const response = await fetchWithCsrf('/api/discord/disconnect', {
         method: 'POST',
       });
 

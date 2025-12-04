@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -51,9 +52,8 @@ export function PaymentPreferencesForm() {
       setIsSaving(true);
       setSuccessMessage('');
 
-      const response = await fetch('/api/coach/payment-preferences', {
+      const response = await fetchWithCsrf('/api/coach/payment-preferences', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           paymentPreferences,
         }),

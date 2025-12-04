@@ -1,5 +1,6 @@
 'use client';
 
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Star, Twitch, Youtube, Twitter, MessageCircle, Bell } from 'lucide-react';
@@ -82,9 +83,8 @@ export function CoachHeader({ coach, reviewStats, studentsCount }: CoachHeaderPr
 
     setIsNotifying(true);
     try {
-      const response = await fetch('/api/coach/notify-inactive', {
+      const response = await fetchWithCsrf('/api/coach/notify-inactive', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ coachId: coach.id }),
       });
 

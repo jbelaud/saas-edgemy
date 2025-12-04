@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { GlassCard } from '@/components/ui';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -58,7 +59,7 @@ export function PendingExternalPayments() {
 
     try {
       setConfirmingId(reservationId);
-      const response = await fetch(`/api/reservations/${reservationId}/confirm-external-payment`, {
+      const response = await fetchWithCsrf(`/api/reservations/${reservationId}/confirm-external-payment`, {
         method: 'POST',
       });
 

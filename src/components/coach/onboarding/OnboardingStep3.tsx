@@ -1,5 +1,6 @@
 'use client';
 
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,7 @@ export function OnboardingStep3({ data, onNext, onBack, isLoading = false }: Pro
       formData.append('file', file);
       formData.append('type', type);
 
-      const response = await fetch('/api/upload', {
+      const response = await fetchWithCsrf('/api/upload', {
         method: 'POST',
         body: formData,
       });

@@ -1,5 +1,6 @@
 'use client';
 
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -94,9 +95,8 @@ export function ToolForm({ onSuccess, isLoading, setIsLoading }: ToolFormProps) 
 
       console.log('📤 Envoi annonce Tool:', payload);
 
-      const response = await fetch('/api/coach/announcement', {
+      const response = await fetchWithCsrf('/api/coach/announcement', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 

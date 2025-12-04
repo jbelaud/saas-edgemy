@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { useLocale } from 'next-intl';
 import { Check, Zap, Loader2, Gift, CheckCircle2, AlertCircle, Sparkles, CreditCard } from 'lucide-react';
 import {
@@ -70,9 +71,8 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
     setPromoMessage(null);
 
     try {
-      const response = await fetch('/api/subscription/activate', {
+      const response = await fetchWithCsrf('/api/subscription/activate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code: promoCode.toUpperCase(),
           planKey: selectedPlan, // Envoyer le plan sélectionné
@@ -107,9 +107,8 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
   const handleSubscribe = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/stripe/checkout/subscription', {
+      const response = await fetchWithCsrf('/api/stripe/checkout/subscription', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           plan: billingPeriod,
           planKey: selectedPlan, // Envoyer le plan (PRO ou LITE)

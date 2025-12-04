@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { GlassCard } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Edit, Trash2, Eye, EyeOff, Euro, Clock, Megaphone } from 'lucide-react';
@@ -93,9 +94,8 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
 
   const handleToggleActive = async (announcement: Announcement) => {
     try {
-      const response = await fetch('/api/coach/announcement', {
+      const response = await fetchWithCsrf('/api/coach/announcement', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: announcement.id,
           isActive: !announcement.isActive,
@@ -116,7 +116,7 @@ export function DashboardAnnouncements({ coach }: DashboardAnnouncementsProps) {
       'Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible.',
       async () => {
         try {
-          const response = await fetch(`/api/coach/announcement?id=${id}`, {
+          const response = await fetchWithCsrf(`/api/coach/announcement?id=${id}`, {
             method: 'DELETE',
           });
 

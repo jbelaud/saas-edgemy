@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { Button } from '@/components/ui/button';
 import { CreditCard, CheckCircle2, ExternalLink } from 'lucide-react';
 import type { OnboardingData } from '@/types/coach';
@@ -18,9 +19,8 @@ export function OnboardingStep4({ data, onNext, onBack }: Props) {
   const handleStripeConnect = async () => {
     setIsConnecting(true);
     try {
-      const response = await fetch('/api/stripe/connect/account-link', {
+      const response = await fetchWithCsrf('/api/stripe/connect/account-link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh: false }),
       });
 

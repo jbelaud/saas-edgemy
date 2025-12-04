@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { X, Users, Package, Clock, Calendar as CalendarIcon } from "lucide-react";
 import { useAlertDialog } from '@/hooks/useAlertDialog';
 import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
@@ -119,9 +120,8 @@ export default function SchedulePackSessionModal({
         return;
       }
 
-      const res = await fetch('/api/coach/schedule-pack-session', {
+      const res = await fetchWithCsrf('/api/coach/schedule-pack-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           packageId: selectedPackage.id,
           startDate: startUTC,

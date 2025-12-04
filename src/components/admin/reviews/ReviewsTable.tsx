@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { Star, Check, X, Eye, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -43,7 +44,7 @@ export function ReviewsTable({ reviews: initialReviews }: ReviewsTableProps) {
   const handleApprove = async (reviewId: string) => {
     try {
       setProcessingId(reviewId);
-      const response = await fetch(`/api/admin/reviews/${reviewId}/approve`, {
+      const response = await fetchWithCsrf(`/api/admin/reviews/${reviewId}/approve`, {
         method: 'POST',
       });
 
@@ -72,7 +73,7 @@ export function ReviewsTable({ reviews: initialReviews }: ReviewsTableProps) {
 
     try {
       setProcessingId(reviewId);
-      const response = await fetch(`/api/admin/reviews/${reviewId}/reject`, {
+      const response = await fetchWithCsrf(`/api/admin/reviews/${reviewId}/reject`, {
         method: 'DELETE',
       });
 
@@ -95,9 +96,8 @@ export function ReviewsTable({ reviews: initialReviews }: ReviewsTableProps) {
   const handleToggleVisibility = async (reviewId: string, currentStatus: boolean) => {
     try {
       setProcessingId(reviewId);
-      const response = await fetch(`/api/admin/reviews/${reviewId}/toggle`, {
+      const response = await fetchWithCsrf(`/api/admin/reviews/${reviewId}/toggle`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublic: !currentStatus }),
       });
 

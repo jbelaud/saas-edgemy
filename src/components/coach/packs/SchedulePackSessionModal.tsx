@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { fetchWithCsrf } from '@/lib/security/csrf-client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -79,9 +80,8 @@ export function SchedulePackSessionModal({
       const endDate = new Date(startDate);
       endDate.setMinutes(endDate.getMinutes() + durationMin);
 
-      const response = await fetch(`/api/coach/packs/${packId}/schedule`, {
+      const response = await fetchWithCsrf(`/api/coach/packs/${packId}/schedule`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           playerId,
           startDate: startDate.toISOString(),
