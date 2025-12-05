@@ -107,11 +107,31 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
   const handleSubscribe = async () => {
     setIsLoading(true);
     try {
+      // Plan LITE = paiement externe (pas Stripe)
+      if (selectedPlan === 'LITE') {
+        const response = await fetchWithCsrf('/api/coach/subscription/activate-lite', {
+          method: 'POST',
+          body: JSON.stringify({
+            billingPeriod,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Erreur lors de l\'activation du plan LITE');
+        }
+
+        // Rediriger vers le dashboard avec message de succès
+        window.location.href = `/${locale}/coach/dashboard?subscription=lite_pending`;
+        return;
+      }
+
+      // Plan PRO = Stripe Checkout
       const response = await fetchWithCsrf('/api/stripe/checkout/subscription', {
         method: 'POST',
         body: JSON.stringify({
           plan: billingPeriod,
-          planKey: selectedPlan, // Envoyer le plan (PRO ou LITE)
+          planKey: selectedPlan,
           locale
         }),
       });
@@ -321,12 +341,15 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Redirection vers le paiement...
+                  {selectedPlan === 'LITE' ? 'Activation en cours...' : 'Redirection vers le paiement...'}
                 </>
               ) : (
                 <>
                   <Zap className="mr-2 h-5 w-5" />
-                  S&apos;abonner au Plan {selectedPlan} - {currentPrice}€/{currentPeriod}
+                  {selectedPlan === 'LITE' 
+                    ? `Activer le Plan LITE - ${currentPrice}€/${currentPeriod}`
+                    : `S'abonner au Plan PRO - ${currentPrice}€/${currentPeriod}`
+                  }
                 </>
               )}
             </GradientButton>
@@ -334,12 +357,25 @@ export function SubscriptionModalCoach({ open, onOpenChange }: SubscriptionModal
 
           {/* Info */}
           <div className="text-center text-xs md:text-sm text-gray-400 space-y-1">
-            <p>
-              Paiement sécurisé via Stripe • Annulation possible à tout moment
-            </p>
-            <p className="text-xs">
-              L&apos;abonnement se renouvelle automatiquement mais vous pouvez annuler quand vous le souhaitez
-            </p>
+            {selectedPlan === 'PRO' ? (
+              <>
+                <p>
+                  Paiement sécurisé via Stripe • Annulation possible à tout moment
+                </p>
+                <p className="text-xs">
+                  L&apos;abonnement se renouvelle automatiquement mais vous pouvez annuler quand vous le souhaitez
+                </p>
+              </>
+            ) : (
+              <>
+                <p>
+                  Paiement externe (Wise, Revolut, USDT, virement) • Validation sous 24h
+                </p>
+                <p className="text-xs">
+                  Après activation, vous recevrez les instructions de paiement par email
+                </p>
+              </>
+            )}
           </div>
         </div>
       </DialogContent>

@@ -163,10 +163,10 @@ export default function CoachPacksPage() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <GradientText className="text-4xl font-bold mb-2">
-            {t('title')}
+          <GradientText variant="amber" className="text-4xl font-bold mb-2">
+            📦 {t('title')}
           </GradientText>
-          <p className="text-gray-400">
+          <p className="text-gray-400 text-lg">
             {t('subtitle')}
           </p>
         </div>

@@ -7,7 +7,7 @@ import { useSession } from '@/lib/auth-client';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Loader2, Plus, Eye, Megaphone } from 'lucide-react';
+import { Loader2, Plus, Eye } from 'lucide-react';
 import { GradientText } from '@/components/ui';
 import { useCoachAccess } from '@/hooks/useCoachAccess';
 import { CoachAccessGuard } from '@/components/coach/guards/CoachAccessGuard';
@@ -107,9 +107,8 @@ export default function CoachAnnouncementsPage() {
       {/* Header */}
       <div className="mb-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <GradientText variant="emerald" className="text-4xl font-bold mb-2 flex items-center gap-3">
-            <Megaphone className="w-10 h-10" />
-            {t('title')}
+          <GradientText variant="emerald" className="text-4xl font-bold mb-2">
+            📢 {t('title')}
           </GradientText>
           <p className="text-gray-400 text-lg">
             {t('subtitle')}

@@ -112,19 +112,14 @@ export default function CoachRevenuePage() {
   return (
     <CoachLayout>
       <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-        <header className="flex flex-col gap-3">
-          <div className="inline-flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/25">
-              <Euro className="h-6 w-6 text-emerald-300" />
-            </div>
-            <GradientText className="text-3xl font-semibold" variant="emerald">
-              {t('title')}
-            </GradientText>
-          </div>
-          <p className="text-gray-300 max-w-2xl">
+        <div className="mb-8">
+          <GradientText variant="emerald" className="text-4xl font-bold mb-2">
+            💰 {t('title')}
+          </GradientText>
+          <p className="text-gray-400 text-lg">
             {t('subtitle')}
           </p>
-        </header>
+        </div>
 
         <SubscriptionGate isActive={subscriptionStatus === 'ACTIVE'}>
         {/* KPI cards */}
