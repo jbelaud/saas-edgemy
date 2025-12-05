@@ -77,7 +77,7 @@ export async function redirectToCheckout(params: PaymentSessionParams): Promise<
  */
 export async function redirectToCoachSubscription(plan: 'MONTHLY' | 'YEARLY'): Promise<void> {
   try {
-    const response = await fetch('/api/stripe/subscribe-coach', {
+    const response = await fetch('/api/stripe/checkout/subscription', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan }),
@@ -106,7 +106,7 @@ export async function redirectToCoachSubscription(plan: 'MONTHLY' | 'YEARLY'): P
  */
 export async function cancelCoachSubscription(): Promise<{ message: string; currentPeriodEnd: Date }> {
   try {
-    const response = await fetch('/api/stripe/subscribe-coach', {
+    const response = await fetch('/api/stripe/checkout/subscription', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     });

@@ -156,3 +156,64 @@ export async function POST(req: Request) {
     );
   }
 }
+
+/**
+ * DELETE /api/stripe/checkout/subscription
+ * Annuler l'abonnement d'un coach (fin de période)
+ */
+export async function DELETE() {
+  try {
+    // Vérifier l'authentification
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
+
+    // Récupérer le coach
+    const coach = await prisma.coach.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!coach) {
+      return NextResponse.json(
+        { error: 'Profil coach non trouvé' },
+        { status: 404 }
+      );
+    }
+
+    if (!coach.subscriptionId) {
+      return NextResponse.json(
+        { error: 'Aucun abonnement actif' },
+        { status: 400 }
+      );
+    }
+
+    // Annuler l'abonnement Stripe (fin de période)
+    const subscription = await stripe.subscriptions.update(coach.subscriptionId, {
+      cancel_at_period_end: true,
+    });
+
+    const currentPeriodEnd = new Date(
+      (subscription as unknown as { current_period_end: number }).current_period_end * 1000
+    );
+
+    console.log(`✅ Abonnement ${coach.subscriptionId} annulé (fin de période: ${currentPeriodEnd.toISOString()})`);
+
+    return NextResponse.json({
+      message: 'Abonnement annulé. Il restera actif jusqu\'à la fin de la période en cours.',
+      currentPeriodEnd,
+    });
+  } catch (err) {
+    console.error('❌ Erreur annulation abonnement:', err);
+    return NextResponse.json(
+      {
+        error: 'Erreur lors de l\'annulation de l\'abonnement',
+        details: err instanceof Error ? err.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
+  }
+}
