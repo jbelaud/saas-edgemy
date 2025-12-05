@@ -72,12 +72,12 @@ export function StripeConnectSettings() {
     }
   }, [searchParams]);
 
-  const handleConnect = async (refresh = false) => {
+  const handleConnect = async () => {
     setIsConnecting(true);
     try {
       const response = await fetchWithCsrf('/api/stripe/connect/account-link', {
         method: 'POST',
-        body: JSON.stringify({ refresh }),
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -284,62 +284,62 @@ export function StripeConnectSettings() {
           {/* Bouton d'action */}
           <div className="flex flex-col gap-3">
             {!status?.connected ? (
-          <Button
-            onClick={() => handleConnect(false)}
-            disabled={isConnecting}
-            size="sm"
-            className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 shadow-lg shadow-sky-500/30"
-          >
-            {isConnecting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Connexion en cours...
-              </>
+              <Button
+                onClick={() => handleConnect()}
+                disabled={isConnecting}
+                size="sm"
+                className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 shadow-lg shadow-sky-500/30"
+              >
+                {isConnecting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Création du compte...
+                  </>
+                ) : (
+                  <>
+                    Créer mon compte Stripe
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            ) : !isFullyConnected ? (
+              <Button
+                onClick={() => handleConnect()}
+                disabled={isConnecting}
+                size="sm"
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-lg shadow-amber-500/30"
+              >
+                {isConnecting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connexion en cours...
+                  </>
+                ) : (
+                  <>
+                    Compléter la configuration
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
             ) : (
-              <>
-                Configurer mon compte Stripe
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        ) : !isFullyConnected ? (
-          <Button
-            onClick={() => handleConnect(false)}
-            disabled={isConnecting}
-            size="sm"
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-lg shadow-amber-500/30"
-          >
-            {isConnecting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Connexion en cours...
-              </>
-            ) : (
-              <>
-                Compléter la configuration
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        ) : (
-          <Button
-            onClick={() => handleConnect(true)}
-            disabled={isConnecting}
-            size="sm"
-            className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold shadow-lg shadow-emerald-500/30"
-          >
-            {isConnecting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Chargement...
-              </>
-            ) : (
-              <>
-                Accéder au tableau de bord Stripe
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
+              <Button
+                onClick={() => handleConnect()}
+                disabled={isConnecting}
+                size="sm"
+                className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold shadow-lg shadow-emerald-500/30"
+              >
+                {isConnecting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Chargement...
+                  </>
+                ) : (
+                  <>
+                    Voir mon tableau de bord Stripe
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
             )}
           </div>
 

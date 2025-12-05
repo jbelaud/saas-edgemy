@@ -136,26 +136,36 @@ export async function POST(req: Request) {
     const isOnboardingComplete = account.details_submitted === true;
     const isPayoutsEnabled = account.payouts_enabled === true;
     const isChargesEnabled = account.charges_enabled === true;
+    const isFullyConnected = isOnboardingComplete && isPayoutsEnabled && isChargesEnabled;
 
-    // Déterminer le type de lien - Toujours utiliser 'account_onboarding'
-    // car 'account_update' nécessite que payouts_enabled et charges_enabled soient true
-    const linkType = 'account_onboarding';
+    console.log(`ℹ️ Compte ${accountId}: details_submitted=${isOnboardingComplete}, payouts_enabled=${isPayoutsEnabled}, charges_enabled=${isChargesEnabled}, isFullyConnected=${isFullyConnected}`);
 
-    console.log(`ℹ️ Compte ${accountId}: details_submitted=${isOnboardingComplete}, payouts_enabled=${isPayoutsEnabled}, charges_enabled=${isChargesEnabled}, type de lien: ${linkType}`);
+    // Si le compte est entièrement configuré, créer un Login Link vers le dashboard Express
+    if (isFullyConnected) {
+      const loginLink = await stripe.accounts.createLoginLink(accountId);
+      console.log(`✅ Login Link créé pour coach ${coach.id} - Accès au dashboard Stripe`);
 
-    // Créer l'Account Link pour l'onboarding
+      return NextResponse.json({
+        url: loginLink.url,
+        accountId,
+        type: 'login',
+      });
+    }
+
+    // Sinon, créer un Account Link pour compléter l'onboarding
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/fr/coach/settings?stripe_refresh=true`,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL}/fr/coach/settings?stripe_success=true`,
-      type: linkType,
+      type: 'account_onboarding',
     });
 
-    console.log(`✅ Account Link créé pour coach ${coach.id}`);
+    console.log(`✅ Account Link (onboarding) créé pour coach ${coach.id}`);
 
     return NextResponse.json({
       url: accountLink.url,
       accountId,
+      type: 'onboarding',
     });
   } catch (err) {
     console.error('❌ Erreur création Account Link:', err);
