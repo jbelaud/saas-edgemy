@@ -53,6 +53,7 @@ export default function CoachDashboardPage() {
     const setupFromUrl = searchParams.get('setupCoach') === 'true';
     const setupFromStorage = typeof window !== 'undefined' && localStorage.getItem('pendingCoachRole') === 'true';
     setIsSettingUp(setupFromUrl || setupFromStorage);
+
   }, [searchParams]);
 
   useEffect(() => {
@@ -235,6 +236,7 @@ export default function CoachDashboardPage() {
             isStripeConnected={isStripeConnected ?? false}
             isDiscordConnected={isDiscordConnected ?? false}
             planKey={coach.planKey}
+            hasAnnouncements={stats.activeAnnouncements > 0}
             onConnectStripe={handleConnectStripe}
             onConnectDiscord={handleConnectDiscord}
             onCreateAnnouncement={handleCreateAnnouncement}

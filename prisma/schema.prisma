@@ -60,7 +60,7 @@ model coach {
   bannerUrl              String?
   avatarUrl              String?
   status                 CoachStatus       @default(INACTIVE)
-  planKey                String            @default("PRO") // Référence à Plan.key (PRO, LITE, etc.)
+  planKey                String?           // Référence à Plan.key (PRO, LITE, etc.) - défini après choix abonnement
   stripeAccountId        String?
   stripeCustomerId       String?           // ID client Stripe pour abonnement
   subscriptionId         String?           // ID abonnement Stripe

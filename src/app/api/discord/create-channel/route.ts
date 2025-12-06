@@ -329,6 +329,7 @@ export async function POST(request: NextRequest) {
         minute: '2-digit',
       })}\n` +
       `📚 **Sujet**: ${reservation.announcement.title}\n\n` +
+      `📹 **Visio**: Le coach communiquera le lien de la visio avant la session.\n\n` +
       `Bon coaching ! 🚀`;
 
     await fetch(

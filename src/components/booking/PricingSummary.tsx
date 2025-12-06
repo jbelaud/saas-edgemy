@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Receipt, AlertCircle, Loader2, CheckCircle, CreditCard } from 'lucide-react';
+import { Receipt, AlertCircle, Loader2, CheckCircle, CreditCard, MessageSquare, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { calculateForSession, calculateForPack } from '@/lib/stripe/pricing';
 import Link from 'next/link';
@@ -33,6 +33,8 @@ interface PricingSummaryProps {
   error: string | null;
   canBook: boolean;
   onBook: () => void;
+  isLitePlan?: boolean;
+  paymentPreferences?: string[];
 }
 
 export function PricingSummary({
@@ -44,6 +46,8 @@ export function PricingSummary({
   error,
   canBook,
   onBook,
+  isLitePlan = false,
+  paymentPreferences = [],
 }: PricingSummaryProps) {
   // Vérifier si c'est une annonce gratuite
   const isFree = announcement.priceCents === 0;
@@ -142,6 +146,20 @@ export function PricingSummary({
               </div>
             </div>
           </div>
+        ) : isLitePlan ? (
+          <div className="space-y-3">
+            <div className="border-t pt-3">
+              <div className="flex justify-between">
+                <span className="font-semibold text-gray-900">Montant de la session</span>
+                <span className="text-2xl font-bold text-blue-600">
+                  {(pricing.coachNetCents / 100).toFixed(2)}€
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                À régler directement avec le coach
+              </p>
+            </div>
+          </div>
         ) : (
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
@@ -238,6 +256,11 @@ export function PricingSummary({
               <CheckCircle className="mr-2 h-5 w-5" />
               Confirmer la réservation
             </>
+          ) : isLitePlan ? (
+            <>
+              <MessageSquare className="mr-2 h-5 w-5" />
+              Réserver et contacter le coach
+            </>
           ) : (
             <>
               <CreditCard className="mr-2 h-5 w-5" />
@@ -247,7 +270,7 @@ export function PricingSummary({
         </Button>
 
         {/* Payment Info */}
-        {!isFree && (
+        {!isFree && !isLitePlan && (
           <div className="text-center">
             <p className="text-xs text-gray-500">
               Paiement sécurisé par Stripe
@@ -255,6 +278,35 @@ export function PricingSummary({
             <p className="text-xs text-gray-400 mt-1">
               Vos données bancaires sont protégées
             </p>
+          </div>
+        )}
+
+        {/* LITE Plan Info */}
+        {!isFree && isLitePlan && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-2 mb-2">
+              <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <h4 className="text-sm font-semibold text-blue-900">Coach Plan LITE</h4>
+            </div>
+            <p className="text-xs text-blue-800 mb-3">
+              Le paiement s&apos;effectue <strong>directement avec le coach</strong> via Discord. 
+              Le coach vous communiquera son lien de paiement lors de vos échanges.
+            </p>
+            {paymentPreferences.length > 0 && (
+              <div className="bg-white/50 rounded p-2">
+                <p className="text-xs font-semibold text-blue-900 mb-1">Moyens de paiement acceptés :</p>
+                <ul className="text-xs text-blue-800 space-y-0.5">
+                  {paymentPreferences.map((pref, idx) => (
+                    <li key={idx}>• {pref}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="mt-3 pt-3 border-t border-blue-200">
+              <p className="text-[10px] text-blue-700">
+                ⚠️ Edgemy n&apos;est pas impliqué dans la transaction. Le paiement se fait directement entre vous et le coach.
+              </p>
+            </div>
           </div>
         )}
 

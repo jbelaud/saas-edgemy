@@ -20,6 +20,12 @@ export function AuthButton() {
   const t = useTranslations('header.auth');
   const { data: session, isPending } = useSession();
   const [coachData, setCoachData] = React.useState<{ avatarUrl?: string | null; isCoach?: boolean }>({});
+  const [mounted, setMounted] = React.useState(false);
+
+  // Éviter les erreurs d'hydratation en attendant le montage côté client
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Récupérer les données du coach si l'utilisateur est un coach
   React.useEffect(() => {
@@ -37,10 +43,11 @@ export function AuthButton() {
     }
   }, [session]);
 
-  if (isPending) {
+  // Afficher un placeholder pendant le SSR et le chargement initial
+  if (!mounted || isPending) {
     return (
-      <Button variant="ghost" disabled>
-        {t('loading')}
+      <Button variant="ghost" disabled className="h-10 w-10 rounded-full">
+        <div className="h-10 w-10 rounded-full bg-gray-700 animate-pulse" />
       </Button>
     );
   }

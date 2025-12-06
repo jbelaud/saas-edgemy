@@ -18,8 +18,14 @@ export async function GET() {
 
     console.log('Fetching player dashboard for user:', session.user.id);
 
-    // Récupérer le profil player
-    const player = await prisma.player.findUnique({
+    // Récupérer le discordId de l'utilisateur
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, discordId: true },
+    });
+
+    // Récupérer le profil player ou le créer s'il n'existe pas
+    let player = await prisma.player.findUnique({
       where: { userId: session.user.id },
       select: {
         id: true,
@@ -29,11 +35,26 @@ export async function GET() {
     });
 
     if (!player) {
-      console.log('Player profile not found for user:', session.user.id);
-      return NextResponse.json(
-        { error: 'Profil joueur non trouvé' },
-        { status: 404 }
-      );
+      console.log('Player profile not found, creating one for user:', session.user.id);
+      
+      const nameParts = (user?.name || 'Joueur').split(' ');
+      const firstName = nameParts[0] || 'Joueur';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      player = await prisma.player.create({
+        data: {
+          userId: session.user.id,
+          firstName,
+          lastName,
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      });
+
+      console.log('Player profile created:', player.id);
     }
 
     console.log('Player profile found:', player.id);
@@ -59,8 +80,9 @@ export async function GET() {
     const now = new Date();
 
     // Calculer les stats
+    // Inclure PAID (PRO) et EXTERNAL_PAID/EXTERNAL_PENDING (LITE)
     const confirmedReservations = reservations.filter(
-      (r) => r.status === 'CONFIRMED' && r.paymentStatus === 'PAID'
+      (r) => r.status === 'CONFIRMED' || r.status === 'PENDING'
     );
 
     const completedReservations = reservations.filter(
@@ -95,6 +117,7 @@ export async function GET() {
         id: player.id,
         firstName: player.firstName,
         lastName: player.lastName,
+        isDiscordConnected: !!user?.discordId,
       },
       stats,
     });

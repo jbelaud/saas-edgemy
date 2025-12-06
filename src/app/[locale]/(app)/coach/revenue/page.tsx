@@ -111,7 +111,7 @@ export default function CoachRevenuePage() {
 
   return (
     <CoachLayout>
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
           <GradientText variant="emerald" className="text-4xl font-bold mb-2">
             💰 {t('title')}

@@ -8,6 +8,7 @@ import { Loader2, TrendingUp, Users, Clock, Search } from 'lucide-react';
 import { GlassCard, GradientButton, GradientText } from '@/components/ui';
 import Link from 'next/link';
 import { PlayerLayout } from '@/components/player/layout/PlayerLayout';
+import { PlayerOnboardingChecklist } from '@/components/player/onboarding/PlayerOnboardingChecklist';
 
 interface PlayerStats {
   totalHours: number;
@@ -22,6 +23,7 @@ interface PlayerDashboardData {
     id: string;
     firstName: string | null;
     lastName: string | null;
+    isDiscordConnected: boolean;
   };
   stats: PlayerStats;
 }
@@ -93,6 +95,11 @@ export default function PlayerDashboardPage() {
 
   return (
     <PlayerLayout>
+      {/* Onboarding Checklist - Discord */}
+      <PlayerOnboardingChecklist
+        isDiscordConnected={dashboardData?.player?.isDiscordConnected ?? false}
+      />
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">

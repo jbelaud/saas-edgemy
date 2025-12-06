@@ -34,6 +34,7 @@ async function getCoach(slug: string) {
       status: true,
       subscriptionStatus: true,
       subscriptionPlan: true,
+      planKey: true,
       experience: true,
       roi: true,
       formats: true,

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Star, Twitch, Youtube, Twitter, MessageCircle, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { useState, useEffect } from 'react';
 import { useAlertDialog } from '@/hooks/useAlertDialog';
 import { AlertDialogCustom } from '@/components/ui/alert-dialog-custom';
@@ -22,6 +23,7 @@ interface CoachHeaderProps {
     status: string;
     subscriptionStatus: string | null;
     subscriptionPlan: string | null;
+    planKey: string | null;
     experience: number | null;
     roi: number | null;
     formats: string[];
@@ -195,6 +197,26 @@ export function CoachHeader({ coach, reviewStats, studentsCount }: CoachHeaderPr
                 <h1 className="text-4xl md:text-5xl font-bold text-white">
                   {coach.firstName} {coach.lastName}
                 </h1>
+
+                {/* Badge PRO/LITE */}
+                {coach.planKey && coach.subscriptionStatus === 'ACTIVE' && (
+                  <Tooltip 
+                    content={
+                      coach.planKey === 'PRO' 
+                        ? 'Paiement sécurisé via Stripe. Vous payez directement sur la plateforme.'
+                        : 'Le coach vous communiquera son lien de paiement lors de vos échanges sur Discord.'
+                    }
+                    position="bottom"
+                  >
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold cursor-help ${
+                      coach.planKey === 'PRO'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                        : 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
+                    }`}>
+                      {coach.planKey === 'PRO' ? '⭐ PRO' : '💡 LITE'}
+                    </div>
+                  </Tooltip>
+                )}
 
                 {/* Badge statut inactif */}
                 {coach.subscriptionStatus !== 'ACTIVE' && (

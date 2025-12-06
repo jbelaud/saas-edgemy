@@ -220,8 +220,10 @@ export async function POST(request: NextRequest) {
         const announcementPack = await prisma.announcementPack.findUnique({
           where: { id: packageId },
           select: {
+            id: true,
             announcementId: true,
             totalPrice: true,
+            hours: true,
             isActive: true,
           },
         });
@@ -241,6 +243,14 @@ export async function POST(request: NextRequest) {
         }
 
         reservationPriceCents = announcementPack.totalPrice;
+        // Calculer le nombre de sessions à partir des heures et de la durée de l'annonce
+        const sessionsCount = Math.floor((announcementPack.hours * 60) / announcement.durationMin);
+        // Stocker les infos du pack pour création du CoachingPackage (LITE)
+        (body as { _announcementPack?: { id: string; hours: number; sessionsCount: number } })._announcementPack = {
+          id: announcementPack.id,
+          hours: announcementPack.hours,
+          sessionsCount,
+        };
       }
     }
 
@@ -255,21 +265,31 @@ export async function POST(request: NextRequest) {
         // ====================================================================
         console.log(`🎯 [LITE] Création réservation sans Stripe pour coach ${coach.id}`);
 
+        // Récupérer les infos du nouveau pack si c'est un achat de pack
+        const newPackInfo = (body as { _announcementPack?: { id: string; hours: number; sessionsCount: number } })._announcementPack;
+
         const reservation = await prisma.$transaction(async (tx) => {
-          // Créer la réservation avec statut EXTERNAL_PENDING
+          // Créer la réservation directement CONFIRMED pour LITE
+          // Le paiement est géré directement entre le coach et le joueur
           const res = await tx.reservation.create({
             data: {
               announcementId,
               coachId,
               playerId: session.user.id,
               packId: packageId || null,
-              sessionNumber,
+              sessionNumber: sessionNumber || (newPackInfo ? 1 : null),
               startDate: start,
               endDate: end,
-              status: 'PENDING', // En attente de paiement externe
-              paymentStatus: 'EXTERNAL_PENDING',
+              status: 'CONFIRMED', // Confirmé immédiatement pour LITE
+              paymentStatus: 'EXTERNAL_PAID', // Paiement externe (géré par le coach)
               type: reservationType,
               priceCents: reservationPriceCents,
+              // Pour LITE, le coach reçoit 100% du montant (pas de frais Edgemy)
+              coachNetCents: reservationPriceCents,
+              stripeFeeCents: 0,
+              edgemyFeeCents: 0,
+              serviceFeeCents: 0,
+              commissionCents: 0,
             },
           });
 
@@ -297,6 +317,49 @@ export async function POST(request: NextRequest) {
             });
           }
 
+          // Si c'est un NOUVEAU pack (achat initial) - créer le CoachingPackage
+          if (newPackInfo && reservationType === 'PACK') {
+            const durationHours = announcement.durationMin / 60;
+            const totalHours = newPackInfo.hours;
+
+            // Créer le CoachingPackage
+            const newCoachingPackage = await tx.coachingPackage.create({
+              data: {
+                playerId: session.user.id,
+                coachId,
+                announcementId,
+                totalHours,
+                remainingHours: totalHours - durationHours, // Déduire la première session
+                priceCents: reservationPriceCents,
+                status: 'ACTIVE',
+                // Pour LITE, pas de frais
+                commissionCents: 0,
+                coachEarningsCents: reservationPriceCents,
+                stripeFeeCents: 0,
+                edgemyFeeCents: 0,
+                serviceFeeCents: 0,
+                coachNetCents: reservationPriceCents,
+                sessionPayoutCents: Math.round(reservationPriceCents / newPackInfo.sessionsCount),
+                sessionsCompletedCount: 0,
+                sessionsTotalCount: newPackInfo.sessionsCount,
+              },
+            });
+
+            // Créer la première PackageSession
+            await tx.packageSession.create({
+              data: {
+                packageId: newCoachingPackage.id,
+                reservationId: res.id,
+                startDate: start,
+                endDate: end,
+                durationMinutes: announcement.durationMin,
+                status: 'SCHEDULED',
+              },
+            });
+
+            console.log(`✅ [LITE] CoachingPackage créé: ${newCoachingPackage.id} avec ${totalHours}h, ${totalHours - durationHours}h restantes`);
+          }
+
           return res;
         });
 
@@ -305,12 +368,15 @@ export async function POST(request: NextRequest) {
         try {
           const discordResult = await createDiscordThreadForLite({
             reservationId: reservation.id,
+            coachId: coach.id,
+            playerId: session.user.id,
             coachName: `${coach.firstName} ${coach.lastName}`,
             playerName: user?.name || 'Joueur',
             sessionTitle: announcement.title,
             startDate: start,
             endDate: end,
             paymentPreferences: coach.paymentPreferences,
+            priceCents: reservationPriceCents,
           });
 
           discordUrl = discordResult.url || null;

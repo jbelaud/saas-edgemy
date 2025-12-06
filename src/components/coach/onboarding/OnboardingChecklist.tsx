@@ -10,6 +10,7 @@ interface OnboardingChecklistProps {
   isStripeConnected: boolean;
   isDiscordConnected: boolean;
   planKey?: 'PRO' | 'LITE' | null;
+  hasAnnouncements?: boolean;
   onConnectStripe: () => void;
   onConnectDiscord: () => void;
   onCreateAnnouncement: () => void;
@@ -29,6 +30,7 @@ export function OnboardingChecklist({
   isStripeConnected,
   isDiscordConnected,
   planKey,
+  hasAnnouncements = false,
   onConnectStripe,
   onConnectDiscord,
   onCreateAnnouncement,
@@ -68,11 +70,11 @@ export function OnboardingChecklist({
     {
       id: 'discord',
       label: 'Connecter mon Discord',
-      status: !hasActiveSubscription
+      status: (!hasActiveSubscription
         ? 'blocked'
         : isDiscordConnected
         ? 'completed'
-        : 'pending',
+        : 'pending') as 'completed' | 'pending' | 'blocked',
       description: !hasActiveSubscription
         ? 'Disponible après activation de l\'abonnement'
         : isDiscordConnected
@@ -81,13 +83,14 @@ export function OnboardingChecklist({
       action: hasActiveSubscription && !isDiscordConnected ? onConnectDiscord : undefined,
       actionLabel: 'Connecter mon Discord',
     },
-    {
+    // N'afficher l'item "Créer ma première annonce" que si le coach n'a pas encore d'annonces
+    ...(!hasAnnouncements ? [{
       id: 'announcement',
       label: 'Créer ma première annonce',
-      status:
+      status: (
         !hasActiveSubscription || (!isLitePlan && !isStripeConnected)
           ? 'blocked'
-          : 'pending',
+          : 'pending') as 'completed' | 'pending' | 'blocked',
       description:
         !hasActiveSubscription || (!isLitePlan && !isStripeConnected)
           ? 'Disponible après validation des étapes précédentes'
@@ -97,7 +100,7 @@ export function OnboardingChecklist({
           ? onCreateAnnouncement
           : undefined,
       actionLabel: 'Créer ma première annonce',
-    },
+    }] : []),
   ];
 
   // Pour LITE : allCompleted = subscription + discord
@@ -172,7 +175,7 @@ export function OnboardingChecklist({
           ))}
         </div>
 
-        {allCompleted && (
+        {allCompleted && !hasAnnouncements && (
           <div className="mt-6 pt-6 border-t border-gray-700">
             <GradientButton
               variant="amber"

@@ -668,10 +668,12 @@ export async function POST(req: Request) {
             subscriptionPlan: planType,
             planKey: planKey, // Ajouter le planKey (PRO ou LITE)
             currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : undefined,
+            // Mettre à jour le statut du profil coach également
+            status: subscriptionStatus === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE',
           },
         });
 
-        console.log(`✅ Abonnement coach mis à jour: ${coachId} - ${subscriptionStatus} (Plan ${planKey} ${planType})`);
+        console.log(`✅ Abonnement coach mis à jour: ${coachId} - ${subscriptionStatus} (Plan ${planKey} ${planType}) - Profil: ${subscriptionStatus === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE'}`);
         break;
       }
 
@@ -690,11 +692,12 @@ export async function POST(req: Request) {
           where: { id: coachId },
           data: {
             subscriptionStatus: 'CANCELED',
+            status: 'INACTIVE', // Désactiver le profil coach
             currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : undefined,
           },
         });
 
-        console.log(`✅ Abonnement coach annulé: ${coachId}`);
+        console.log(`✅ Abonnement coach annulé: ${coachId} - Profil: INACTIVE`);
         break;
       }
 

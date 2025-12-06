@@ -21,11 +21,12 @@ export async function GET() {
     });
 
     // Récupérer toutes les réservations du joueur
+    // Inclure PENDING pour les anciennes réservations LITE créées avant la correction
     const reservations = await prisma.reservation.findMany({
       where: {
         playerId: session.user.id,
         status: {
-          in: ['CONFIRMED', 'COMPLETED'],
+          in: ['CONFIRMED', 'COMPLETED', 'PENDING'],
         },
       },
       select: {
@@ -33,6 +34,7 @@ export async function GET() {
         startDate: true,
         endDate: true,
         status: true,
+        paymentStatus: true,
         packId: true,
         discordChannelId: true,
         type: true,
@@ -42,6 +44,7 @@ export async function GET() {
             firstName: true,
             lastName: true,
             avatarUrl: true,
+            planKey: true,
           },
         },
         announcement: {

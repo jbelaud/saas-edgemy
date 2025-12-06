@@ -27,6 +27,8 @@ export default async function BookingPage({ params, searchParams }: BookingPageP
       lastName: true,
       avatarUrl: true,
       timezone: true,
+      planKey: true,
+      paymentPreferences: true,
       user: {
         select: {
           image: true,

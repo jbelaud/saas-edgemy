@@ -150,54 +150,48 @@ export function CoachAvailabilityPreview({ coachId, coachTimezone }: CoachAvaila
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* Liste des disponibilités */}
+      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
         {groupedAvailabilities.map((group, idx) => (
           <div
             key={idx}
-            className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100 hover:border-amber-300 transition-all hover:shadow-md"
+            className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100"
           >
             {/* En-tête du jour */}
-            <div className="flex items-center gap-3 mb-3 pb-3 border-b border-amber-200">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-white rounded-lg flex flex-col items-center justify-center shadow-sm">
-                  <span className="text-xs text-amber-600 font-medium uppercase">
-                    {format(group.date, 'MMM', { locale: fr })}
-                  </span>
-                  <span className="text-lg font-bold text-amber-900">
-                    {format(group.date, 'd')}
-                  </span>
-                </div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 bg-white rounded-lg flex flex-col items-center justify-center shadow-sm flex-shrink-0">
+                <span className="text-[10px] text-amber-600 font-medium uppercase leading-none">
+                  {format(group.date, 'MMM', { locale: fr })}
+                </span>
+                <span className="text-base font-bold text-amber-900 leading-none">
+                  {format(group.date, 'd')}
+                </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-gray-900 capitalize text-sm leading-tight">
-                  {format(group.date, 'EEEE', { locale: fr })}
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900 capitalize text-sm">
+                  {format(group.date, 'EEEE d MMMM', { locale: fr })}
                 </h4>
-                <p className="text-xs text-gray-600">
-                  {format(group.date, 'd MMMM yyyy', { locale: fr })}
-                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded-full">
+                  {group.totalHours.toFixed(0)}h dispo
+                </span>
               </div>
             </div>
 
-            {/* Plages horaires */}
-            <div className="space-y-2 mb-3">
+            {/* Créneaux horaires en ligne */}
+            <div className="flex flex-wrap gap-2">
               {group.slots.map((slot, slotIdx) => (
-                <div key={slotIdx} className="flex items-center gap-2 text-sm bg-white rounded-lg px-3 py-2 shadow-sm">
-                  <Clock className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-                  <span className="font-medium text-gray-900">
+                <div 
+                  key={slotIdx} 
+                  className="inline-flex items-center gap-1.5 text-sm bg-white rounded-lg px-3 py-1.5 border border-amber-200"
+                >
+                  <Clock className="h-3 w-3 text-amber-500" />
+                  <span className="font-medium text-gray-800">
                     {formatInTimezone(slot.start, visitorTimezone, 'HH:mm')} - {formatInTimezone(slot.end, visitorTimezone, 'HH:mm')}
-                  </span>
-                  <span className="text-xs text-gray-500 ml-auto">
-                    {slot.hours.toFixed(1)}h
                   </span>
                 </div>
               ))}
-            </div>
-
-            {/* Total heures */}
-            <div className="text-center py-2 bg-amber-100 rounded-lg">
-              <span className="text-xs font-bold text-amber-800">
-                {group.totalHours.toFixed(1)}h disponibles
-              </span>
             </div>
           </div>
         ))}

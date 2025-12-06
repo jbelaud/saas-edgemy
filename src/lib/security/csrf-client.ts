@@ -53,13 +53,45 @@ export function hasCsrfToken(): boolean {
 }
 
 /**
+ * Initialise le token CSRF en appelant l'API si nécessaire
+ */
+async function ensureCsrfToken(): Promise<string> {
+  let token = getCsrfToken();
+  
+  if (!token) {
+    console.log('[CSRF] Token absent, appel API /api/csrf...');
+    try {
+      const response = await fetch('/api/csrf', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        token = data.token;
+        console.log('[CSRF] Token reçu:', token?.substring(0, 8) + '...');
+      }
+    } catch (error) {
+      console.error('[CSRF] Erreur lors de la récupération du token:', error);
+    }
+  }
+  
+  return token || '';
+}
+
+/**
  * Wrapper fetch qui ajoute automatiquement le token CSRF
  */
 export async function fetchWithCsrf(
   url: string | URL,
   options: RequestInit = {}
 ): Promise<Response> {
-  const csrfToken = getCsrfToken();
+  // S'assurer que le token CSRF existe
+  const csrfToken = await ensureCsrfToken();
+
+  if (!csrfToken) {
+    console.error('[CSRF] Impossible d\'obtenir un token CSRF');
+  }
 
   const headers = new Headers(options.headers);
   

@@ -91,85 +91,85 @@ export default function CoachAgendaPage() {
 
   return (
     <CoachLayout>
-      {/* Header */}
-      <div className="mb-8">
-        <GradientText variant="amber" className="text-4xl font-bold mb-2">
-          📅 {t('title')}
-        </GradientText>
-        <p className="text-gray-400 text-lg">
-          {t('subtitle')}
-        </p>
-      </div>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="mb-8">
+          <GradientText variant="amber" className="text-4xl font-bold mb-2">
+            📅 {t('title')}
+          </GradientText>
+          <p className="text-gray-400 text-lg">
+            {t('subtitle')}
+          </p>
+        </div>
 
-      <SubscriptionGate
-        isActive={subscriptionStatus === 'ACTIVE'}
-      >
-        {/* Actions rapides */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <QuickAddAvailability coachId={coachId} onSuccess={handleRefresh} />
-          
-          {/* Bouton planifier session de pack */}
+        <SubscriptionGate isActive={subscriptionStatus === 'ACTIVE'}>
+          {/* Actions rapides */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <QuickAddAvailability coachId={coachId} onSuccess={handleRefresh} />
+            
+            {/* Bouton planifier session de pack */}
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                  <Package className="w-5 h-5 text-purple-400" />
+                </div>
+                <h2 className="text-xl font-semibold text-white">{t('packSessions.title')}</h2>
+              </div>
+              <p className="text-gray-400 text-sm mb-4">
+                {t('packSessions.description')}
+              </p>
+              <button
+                onClick={() => setIsPackModalOpen(true)}
+                className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+              >
+                <Package className="w-5 h-5" />
+                {t('packSessions.schedule')}
+              </button>
+            </GlassCard>
+          </div>
+
+          {/* Layout principal: Calendrier + Liste */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* Calendrier (2/3 de l'espace) - Masqué sur mobile */}
+            <div className="hidden xl:block xl:col-span-2">
+              <CoachCalendar key={refreshKey} coachId={coachId} onAvailabilityChange={handleRefresh} />
+            </div>
+
+            {/* Liste des disponibilités (1/3 de l'espace sur desktop, pleine largeur sur mobile) */}
+            <div className="xl:col-span-1">
+              <AvailabilityList
+                availabilities={availabilities.map(av => ({
+                  ...av,
+                  start: new Date(av.start),
+                  end: new Date(av.end),
+                }))}
+                coachId={coachId}
+                onUpdate={handleRefresh}
+              />
+            </div>
+          </div>
+
+          {/* Prochaines sessions - À implémenter */}
           <GlassCard className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                <Package className="w-5 h-5 text-purple-400" />
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-amber-400" />
               </div>
-              <h2 className="text-xl font-semibold text-white">{t('packSessions.title')}</h2>
+              <h2 className="text-xl font-semibold text-white">{t('upcomingSessions.title')}</h2>
             </div>
-            <p className="text-gray-400 text-sm mb-4">
-              {t('packSessions.description')}
+            <p className="text-gray-400 text-sm">
+              {t('upcomingSessions.description')}
             </p>
-            <button
-              onClick={() => setIsPackModalOpen(true)}
-              className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
-            >
-              <Package className="w-5 h-5" />
-              {t('packSessions.schedule')}
-            </button>
           </GlassCard>
-        </div>
+        </SubscriptionGate>
 
-        {/* Layout principal: Calendrier + Liste */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Calendrier (2/3 de l'espace) - Masqué sur mobile */}
-          <div className="hidden xl:block xl:col-span-2">
-            <CoachCalendar key={refreshKey} coachId={coachId} onAvailabilityChange={handleRefresh} />
-          </div>
-
-          {/* Liste des disponibilités (1/3 de l'espace sur desktop, pleine largeur sur mobile) */}
-          <div className="xl:col-span-1">
-            <AvailabilityList
-              availabilities={availabilities.map(av => ({
-                ...av,
-                start: new Date(av.start),
-                end: new Date(av.end),
-              }))}
-              coachId={coachId}
-              onUpdate={handleRefresh}
-            />
-          </div>
-        </div>
-
-        {/* Prochaines sessions - À implémenter */}
-        <GlassCard className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-amber-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-white">{t('upcomingSessions.title')}</h2>
-          </div>
-          <p className="text-gray-400 text-sm">
-            {t('upcomingSessions.description')}
-          </p>
-        </GlassCard>
-      </SubscriptionGate>
-
-      {/* Modal de planification de pack */}
-      <SchedulePackSessionModal
-        isOpen={isPackModalOpen}
-        onClose={() => setIsPackModalOpen(false)}
-        onSuccess={handleRefresh}
-      />
+        {/* Modal de planification de pack */}
+        <SchedulePackSessionModal
+          isOpen={isPackModalOpen}
+          onClose={() => setIsPackModalOpen(false)}
+          onSuccess={handleRefresh}
+        />
+      </div>
     </CoachLayout>
   );
 }

@@ -121,9 +121,11 @@ export function PlayerSettingsForm() {
 
   return (
     <div className="space-y-6">
-      {/* Section Profil */}
-      <GlassCard>
-        <div className="p-6">
+      {/* Grid 2 colonnes pour Profil et Discord */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Section Profil */}
+        <GlassCard>
+          <div className="p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-emerald-500/10 rounded-lg">
               <User className="h-5 w-5 text-emerald-400" />
@@ -145,6 +147,7 @@ export function PlayerSettingsForm() {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
+              className="text-white bg-slate-800/50 border-slate-600"
             />
           </div>
 
@@ -158,6 +161,7 @@ export function PlayerSettingsForm() {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
+              className="text-white bg-slate-800/50 border-slate-600"
             />
           </div>
 
@@ -165,7 +169,7 @@ export function PlayerSettingsForm() {
           <div className="space-y-2">
             <Label htmlFor="timezone">{t('profile.timezone')}</Label>
             <Select value={timezone} onValueChange={setTimezone}>
-              <SelectTrigger id="timezone">
+              <SelectTrigger id="timezone" className="text-white bg-slate-800/50 border-slate-600">
                 <SelectValue placeholder={t('profile.timezonePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -185,7 +189,7 @@ export function PlayerSettingsForm() {
           <div className="space-y-2">
             <Label htmlFor="language">{t('profile.language')}</Label>
             <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger id="language">
+              <SelectTrigger id="language" className="text-white bg-slate-800/50 border-slate-600">
                 <SelectValue placeholder={t('profile.languagePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -223,11 +227,11 @@ export function PlayerSettingsForm() {
             </div>
           </form>
         </div>
-      </GlassCard>
+        </GlassCard>
 
-      {/* Section Discord */}
-      <GlassCard>
-        <div className="p-6">
+        {/* Section Discord */}
+        <GlassCard>
+          <div className="p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-[#5865F2]/10 rounded-lg">
               <svg
@@ -309,7 +313,8 @@ export function PlayerSettingsForm() {
             </div>
           </div>
         </div>
-      </GlassCard>
+        </GlassCard>
+      </div>
 
       {/* Section Notifications (à venir) */}
       <GlassCard className="opacity-60">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { ensureMemberRole } from '@/lib/discord/roles';
 
 /**
  * GET /api/discord/oauth/callback
@@ -117,11 +118,59 @@ export async function GET(request: NextRequest) {
       data: { discordId },
     });
 
-    // Mettre à jour le profil coach si existant
+    // Vérifier si c'est un coach
     const coach = await prisma.coach.findUnique({
       where: { userId: session.user.id },
     });
 
+    const role = coach ? 'COACH' : 'PLAYER';
+    const roleId = role === 'COACH' 
+      ? process.env.DISCORD_COACH_ROLE_ID 
+      : process.env.DISCORD_PLAYER_ROLE_ID;
+
+    console.log(`[Discord OAuth] Utilisateur: ${discordTag}, Role: ${role}, RoleId: ${roleId || 'NON DÉFINI'}`);
+    console.log(`[Discord OAuth] DISCORD_COACH_ROLE_ID: ${process.env.DISCORD_COACH_ROLE_ID || 'NON DÉFINI'}`);
+    console.log(`[Discord OAuth] DISCORD_PLAYER_ROLE_ID: ${process.env.DISCORD_PLAYER_ROLE_ID || 'NON DÉFINI'}`);
+
+    // Ajouter automatiquement l'utilisateur au serveur Discord avec le bon rôle
+    const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID;
+    const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+
+    if (DISCORD_GUILD_ID && DISCORD_BOT_TOKEN) {
+      try {
+        const addMemberResponse = await fetch(
+          `https://discord.com/api/v10/guilds/${DISCORD_GUILD_ID}/members/${discordId}`,
+          {
+            method: 'PUT',
+            headers: {
+              Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              access_token: accessToken,
+              roles: roleId ? [roleId] : [],
+            }),
+          }
+        );
+
+        if (addMemberResponse.status === 201) {
+          console.log(`✅ Utilisateur ${discordTag} ajouté au serveur Discord avec rôle ${role}`);
+        } else if (addMemberResponse.status === 204) {
+          // L'utilisateur est déjà membre, on met à jour son rôle
+          console.log(`ℹ️ Utilisateur ${discordTag} déjà membre du serveur, mise à jour du rôle...`);
+          await ensureMemberRole({ discordId, role });
+        } else {
+          const errorText = await addMemberResponse.text();
+          console.error(`⚠️ Erreur ajout membre Discord (${addMemberResponse.status}):`, errorText);
+          // On continue quand même, l'utilisateur devra rejoindre manuellement
+        }
+      } catch (discordError) {
+        console.error('⚠️ Erreur lors de l\'ajout au serveur Discord:', discordError);
+        // On continue quand même, ce n'est pas bloquant
+      }
+    }
+
+    // Mettre à jour le profil coach si existant
     if (coach) {
       await prisma.coach.update({
         where: { id: coach.id },

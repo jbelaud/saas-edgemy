@@ -20,6 +20,8 @@ interface Coach {
   lastName: string;
   avatarUrl: string | null;
   timezone: string | null;
+  planKey: string | null;
+  paymentPreferences: string[];
   user: {
     image: string | null;
   } | null;
@@ -129,13 +131,9 @@ export function BookingPageClient({
 
       const reservationData = await reservationResponse.json();
 
-      // Si c'est un plan LITE, rediriger vers Discord
+      // Si c'est un plan LITE, rediriger vers la page de succès LITE
       if (reservationData.mode === 'LITE') {
-        if (reservationData.discordUrl) {
-          window.location.href = reservationData.discordUrl;
-        } else {
-          router.push(`/${locale}/player/sessions`);
-        }
+        router.push(`/${locale}/session/success-lite?reservation_id=${reservationData.reservationId}`);
         return;
       }
 
@@ -275,6 +273,8 @@ export function BookingPageClient({
                 error={error}
                 canBook={isDiscordMember === true && selectedSlot !== null}
                 onBook={handleBooking}
+                isLitePlan={coach.planKey === 'LITE'}
+                paymentPreferences={coach.paymentPreferences}
               />
             </div>
           </div>

@@ -30,11 +30,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Construire l'URL d'autorisation Discord
+    // Scopes: identify (infos user) + guilds.join (ajout auto au serveur)
     const discordAuthUrl = new URL('https://discord.com/api/oauth2/authorize');
     discordAuthUrl.searchParams.set('client_id', DISCORD_CLIENT_ID);
     discordAuthUrl.searchParams.set('redirect_uri', DISCORD_REDIRECT_URI);
     discordAuthUrl.searchParams.set('response_type', 'code');
-    discordAuthUrl.searchParams.set('scope', 'identify');
+    discordAuthUrl.searchParams.set('scope', 'identify guilds.join');
 
     return NextResponse.redirect(discordAuthUrl.toString());
   } catch (error) {
